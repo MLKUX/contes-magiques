@@ -17,11 +17,11 @@ module.exports = async function handler(req, res) {
         'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
+        model: 'gpt-image-1',
         prompt: prompt + ', children book illustration, Pixar 3D style, vibrant colors, no text',
         n: 1,
-        size: '1792x1024',
-        quality: 'standard'
+        size: '1536x1024',
+        quality: 'medium'
       })
     });
 
@@ -31,10 +31,10 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ error: data.error && data.error.message || 'OpenAI error' });
     }
 
-    const url = data.data && data.data[0] && data.data[0].url;
-    if (!url) return res.status(500).json({ error: 'No URL in response' });
+    const b64 = data.data && data.data[0] && data.data[0].b64_json;
+    if (!b64) return res.status(500).json({ error: 'No image in response' });
 
-    return res.status(200).json({ url });
+    return res.status(200).json({ url: 'data:image/png;base64,' + b64 });
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
