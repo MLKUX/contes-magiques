@@ -21,8 +21,7 @@ module.exports = async function handler(req, res) {
         prompt: prompt + ', children book illustration, Pixar 3D style, vibrant colors, no text',
         n: 1,
         size: '1792x1024',
-        quality: 'standard',
-        response_format: 'url'
+        quality: 'standard'
       })
     });
 
