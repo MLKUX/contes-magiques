@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contes Magiques</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:#FFD700; --purple:#6B21A8; --purple-light:#A855F7;
+    --teal:#0D9488; --dark:#07071a; --card-bg:rgba(255,255,255,0.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Nunito',sans-serif;background:var(--dark);color:#F1F0FF;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(107,33,168,0.3) 0%,transparent 55%),radial-gradient(ellipse at 80% 80%,rgba(13,148,136,0.2) 0%,transparent 55%);pointer-events:none;z-index:0;}
+
+  /* SETUP */
+  #setup-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:100;background:radial-gradient(ellipse at center,#1a0a2e 0%,#07071a 100%);}
+  .setup-box{background:rgba(255,255,255,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:24px;padding:44px 36px;width:100%;max-width:460px;text-align:center;backdrop-filter:blur(20px);box-shadow:0 0 80px rgba(107,33,168,0.3);}
+  .setup-emoji{font-size:52px;display:block;margin-bottom:14px;animation:float 3s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .setup-box h1{font-family:'Fredoka One',cursive;font-size:2rem;background:linear-gradient(135deg,#FFD700,#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;}
+  .setup-box p{color:rgba(255,255,255,0.55);font-size:0.9rem;margin-bottom:28px;line-height:1.5;}
+  .setup-box label{display:block;text-align:left;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:rgba(255,215,0,0.8);margin-bottom:7px;}
+  .setup-box input{width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:13px 16px;color:white;font-family:'Nunito',sans-serif;font-size:0.9rem;margin-bottom:20px;outline:none;transition:border-color 0.2s;}
+  .setup-box input:focus{border-color:rgba(255,215,0,0.5);}
+  .setup-box input::placeholder{color:rgba(255,255,255,0.25);}
+  .btn-start{width:100%;background:linear-gradient(135deg,#FFD700,#FF6B35);border:none;border-radius:14px;padding:15px;font-family:'Fredoka One',cursive;font-size:1.15rem;color:#1a0a2e;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 24px rgba(255,215,0,0.3);}
+  .btn-start:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(255,215,0,0.45);}
+  #setup-error{color:#FF6B6B;font-size:0.82rem;font-weight:700;margin-top:12px;min-height:20px;}
+
+  /* LIBRARY */
+  #app{display:none;position:relative;z-index:1;min-height:100vh;}
+  #library-screen{padding:28px 20px;max-width:920px;margin:0 auto;}
+  .library-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;}
+  .library-header h1{font-family:'Fredoka One',cursive;font-size:1.85rem;background:linear-gradient(135deg,#FFD700,#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--purple-light),var(--teal));display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:1rem;border:2px solid rgba(255,215,0,0.4);}
+  .level-tabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+  .level-tab{padding:7px 18px;border-radius:999px;border:1px solid rgba(255,255,255,0.14);background:transparent;color:rgba(255,255,255,0.45);font-family:'Nunito',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;transition:all 0.2s;}
+  .level-tab.active{background:linear-gradient(135deg,#6B21A8,#A855F7);border-color:transparent;color:white;box-shadow:0 2px 16px rgba(168,85,247,0.4);}
+  .stories-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:18px;}
+  .story-card{background:var(--card-bg);border:1px solid rgba(255,255,255,0.08);border-radius:20px;overflow:hidden;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s,border-color 0.2s;}
+  .story-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(107,33,168,0.35);border-color:rgba(255,215,0,0.25);}
+  .story-thumb{width:100%;height:155px;display:flex;align-items:center;justify-content:center;font-size:50px;position:relative;overflow:hidden;}
+  .story-thumb-forest{background:linear-gradient(160deg,#1a3a1a,#2d5a1b,#0a2a0a);}
+  .story-thumb-ocean{background:linear-gradient(160deg,#0a1a3a,#1b3d5a,#0a2040);}
+  .story-thumb-castle{background:linear-gradient(160deg,#3a1a0a,#5a3010,#2a0a05);}
+  .story-thumb::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.4) 100%);}
+  .story-info{padding:14px 16px 18px;}
+  .story-level{display:inline-block;font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;padding:3px 9px;border-radius:999px;margin-bottom:7px;}
+  .level-eveil{background:rgba(255,192,203,0.2);color:#FFB6C1;border:1px solid rgba(255,182,193,0.3);}
+  .level-explorateur{background:rgba(255,215,0,0.15);color:#FFD700;border:1px solid rgba(255,215,0,0.3);}
+  .level-aventurier{background:rgba(168,85,247,0.2);color:#C084FC;border:1px solid rgba(192,132,252,0.3);}
+  .story-title{font-family:'Fredoka One',cursive;font-size:1.1rem;color:white;margin-bottom:5px;}
+  .story-desc{font-size:0.8rem;color:rgba(255,255,255,0.5);line-height:1.5;}
+
+  /* STORY SCREEN */
+  #story-screen{display:none;position:fixed;inset:0;z-index:50;overflow:hidden;}
+
+  /* SVG illustration fills entire screen */
+  #story-svg-bg{position:absolute;inset:0;width:100%;height:100%;transition:opacity 0.5s;}
+  #story-svg-bg svg{width:100%;height:100%;object-fit:cover;}
+
+  /* Bottom gradient for text readability */
+  .story-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,transparent 30%,transparent 50%,rgba(0,0,0,0.75) 80%,rgba(0,0,0,0.92) 100%);pointer-events:none;}
+
+  /* Back button + progress */
+  .story-back-btn{position:absolute;top:18px;left:18px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);color:white;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:background 0.2s;z-index:10;}
+  .story-back-btn:hover{background:rgba(255,255,255,0.15);}
+  .story-progress{position:absolute;top:22px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:10;}
+  .progress-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.3);transition:all 0.3s;}
+  .progress-dot.done{background:#FFD700;}
+  .progress-dot.current{background:white;transform:scale(1.3);}
+
+  /* HOTSPOT choices — positioned absolutely on image */
+  .hotspot{
+    position:absolute;
+    z-index:20;
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(14px);
+    border:1.5px solid rgba(255,255,255,0.35);
+    border-radius:999px;
+    padding:9px 16px 9px 10px;
+    display:flex;align-items:center;gap:8px;
+    cursor:pointer;
+    font-family:'Nunito',sans-serif;font-weight:800;font-size:0.82rem;
+    color:white;white-space:nowrap;
+    transition:all 0.25s;
+    box-shadow:0 4px 20px rgba(0,0,0,0.4);
+    animation:hotspot-in 0.4s ease both;
+  }
+  .hotspot:hover{background:rgba(255,215,0,0.25);border-color:rgba(255,215,0,0.7);transform:scale(1.06);box-shadow:0 6px 28px rgba(255,215,0,0.3);}
+  .hotspot:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+  @keyframes hotspot-in{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}
+  .hotspot-icon{width:24px;height:24px;border-radius:50%;background:rgba(255,215,0,0.3);border:1px solid rgba(255,215,0,0.6);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:900;color:#FFD700;flex-shrink:0;}
+
+  /* Pulse dot on hotspot */
+  .hotspot::before{content:'';position:absolute;inset:-4px;border-radius:999px;border:2px solid rgba(255,215,0,0.4);animation:hotspot-pulse 2s ease-in-out infinite;pointer-events:none;}
+  @keyframes hotspot-pulse{0%,100%{opacity:0;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+
+  /* Narration bar at bottom */
+  .story-narration{
+    position:absolute;bottom:0;left:0;right:0;
+    padding:20px 24px 28px;
+    z-index:10;
+  }
+  .story-text-box{
+    background:rgba(0,0,0,0.6);
+    backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:16px;padding:16px 20px;
+  }
+  .story-text{font-size:0.95rem;font-weight:600;line-height:1.65;color:rgba(255,255,255,0.92);}
+
+  /* END SCREEN */
+  .end-overlay{display:none;position:absolute;inset:0;z-index:30;flex-direction:column;align-items:center;justify-content:flex-end;text-align:center;padding-bottom:40px;}
+  .end-overlay.show{display:flex;animation:end-in 0.6s ease both;}
+  @keyframes end-in{from{opacity:0}to{opacity:1}}
+  .end-illustration{position:absolute;inset:0;width:100%;height:100%;z-index:0;overflow:hidden;}
+  .end-illustration svg{width:100%;height:100%;}
+  .end-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 25%,rgba(0,0,0,0.9) 100%);z-index:1;pointer-events:none;}
+  .end-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;max-width:420px;padding:0 24px;}
+  .end-star{font-size:56px;animation:float 2s ease-in-out infinite;margin-bottom:10px;filter:drop-shadow(0 0 20px rgba(255,215,0,0.8));}
+  .end-title{font-family:'Fredoka One',cursive;font-size:2.2rem;background:linear-gradient(135deg,#FFD700,#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px;}
+  .end-text{color:rgba(255,255,255,0.92);font-size:1rem;line-height:1.65;margin-bottom:24px;max-width:340px;text-shadow:0 1px 6px rgba(0,0,0,0.9);}
+  .btn-replay{background:linear-gradient(135deg,#FFD700,#FF6B35);border:none;border-radius:13px;padding:13px 28px;font-family:'Fredoka One',cursive;font-size:1.05rem;color:#1a0a2e;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 20px rgba(255,215,0,0.4);margin-bottom:10px;display:block;width:100%;max-width:260px;}
+  .btn-replay:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,215,0,0.55);}
+  .btn-library{background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.3);border-radius:13px;padding:11px 24px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.88rem;color:rgba(255,255,255,0.8);cursor:pointer;transition:all 0.2s;display:block;width:100%;max-width:260px;backdrop-filter:blur(8px);}
+  .btn-library:hover{border-color:rgba(255,255,255,0.6);color:white;}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup-screen">
+  <div class="setup-box">
+    <span class="setup-emoji">✨</span>
+    <h1>Contes Magiques</h1>
+    <p>Entre ton prénom pour commencer l'aventure !</p>
+    <label>Ton prénom</label>
+    <input type="text" id="name-input" placeholder="Ex : Léo" maxlength="20"/>
+    <button class="btn-start" onclick="startApp()">Commencer l'aventure 🚀</button>
+    <div id="setup-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div id="library-screen">
+    <div class="library-header">
+      <h1>✨ Contes Magiques</h1>
+      <div class="avatar" id="user-avatar">?</div>
+    </div>
+    <div class="level-tabs">
+      <button class="level-tab active" onclick="filterLevel('all',this)">Tous</button>
+      <button class="level-tab" onclick="filterLevel('eveil',this)">🌸 Éveil (3-5 ans)</button>
+      <button class="level-tab" onclick="filterLevel('explorateur',this)">⭐ Explorateur (6-8 ans)</button>
+      <button class="level-tab" onclick="filterLevel('aventurier',this)">⚔️ Aventurier (9-12 ans)</button>
+    </div>
+    <div class="stories-grid" id="stories-grid"></div>
+  </div>
+
+  <div id="story-screen">
+    <div id="story-svg-bg"></div>
+    <div class="story-gradient"></div>
+    <button class="story-back-btn" onclick="closeStory()">←</button>
+    <div class="story-progress" id="story-progress"></div>
+    <!-- Hotspots injected here dynamically -->
+    <div id="hotspots-layer"></div>
+    <div class="story-narration">
+      <div class="story-text-box">
+        <div class="story-text" id="story-text">…</div>
+      </div>
+    </div>
+    <div class="end-overlay" id="end-overlay">
+      <div class="end-illustration" id="end-illustration"></div>
+      <div class="end-gradient"></div>
+      <div class="end-content">
+        <div class="end-star"  id="end-star">⭐</div>
+        <div class="end-title" id="end-title">Bravo !</div>
+        <div class="end-text"  id="end-text"></div>
+        <button class="btn-replay"  onclick="replayStory()">🔄 Rejouer</button>
+        <button class="btn-library" onclick="closeStory()">📚 Autre histoire</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PREMIUM MODAL -->
+<div id="premium-modal">
+  <div class="premium-box">
+    <span class="lock-icon">🔒</span>
+    <h2>Contenu Premium</h2>
+    <p>Les histoires <strong>Aventurier</strong> sont réservées aux abonnés.<br>Des récits plus profonds, des choix plus complexes, pour les grands explorateurs.</p>
+    <button class="btn-subscribe" onclick="closePremiumModal()">✨ Découvrir l'abonnement</button>
+    <button class="btn-cancel" onclick="closePremiumModal()">Pas maintenant</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════
+// SVG BACKGROUNDS — instantanés
+// ═══════════════════════════════════
+const SCENES_SVG = {
+
+  // ── FORÊT ──────────────────────────────────────────────
+  'foret-magique/s1': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="sky1" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#1a3a2a"/><stop offset="100%" stop-color="#070d0a"/></radialGradient>
+      <radialGradient id="glow-gold" cx="70%" cy="50%" r="40%"><stop offset="0%" stop-color="#b8860b" stop-opacity="0.5"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+      <radialGradient id="glow-dark" cx="28%" cy="50%" r="35%"><stop offset="0%" stop-color="#1a0a4a" stop-opacity="0.7"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+      <radialGradient id="moon" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#c8e8ff"/><stop offset="100%" stop-color="#8ab4d4"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#sky1)"/>
+    <ellipse cx="840" cy="350" rx="380" ry="320" fill="url(#glow-gold)"/>
+    <ellipse cx="320" cy="350" rx="300" ry="280" fill="url(#glow-dark)"/>
+    <!-- Stars -->
+    <circle cx="100" cy="60" r="1.5" fill="white" opacity="0.8"/>
+    <circle cx="250" cy="40" r="1" fill="white" opacity="0.6"/>
+    <circle cx="400" cy="80" r="1.5" fill="white" opacity="0.7"/>
+    <circle cx="600" cy="30" r="1" fill="white" opacity="0.9"/>
+    <circle cx="900" cy="55" r="1.5" fill="white" opacity="0.5"/>
+    <circle cx="1100" cy="40" r="1" fill="white" opacity="0.7"/>
+    <!-- Moon -->
+    <circle cx="950" cy="80" r="28" fill="url(#moon)" opacity="0.9"/>
+    <!-- Ground path center -->
+    <path d="M580 700 Q600 500 590 350 Q600 280 600 700" fill="#2a1a0a" opacity="0.6"/>
+    <path d="M560 700 Q580 480 575 340 Q590 260 620 700" fill="#3a2510" opacity="0.4"/>
+    <!-- LEFT dark side trees -->
+    <rect x="30" y="160" width="80" height="540" rx="8" fill="#0d1a0d"/>
+    <ellipse cx="70" cy="155" rx="75" ry="95" fill="#0f2010"/>
+    <rect x="130" y="220" width="55" height="480" rx="6" fill="#0a150a"/>
+    <ellipse cx="157" cy="215" rx="58" ry="80" fill="#0d1c0d"/>
+    <rect x="190" y="180" width="70" height="520" rx="7" fill="#0c1a0c"/>
+    <ellipse cx="225" cy="175" rx="65" ry="90" fill="#0f2210"/>
+    <!-- LEFT glowing mushrooms -->
+    <ellipse cx="80" cy="580" rx="18" ry="10" fill="#4040ff" opacity="0.7"/>
+    <rect x="77" y="550" width="6" height="34" rx="3" fill="#6060dd"/>
+    <ellipse cx="150" cy="610" rx="14" ry="8" fill="#5050ff" opacity="0.8"/>
+    <rect x="147" y="584" width="5" height="28" rx="2" fill="#7070ee"/>
+    <ellipse cx="250" cy="590" rx="16" ry="9" fill="#3a3aee" opacity="0.9"/>
+    <rect x="247" y="563" width="5" height="30" rx="2" fill="#5858dd"/>
+    <!-- Glowing particles left -->
+    <circle cx="100" cy="400" r="3" fill="#7878ff" opacity="0.6"/>
+    <circle cx="180" cy="350" r="2" fill="#9090ff" opacity="0.5"/>
+    <circle cx="60" cy="480" r="4" fill="#5050ee" opacity="0.7"/>
+    <!-- RIGHT golden side trees -->
+    <rect x="800" y="120" width="90" height="580" rx="8" fill="#2a1a05"/>
+    <ellipse cx="845" cy="115" rx="85" ry="100" fill="#3a2808"/>
+    <rect x="940" y="180" width="70" height="520" rx="7" fill="#2d1e06"/>
+    <ellipse cx="975" cy="175" rx="72" ry="88" fill="#3c2a08"/>
+    <rect x="1060" y="150" width="85" height="550" rx="8" fill="#251805"/>
+    <ellipse cx="1102" cy="145" rx="80" ry="95" fill="#352205"/>
+    <rect x="1140" y="200" width="60" height="500" rx="6" fill="#201505"/>
+    <!-- RIGHT golden light rays -->
+    <path d="M1200 0 L900 700" stroke="#ffd700" stroke-width="2" opacity="0.08"/>
+    <path d="M1200 100 L850 700" stroke="#ffb700" stroke-width="1.5" opacity="0.06"/>
+    <path d="M1150 0 L950 700" stroke="#ffc700" stroke-width="1" opacity="0.05"/>
+    <!-- Sunlight glow -->
+    <ellipse cx="1050" cy="300" rx="120" ry="200" fill="#ffd700" opacity="0.07"/>
+    <!-- Butterflies right -->
+    <path d="M780 280 Q785 275 790 280 Q785 285 780 280" fill="#ffd700" opacity="0.7"/>
+    <path d="M810 320 Q815 313 820 320 Q815 327 810 320" fill="#ffaa00" opacity="0.6"/>
+    <!-- Central ancient tree -->
+    <rect x="530" y="200" width="120" height="500" rx="15" fill="#2d1a08"/>
+    <ellipse cx="590" cy="195" rx="110" ry="90" fill="#3a2208"/>
+    <ellipse cx="590" cy="240" rx="130" ry="70" fill="#2e1c07"/>
+    <!-- Tree face -->
+    <ellipse cx="572" cy="285" rx="10" ry="8" fill="#1a0a00"/>
+    <ellipse cx="610" cy="285" rx="10" ry="8" fill="#1a0a00"/>
+    <path d="M575 310 Q591 322 607 310" stroke="#1a0a00" stroke-width="3" fill="none"/>
+    <!-- Ground flowers -->
+    <circle cx="420" cy="660" r="5" fill="#ff88aa" opacity="0.8"/>
+    <circle cx="460" cy="670" r="4" fill="#ffcc44" opacity="0.7"/>
+    <circle cx="720" cy="655" r="5" fill="#88ffcc" opacity="0.7"/>
+    <circle cx="760" cy="665" r="4" fill="#ff88cc" opacity="0.8"/>
+    <!-- Path fork -->
+    <path d="M590 700 Q560 600 400 500 Q280 440 200 400" stroke="#5a3a18" stroke-width="30" fill="none" opacity="0.5" stroke-linecap="round"/>
+    <path d="M595 700 Q620 600 750 520 Q860 460 950 430" stroke="#7a5a28" stroke-width="28" fill="none" opacity="0.5" stroke-linecap="round"/>
+    <!-- Child character -->
+    <ellipse cx="595" cy="648" rx="18" ry="8" fill="rgba(0,0,0,0.3)"/>
+    <rect x="581" y="580" width="28" height="55" rx="5" fill="#c0392b"/>
+    <rect x="575" y="595" width="40" height="32" rx="6" fill="#3498db" opacity="0.9"/>
+    <circle cx="595" cy="572" r="20" fill="#d4956a"/>
+    <!-- Curly hair -->
+    <circle cx="583" cy="558" r="9" fill="#6b3a1a"/>
+    <circle cx="595" cy="554" r="10" fill="#7a4422"/>
+    <circle cx="607" cy="558" r="9" fill="#6b3a1a"/>
+    <circle cx="589" cy="561" r="7" fill="#7a4422"/>
+    <circle cx="601" cy="561" r="7" fill="#6b3a1a"/>
+  </svg>`,
+
+  'foret-magique/s2a': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="bg2a" cx="50%" cy="40%" r="70%"><stop offset="0%" stop-color="#0d1a2a"/><stop offset="100%" stop-color="#03050a"/></radialGradient>
+      <radialGradient id="owl-glow" cx="65%" cy="45%" r="30%"><stop offset="0%" stop-color="#4040aa" stop-opacity="0.6"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#bg2a)"/>
+    <ellipse cx="800" cy="350" rx="350" ry="280" fill="url(#owl-glow)"/>
+    <!-- Dark twisted trees -->
+    <rect x="0" y="100" width="70" height="600" rx="6" fill="#060e06"/>
+    <path d="M35 100 Q10 50 40 0 Q60 50 35 100" fill="#080f08"/>
+    <rect x="100" y="150" width="55" height="550" rx="5" fill="#070d07"/>
+    <path d="M127 150 Q100 90 130 40 Q155 90 127 150" fill="#090f09"/>
+    <rect x="900" y="120" width="75" height="580" rx="7" fill="#060c06"/>
+    <rect x="1020" y="160" width="60" height="540" rx="6" fill="#07100a"/>
+    <rect x="1120" y="140" width="80" height="560" rx="7" fill="#05090a"/>
+    <!-- Glowing mushrooms blue -->
+    <ellipse cx="60" cy="590" rx="20" ry="11" fill="#3a3aff" opacity="0.9"/>
+    <rect x="57" y="558" width="7" height="35" rx="3" fill="#6666ee"/>
+    <ellipse cx="140" cy="610" rx="15" ry="8" fill="#4848ff" opacity="0.8"/>
+    <rect x="137" y="584" width="6" height="28" rx="3" fill="#7070ee"/>
+    <ellipse cx="300" cy="595" rx="18" ry="10" fill="#2a2aee" opacity="0.9"/>
+    <rect x="297" y="566" width="6" height="31" rx="3" fill="#5555dd"/>
+    <ellipse cx="380" cy="615" rx="12" ry="7" fill="#5050ff" opacity="0.7"/>
+    <!-- Blue ambient particles -->
+    <circle cx="200" cy="300" r="3" fill="#7070ff" opacity="0.7"/>
+    <circle cx="350" cy="250" r="2" fill="#9090ff" opacity="0.5"/>
+    <circle cx="150" cy="450" r="4" fill="#5050ee" opacity="0.6"/>
+    <circle cx="420" cy="380" r="2" fill="#8080ff" opacity="0.4"/>
+    <circle cx="480" cy="300" r="3" fill="#6060ee" opacity="0.5"/>
+    <!-- Ground path -->
+    <path d="M550 700 Q580 500 570 300" stroke="#1a1a2a" stroke-width="60" fill="none" stroke-linecap="round"/>
+    <!-- Owl branch -->
+    <rect x="650" y="290" width="280" height="22" rx="11" fill="#2a1a08"/>
+    <rect x="640" y="280" width="20" height="120" rx="8" fill="#1a1008"/>
+    <!-- Owl body -->
+    <ellipse cx="790" cy="265" rx="52" ry="60" fill="#9a8aaa"/>
+    <ellipse cx="790" cy="250" rx="40" ry="35" fill="#b8a8cc"/>
+    <!-- Owl face -->
+    <circle cx="773" cy="248" r="16" fill="white"/>
+    <circle cx="807" cy="248" r="16" fill="white"/>
+    <circle cx="773" cy="250" r="10" fill="#f0c040"/>
+    <circle cx="807" cy="250" r="10" fill="#f0c040"/>
+    <circle cx="774" cy="252" r="5" fill="#1a0a00"/>
+    <circle cx="808" cy="252" r="5" fill="#1a0a00"/>
+    <ellipse cx="790" cy="268" rx="7" ry="4" fill="#d4a044"/>
+    <!-- Owl glasses -->
+    <circle cx="773" cy="248" r="17" fill="none" stroke="#aaaaaa" stroke-width="2.5"/>
+    <circle cx="807" cy="248" r="17" fill="none" stroke="#aaaaaa" stroke-width="2.5"/>
+    <line x1="790" y1="248" x2="790" y2="248" stroke="#aaaaaa" stroke-width="2"/>
+    <!-- Owl wings -->
+    <path d="M742 280 Q700 320 720 360 Q750 340 742 280" fill="#8a7a9a"/>
+    <path d="M838 280 Q880 320 860 360 Q830 340 838 280" fill="#8a7a9a"/>
+    <!-- Child looking up -->
+    <ellipse cx="490" cy="655" rx="16" ry="7" fill="rgba(0,0,0,0.3)"/>
+    <rect x="477" y="592" width="26" height="52" rx="5" fill="#c0392b"/>
+    <rect x="471" y="606" width="38" height="30" rx="5" fill="#3498db"/>
+    <circle cx="490" cy="584" r="18" fill="#d4956a"/>
+    <circle cx="479" cy="571" r="8" fill="#7a4422"/>
+    <circle cx="490" cy="567" r="9" fill="#6b3a1a"/>
+    <circle cx="501" cy="571" r="8" fill="#7a4422"/>
+  </svg>`,
+
+  'foret-magique/s2b': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="bg2b" cx="55%" cy="40%" r="65%"><stop offset="0%" stop-color="#2a1a05"/><stop offset="100%" stop-color="#0a0805"/></radialGradient>
+      <radialGradient id="sun2b" cx="70%" cy="30%" r="50%"><stop offset="0%" stop-color="#ffd700" stop-opacity="0.5"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#bg2b)"/>
+    <ellipse cx="850" cy="280" rx="400" ry="300" fill="url(#sun2b)"/>
+    <!-- Sunlight rays -->
+    <path d="M1100 0 L700 700" stroke="#ffd700" stroke-width="3" opacity="0.08"/>
+    <path d="M1050 0 L750 700" stroke="#ffaa00" stroke-width="2" opacity="0.06"/>
+    <path d="M1150 0 L650 700" stroke="#ffc700" stroke-width="1.5" opacity="0.05"/>
+    <!-- Butterflies -->
+    <path d="M680 180 Q688 172 696 180 Q688 188 680 180" fill="#ffd700" opacity="0.8" transform="scale(1.5)"/>
+    <path d="M750 220 Q756 214 762 220 Q756 226 750 220" fill="#ff8800" opacity="0.7" transform="scale(1.3)"/>
+    <!-- Trees right -->
+    <rect x="850" y="100" width="88" height="600" rx="8" fill="#2a1805"/>
+    <ellipse cx="894" cy="95" rx="85" ry="95" fill="#3a2408"/>
+    <rect x="990" y="140" width="72" height="560" rx="7" fill="#251505"/>
+    <ellipse cx="1026" cy="135" rx="75" ry="90" fill="#342008"/>
+    <rect x="1110" y="120" width="90" height="580" rx="8" fill="#201205"/>
+    <!-- Golden flowers -->
+    <circle cx="750" cy="650" r="6" fill="#ffdd44" opacity="0.9"/>
+    <circle cx="800" cy="665" r="5" fill="#ff88cc" opacity="0.8"/>
+    <circle cx="850" cy="655" r="6" fill="#88ffaa" opacity="0.7"/>
+    <circle cx="900" cy="668" r="4" fill="#ffcc44" opacity="0.9"/>
+    <!-- Fox in thorns (center) -->
+    <ellipse cx="620" cy="460" rx="55" ry="35" fill="#e55a1a"/>
+    <ellipse cx="650" cy="445" rx="28" ry="20" fill="#f07030"/>
+    <!-- Fox head -->
+    <ellipse cx="672" cy="432" rx="22" ry="18" fill="#e55a1a"/>
+    <path d="M660 420 L650 400 L668 415" fill="#cc4a10"/>
+    <path d="M678 420 L688 400 L672 415" fill="#cc4a10"/>
+    <circle cx="667" cy="432" r="4" fill="#1a0a00"/>
+    <ellipse cx="672" cy="438" rx="8" ry="5" fill="#f8c0a0"/>
+    <!-- Fox tail -->
+    <path d="M570 460 Q530 430 520 460 Q535 480 570 460" fill="#e55a1a"/>
+    <ellipse cx="523" cy="460" rx="12" ry="10" fill="white"/>
+    <!-- Thorns -->
+    <path d="M580 480 Q600 460 590 440 Q610 455 600 430" stroke="#3a5a20" stroke-width="4" fill="none"/>
+    <path d="M630 490 Q650 465 640 445 Q660 462 650 435" stroke="#3a5a20" stroke-width="4" fill="none"/>
+    <path d="M660 485 Q680 462 670 442 Q690 458 680 430" stroke="#3a5a20" stroke-width="3" fill="none"/>
+    <!-- Child -->
+    <ellipse cx="460" cy="652" rx="16" ry="7" fill="rgba(0,0,0,0.3)"/>
+    <rect x="448" y="592" width="26" height="50" rx="5" fill="#c0392b"/>
+    <rect x="442" y="604" width="38" height="30" rx="5" fill="#3498db"/>
+    <circle cx="461" cy="584" r="18" fill="#d4956a"/>
+    <circle cx="450" cy="571" r="8" fill="#7a4422"/>
+    <circle cx="461" cy="567" r="9" fill="#6b3a1a"/>
+    <circle cx="472" cy="571" r="8" fill="#7a4422"/>
+  </svg>`,
+
+  'foret-magique/s3a1': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="bg3a1" cx="50%" cy="50%" r="70%"><stop offset="0%" stop-color="#1a2a0a"/><stop offset="100%" stop-color="#050805"/></radialGradient>
+      <radialGradient id="book-glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffd700" stop-opacity="0.8"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#bg3a1)"/>
+    <ellipse cx="600" cy="400" rx="300" ry="250" fill="url(#book-glow)"/>
+    <!-- Trees -->
+    <rect x="50" y="100" width="80" height="600" rx="7" fill="#0d1a0d"/>
+    <ellipse cx="90" cy="95" rx="78" ry="92" fill="#0f2010"/>
+    <rect x="1050" y="130" width="80" height="570" rx="7" fill="#0d1a0d"/>
+    <ellipse cx="1090" cy="125" rx="78" ry="92" fill="#0f2010"/>
+    <!-- Sparkles around book -->
+    <circle cx="520" cy="320" r="4" fill="#ffd700" opacity="0.9"/>
+    <circle cx="680" cy="280" r="3" fill="#ffaa00" opacity="0.8"/>
+    <circle cx="720" cy="380" r="5" fill="#ffd700" opacity="0.7"/>
+    <circle cx="470" cy="420" r="3" fill="#ffcc44" opacity="0.9"/>
+    <circle cx="750" cy="440" r="4" fill="#ffd700" opacity="0.6"/>
+    <!-- Magical book -->
+    <rect x="520" y="370" width="160" height="120" rx="10" fill="#3a1a05"/>
+    <rect x="520" y="370" width="160" height="120" rx="10" fill="none" stroke="#ffd700" stroke-width="3"/>
+    <rect x="595" y="370" width="5" height="120" fill="#2a1204"/>
+    <ellipse cx="600" cy="380" rx="60" ry="50" fill="#ffd700" opacity="0.3"/>
+    <circle cx="600" cy="380" r="22" fill="#ffd700" opacity="0.8"/>
+    <path d="M590 372 L596 382 L612 362 L596 378 L590 372" fill="white"/>
+    <!-- Child + owl looking at book -->
+    <ellipse cx="500" cy="555" rx="18" ry="8" fill="rgba(0,0,0,0.3)"/>
+    <rect x="488" y="496" width="26" height="52" rx="5" fill="#c0392b"/>
+    <circle cx="501" cy="488" r="18" fill="#d4956a"/>
+    <circle cx="490" cy="475" r="8" fill="#7a4422"/>
+    <circle cx="501" cy="471" r="9" fill="#6b3a1a"/>
+    <circle cx="512" cy="475" r="8" fill="#7a4422"/>
+    <ellipse cx="700" cy="470" rx="38" ry="44" fill="#9a8aaa"/>
+    <ellipse cx="700" cy="455" rx="30" ry="28" fill="#b8a8cc"/>
+    <circle cx="688" cy="453" r="12" fill="white"/>
+    <circle cx="712" cy="453" r="12" fill="white"/>
+    <circle cx="688" cy="455" r="7" fill="#f0c040"/>
+    <circle cx="712" cy="455" r="7" fill="#f0c040"/>
+    <circle cx="689" cy="457" r="3.5" fill="#1a0a00"/>
+    <circle cx="713" cy="457" r="3.5" fill="#1a0a00"/>
+  </svg>`,
+
+  'foret-magique/s3a2': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="bg3a2" cx="60%" cy="30%" r="55%"><stop offset="0%" stop-color="#b8d4e8" stop-opacity="0.5"/><stop offset="100%" stop-color="#050810"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="#060c14"/>
+    <ellipse cx="700" cy="200" rx="320" ry="240" fill="url(#bg3a2)"/>
+    <!-- Moon -->
+    <circle cx="680" cy="120" r="55" fill="#c8e0f8" opacity="0.85"/>
+    <circle cx="695" cy="108" r="45" fill="#a8c8e8" opacity="0.3"/>
+    <!-- Trees silhouette -->
+    <rect x="0" y="180" width="70" height="520" fill="#030608"/>
+    <rect x="80" y="220" width="55" height="480" fill="#040809"/>
+    <rect x="200" y="160" width="80" height="540" fill="#030508"/>
+    <rect x="900" y="170" width="75" height="530" fill="#040809"/>
+    <rect x="1020" y="200" width="65" height="500" fill="#030608"/>
+    <rect x="1130" y="160" width="70" height="540" fill="#040708"/>
+    <!-- Child emerging from forest into moonlight -->
+    <ellipse cx="590" cy="648" rx="18" ry="7" fill="rgba(0,0,0,0.4)"/>
+    <rect x="578" y="586" width="26" height="55" rx="5" fill="#c0392b"/>
+    <rect x="572" y="600" width="38" height="32" rx="5" fill="#3498db" opacity="0.9"/>
+    <circle cx="591" cy="578" r="19" fill="#d4956a"/>
+    <circle cx="580" cy="564" r="8" fill="#7a4422"/>
+    <circle cx="591" cy="560" r="9" fill="#6b3a1a"/>
+    <circle cx="602" cy="564" r="8" fill="#7a4422"/>
+    <!-- Owl on branch above -->
+    <rect x="650" y="300" width="200" height="16" rx="8" fill="#1a1008"/>
+    <ellipse cx="740" cy="278" rx="36" ry="40" fill="#9a8aaa"/>
+    <circle cx="730" cy="270" r="10" fill="white"/>
+    <circle cx="750" cy="270" r="10" fill="white"/>
+    <circle cx="730" cy="272" r="6" fill="#f0c040"/>
+    <circle cx="750" cy="272" r="6" fill="#f0c040"/>
+    <circle cx="731" cy="273" r="3" fill="#1a0a00"/>
+    <circle cx="751" cy="273" r="3" fill="#1a0a00"/>
+  </svg>`,
+
+  'foret-magique/s3b1': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="bg3b1" cx="55%" cy="50%" r="60%"><stop offset="0%" stop-color="#3a2a05"/><stop offset="100%" stop-color="#0a0805"/></radialGradient>
+      <radialGradient id="fox-magic" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ff8800" stop-opacity="0.6"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#bg3b1)"/>
+    <ellipse cx="640" cy="430" rx="280" ry="220" fill="url(#fox-magic)"/>
+    <!-- Golden light rays -->
+    <path d="M1000 0 L500 700" stroke="#ffd700" stroke-width="4" opacity="0.1"/>
+    <path d="M1100 0 L450 700" stroke="#ffaa00" stroke-width="3" opacity="0.07"/>
+    <!-- Flowers blooming -->
+    <circle cx="400" cy="620" r="8" fill="#ff88aa" opacity="0.9"/>
+    <circle cx="440" cy="635" r="6" fill="#ffcc44" opacity="0.9"/>
+    <circle cx="480" cy="625" r="7" fill="#88ffcc" opacity="0.8"/>
+    <circle cx="750" cy="618" r="8" fill="#ff88cc" opacity="0.9"/>
+    <circle cx="790" cy="632" r="6" fill="#ffd700" opacity="0.9"/>
+    <circle cx="830" cy="622" r="7" fill="#aaffaa" opacity="0.8"/>
+    <!-- Fox glowing free -->
+    <ellipse cx="660" cy="460" rx="60" ry="40" fill="#e86020"/>
+    <ellipse cx="696" cy="440" rx="32" ry="24" fill="#f07838"/>
+    <!-- Fox head -->
+    <ellipse cx="720" cy="426" rx="26" ry="22" fill="#e86020"/>
+    <path d="M706 413 L694 390 L714 408" fill="#cc4a10"/>
+    <path d="M728 413 L740 390 L726 408" fill="#cc4a10"/>
+    <circle cx="716" cy="428" r="5" fill="#1a0a00"/>
+    <ellipse cx="720" cy="436" rx="10" ry="6" fill="#f8c0a0"/>
+    <!-- Fox tail free + glowing -->
+    <path d="M600 460 Q556 424 544 458 Q558 482 600 460" fill="#e86020"/>
+    <ellipse cx="546" cy="460" rx="14" ry="12" fill="white"/>
+    <!-- Magic sparkles around fox -->
+    <circle cx="760" cy="380" r="4" fill="#ffd700" opacity="0.9"/>
+    <circle cx="620" cy="395" r="3" fill="#ff8800" opacity="0.8"/>
+    <circle cx="700" cy="360" r="5" fill="#ffd700" opacity="0.7"/>
+    <!-- Child reaching out -->
+    <ellipse cx="480" cy="645" rx="17" ry="7" fill="rgba(0,0,0,0.3)"/>
+    <rect x="468" y="586" width="26" height="52" rx="5" fill="#c0392b"/>
+    <rect x="462" y="600" width="38" height="30" rx="5" fill="#3498db"/>
+    <circle cx="481" cy="578" r="18" fill="#d4956a"/>
+    <circle cx="470" cy="565" r="8" fill="#7a4422"/>
+    <circle cx="481" cy="561" r="9" fill="#6b3a1a"/>
+    <circle cx="492" cy="565" r="8" fill="#7a4422"/>
+    <!-- Arm reaching -->
+    <path d="M499 610 Q540 570 590 520" stroke="#d4956a" stroke-width="12" fill="none" stroke-linecap="round"/>
+  </svg>`,
+
+  'foret-magique/s3b2': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="bg3b2" cx="55%" cy="45%" r="60%"><stop offset="0%" stop-color="#2a1a05"/><stop offset="100%" stop-color="#080605"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#bg3b2)"/>
+    <path d="M1000 0 L600 700" stroke="#ffd700" stroke-width="3" opacity="0.09"/>
+    <!-- Trees -->
+    <rect x="50" y="140" width="78" height="560" rx="7" fill="#1a2a0a"/>
+    <ellipse cx="89" cy="135" rx="76" ry="88" fill="#213510"/>
+    <rect x="950" y="120" width="82" height="580" rx="8" fill="#1a2a0a"/>
+    <ellipse cx="991" cy="115" rx="80" ry="92" fill="#213510"/>
+    <rect x="1080" y="150" width="70" height="550" rx="7" fill="#162408"/>
+    <!-- Running child -->
+    <ellipse cx="580" cy="648" rx="19" ry="8" fill="rgba(0,0,0,0.3)"/>
+    <rect x="565" y="588" width="28" height="53" rx="5" fill="#c0392b"/>
+    <rect x="558" y="602" width="40" height="30" rx="5" fill="#3498db"/>
+    <circle cx="579" cy="579" r="19" fill="#d4956a"/>
+    <circle cx="568" cy="566" r="8" fill="#7a4422"/>
+    <circle cx="579" cy="562" r="9" fill="#6b3a1a"/>
+    <circle cx="590" cy="566" r="8" fill="#7a4422"/>
+    <!-- Motion lines -->
+    <path d="M520 610 L545 615" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+    <path d="M515 625 L542 630" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+    <!-- Fox in distance -->
+    <ellipse cx="820" cy="510" rx="35" ry="22" fill="#e86020" opacity="0.7"/>
+    <ellipse cx="844" cy="498" rx="18" ry="14" fill="#f07838" opacity="0.7"/>
+    <ellipse cx="858" cy="490" rx="14" ry="12" fill="#e86020" opacity="0.6"/>
+    <path d="M788 510 Q768 495 762 510 Q772 522 788 510" fill="#e86020" opacity="0.6"/>
+    <!-- Hope light ahead -->
+    <ellipse cx="820" cy="450" rx="80" ry="100" fill="#ffd700" opacity="0.08"/>
+  </svg>`,
+
+  // ── OCEAN ──────────────────────────────────────────────
+  'ocean-mystere/s1': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="sky-ocean" cx="50%" cy="30%" r="60%"><stop offset="0%" stop-color="#1a3a6a"/><stop offset="100%" stop-color="#050c1a"/></radialGradient>
+      <radialGradient id="sea-glow" cx="50%" cy="80%" r="50%"><stop offset="0%" stop-color="#0a3a6a" stop-opacity="0.8"/><stop offset="100%" stop-color="#020810"/></radialGradient>
+      <radialGradient id="pearl-glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#a0e0ff" stop-opacity="0.9"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#sky-ocean)"/>
+    <!-- Stars -->
+    <circle cx="150" cy="80" r="1.5" fill="white" opacity="0.8"/>
+    <circle cx="300" cy="50" r="1" fill="white" opacity="0.7"/>
+    <circle cx="500" cy="70" r="1.5" fill="white" opacity="0.9"/>
+    <circle cx="800" cy="40" r="1" fill="white" opacity="0.6"/>
+    <circle cx="1050" cy="65" r="1.5" fill="white" opacity="0.8"/>
+    <!-- Moon reflection -->
+    <circle cx="600" cy="90" r="36" fill="#c8e8ff" opacity="0.8"/>
+    <!-- Sea -->
+    <rect x="0" y="400" width="1200" height="300" fill="url(#sea-glow)"/>
+    <!-- Waves -->
+    <path d="M0 410 Q150 395 300 410 Q450 425 600 410 Q750 395 900 410 Q1050 425 1200 410" fill="none" stroke="#1a5a9a" stroke-width="2" opacity="0.6"/>
+    <path d="M0 430 Q200 415 400 430 Q600 445 800 430 Q1000 415 1200 430" fill="none" stroke="#0a4a8a" stroke-width="1.5" opacity="0.4"/>
+    <!-- Rock -->
+    <ellipse cx="600" cy="420" rx="90" ry="40" fill="#2a1a0a"/>
+    <ellipse cx="600" cy="415" rx="75" ry="32" fill="#3a2a10"/>
+    <!-- Mermaid sitting on rock -->
+    <path d="M578 420 Q595 460 612 420" fill="#1a8a6a"/>
+    <path d="M574 422 Q558 455 542 440 Q548 465 578 450" fill="#1a8a6a"/>
+    <path d="M626 422 Q642 455 658 440 Q652 465 622 450" fill="#1a8a6a"/>
+    <rect x="582" y="360" width="36" height="65" rx="8" fill="#4ab8e8"/>
+    <circle cx="600" cy="352" r="24" fill="#f0c8a0"/>
+    <!-- Blue hair -->
+    <path d="M578 338 Q560 360 562 390 Q580 375 578 338" fill="#1a5aee"/>
+    <path d="M600 334 Q595 355 595 380 Q605 365 600 334" fill="#2a6aff"/>
+    <path d="M622 338 Q640 360 638 390 Q620 375 622 338" fill="#1a5aee"/>
+    <circle cx="592" cy="348" r="5" fill="#1a0a00"/>
+    <circle cx="608" cy="348" r="5" fill="#1a0a00"/>
+    <path d="M592 360 Q600 366 608 360" stroke="#d08080" stroke-width="2" fill="none"/>
+    <!-- Tears -->
+    <path d="M589 355 Q586 362 588 368" stroke="#88ccff" stroke-width="1.5" fill="none"/>
+    <path d="M611 355 Q614 362 612 368" stroke="#88ccff" stroke-width="1.5" fill="none"/>
+    <!-- Pearl underwater glow -->
+    <ellipse cx="600" cy="550" rx="50" ry="40" fill="url(#pearl-glow)"/>
+    <circle cx="600" cy="550" r="16" fill="#d8f4ff" opacity="0.9"/>
+    <circle cx="595" cy="545" r="6" fill="white" opacity="0.7"/>
+  </svg>`,
+
+  'ocean-mystere/s2a': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="deep" cx="50%" cy="50%" r="70%"><stop offset="0%" stop-color="#0a2a4a"/><stop offset="100%" stop-color="#020810"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#deep)"/>
+    <!-- Light rays from surface -->
+    <path d="M400 0 L380 700" stroke="#38bdf8" stroke-width="3" opacity="0.06"/>
+    <path d="M600 0 L580 700" stroke="#38bdf8" stroke-width="4" opacity="0.08"/>
+    <path d="M800 0 L820 700" stroke="#38bdf8" stroke-width="3" opacity="0.05"/>
+    <!-- Coral reef left -->
+    <path d="M0 600 Q50 500 80 560 Q100 490 130 550 Q160 480 180 560 Q200 500 220 580 L220 700 L0 700" fill="#1a3a2a"/>
+    <circle cx="85" cy="530" r="14" fill="#ff6680" opacity="0.8"/>
+    <circle cx="130" cy="510" r="12" fill="#ff4466" opacity="0.7"/>
+    <circle cx="170" cy="525" r="10" fill="#ff7788" opacity="0.8"/>
+    <!-- Bioluminescent fish -->
+    <ellipse cx="350" cy="300" rx="28" ry="14" fill="#38bdf8" opacity="0.7"/>
+    <circle cx="366" cy="298" r="5" fill="#e8f8ff"/>
+    <path d="M322 300 L310 288 L310 312 Z" fill="#38bdf8" opacity="0.6"/>
+    <ellipse cx="820" cy="420" rx="22" ry="11" fill="#34d399" opacity="0.6"/>
+    <circle cx="834" cy="418" r="4" fill="#e8fff8"/>
+    <ellipse cx="950" cy="250" rx="18" ry="9" fill="#a78bfa" opacity="0.7"/>
+    <ellipse cx="180" cy="380" rx="16" ry="8" fill="#f472b6" opacity="0.6"/>
+    <!-- Dolphin -->
+    <path d="M620 340 Q680 310 720 340 Q680 370 620 340" fill="#5a8ab0"/>
+    <path d="M620 340 Q600 325 595 345 Q610 358 620 340" fill="#4a7aa0"/>
+    <ellipse cx="716" cy="340" rx="14" ry="8" fill="#4a7aa0"/>
+    <path d="M700 325 Q720 310 735 325 Q720 335 700 325" fill="#5a8ab0"/>
+    <circle cx="712" cy="338" r="4" fill="#1a0a00"/>
+    <path d="M680 348 Q700 355 718 348" stroke="#f8f8ff" stroke-width="1.5" fill="none"/>
+    <!-- Swimming child -->
+    <ellipse cx="450" cy="355" rx="28" ry="14" fill="#d4956a" opacity="0.9"/>
+    <rect x="426" y="340" width="48" height="28" rx="5" fill="#c0392b" opacity="0.9"/>
+    <circle cx="450" cy="332" r="17" fill="#d4956a"/>
+    <circle cx="440" cy="320" r="7" fill="#7a4422"/>
+    <circle cx="450" cy="316" r="8" fill="#6b3a1a"/>
+    <circle cx="460" cy="320" r="7" fill="#7a4422"/>
+    <!-- Bubbles -->
+    <circle cx="465" cy="310" r="4" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+    <circle cx="472" cy="296" r="3" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+    <circle cx="460" cy="280" r="5" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+  </svg>`,
+
+  'ocean-mystere/s2b': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="bg2b-oc" cx="50%" cy="40%" r="65%"><stop offset="0%" stop-color="#0a2a4a"/><stop offset="100%" stop-color="#030810"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#bg2b-oc)"/>
+    <path d="M500 0 L480 700" stroke="#38bdf8" stroke-width="3" opacity="0.07"/>
+    <path d="M700 0 L720 700" stroke="#38bdf8" stroke-width="2" opacity="0.05"/>
+    <!-- Diving duo -->
+    <ellipse cx="520" cy="380" rx="22" ry="12" fill="#d4956a"/>
+    <rect x="502" y="365" width="36" height="28" rx="5" fill="#c0392b"/>
+    <circle cx="520" cy="356" r="17" fill="#d4956a"/>
+    <circle cx="510" cy="344" r="7" fill="#7a4422"/>
+    <circle cx="520" cy="340" r="8" fill="#6b3a1a"/>
+    <circle cx="530" cy="344" r="7" fill="#7a4422"/>
+    <!-- Mermaid diving with child -->
+    <ellipse cx="680" cy="380" rx="30" ry="14" fill="#1a8a6a"/>
+    <path d="M658 382 Q642 408 626 398 Q632 420 658 410" fill="#1a8a6a"/>
+    <path d="M702 382 Q718 408 734 398 Q728 420 702 410" fill="#1a8a6a"/>
+    <rect x="660" y="336" width="40" height="50" rx="8" fill="#4ab8e8"/>
+    <circle cx="680" cy="328" r="22" fill="#f0c8a0"/>
+    <path d="M660 315 Q644 334 646 360 Q662 348 660 315" fill="#1a5aee"/>
+    <path d="M680 312 Q675 332 675 355 Q684 342 680 312" fill="#2a6aff"/>
+    <path d="M700 315 Q716 334 714 360 Q698 348 700 315" fill="#1a5aee"/>
+    <!-- Holding hands -->
+    <path d="M558 390 Q615 390 658 390" stroke="#d4956a" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <!-- Bubbles -->
+    <circle cx="540" cy="330" r="5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+    <circle cx="695" cy="320" r="4" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2"/>
+    <!-- Fish around -->
+    <ellipse cx="350" cy="280" rx="20" ry="10" fill="#38bdf8" opacity="0.6"/>
+    <ellipse cx="880" cy="350" rx="18" ry="9" fill="#f472b6" opacity="0.5"/>
+  </svg>`,
+
+  'ocean-mystere/s3a': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="coral-bg" cx="50%" cy="60%" r="65%"><stop offset="0%" stop-color="#1a3a5a"/><stop offset="100%" stop-color="#040c18"/></radialGradient>
+      <radialGradient id="pearl-center" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#a0e8ff" stop-opacity="1"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#coral-bg)"/>
+    <!-- Light rays -->
+    <path d="M550 0 L530 700" stroke="#38bdf8" stroke-width="5" opacity="0.1"/>
+    <path d="M650 0 L670 700" stroke="#38bdf8" stroke-width="4" opacity="0.08"/>
+    <!-- Colorful fish school -->
+    <ellipse cx="300" cy="250" rx="22" ry="11" fill="#fbbf24" opacity="0.8"/>
+    <ellipse cx="340" cy="265" rx="18" ry="9"  fill="#f97316" opacity="0.7"/>
+    <ellipse cx="370" cy="248" rx="20" ry="10" fill="#fcd34d" opacity="0.8"/>
+    <ellipse cx="860" cy="220" rx="22" ry="11" fill="#34d399" opacity="0.7"/>
+    <ellipse cx="900" cy="235" rx="18" ry="9"  fill="#6ee7b7" opacity="0.6"/>
+    <ellipse cx="930" cy="218" rx="20" ry="10" fill="#10b981" opacity="0.7"/>
+    <!-- Coral garden -->
+    <path d="M100 700 Q130 580 110 520 Q145 555 140 480 Q170 530 165 700" fill="#d45080" opacity="0.8"/>
+    <path d="M900 700 Q930 590 910 530 Q945 565 940 490 Q970 540 965 700" fill="#e86090" opacity="0.7"/>
+    <circle cx="140" cy="480" r="20" fill="#ff6088" opacity="0.7"/>
+    <circle cx="165" cy="500" r="15" fill="#ff4068" opacity="0.8"/>
+    <!-- Anemones with pearl -->
+    <path d="M540 700 Q560 650 580 620 Q600 640 620 620 Q640 650 660 700" fill="#ff6888" opacity="0.8"/>
+    <path d="M560 700 Q575 660 590 635 Q605 655 620 635 Q635 660 650 700" fill="#ff4870" opacity="0.9"/>
+    <!-- PEARL glowing on anemone -->
+    <ellipse cx="600" cy="560" rx="45" ry="35" fill="url(#pearl-center)"/>
+    <circle cx="600" cy="560" r="22" fill="#d8f4ff"/>
+    <circle cx="592" cy="552" r="9" fill="white" opacity="0.8"/>
+    <circle cx="600" cy="560" r="22" fill="none" stroke="#a0e8ff" stroke-width="2" opacity="0.6"/>
+  </svg>`,
+
+  'ocean-mystere/s3b': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="cave-bg" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#0d2030"/><stop offset="100%" stop-color="#03080f"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#cave-bg)"/>
+    <!-- Cave walls -->
+    <path d="M0 0 Q150 200 100 400 Q80 550 0 700" fill="#050e18"/>
+    <path d="M1200 0 Q1050 200 1100 400 Q1120 550 1200 700" fill="#050e18"/>
+    <!-- Bioluminescent cave details -->
+    <circle cx="120" cy="300" r="5" fill="#38bdf8" opacity="0.4"/>
+    <circle cx="90" cy="450" r="3" fill="#6ee7b7" opacity="0.3"/>
+    <circle cx="1080" cy="280" r="4" fill="#38bdf8" opacity="0.3"/>
+    <circle cx="1100" cy="430" r="5" fill="#a78bfa" opacity="0.35"/>
+    <!-- Octopus -->
+    <circle cx="730" cy="360" r="55" fill="#c084fc" opacity="0.85"/>
+    <circle cx="716" cy="346" r="15" fill="white"/>
+    <circle cx="748" cy="346" r="15" fill="white"/>
+    <circle cx="716" cy="348" r="9" fill="#fbbf24"/>
+    <circle cx="748" cy="348" r="9" fill="#fbbf24"/>
+    <circle cx="717" cy="350" r="5" fill="#1a0a00"/>
+    <circle cx="749" cy="350" r="5" fill="#1a0a00"/>
+    <!-- Octopus tentacles -->
+    <path d="M690 410 Q660 450 650 490 Q670 480 680 500 Q695 470 690 410" fill="#b070ec" opacity="0.8"/>
+    <path d="M710 415 Q700 465 695 510 Q715 498 720 520 Q730 490 710 415" fill="#b070ec" opacity="0.8"/>
+    <path d="M750 415 Q760 465 765 510 Q745 498 740 520 Q730 490 750 415" fill="#b070ec" opacity="0.8"/>
+    <path d="M770 410 Q800 450 810 490 Q790 480 780 500 Q765 470 770 410" fill="#b070ec" opacity="0.8"/>
+    <!-- Pearl held by octopus -->
+    <circle cx="732" cy="400" r="20" fill="#d8f4ff"/>
+    <circle cx="725" cy="393" r="8" fill="white" opacity="0.8"/>
+    <!-- Child smiling -->
+    <ellipse cx="460" cy="385" rx="22" ry="11" fill="#d4956a"/>
+    <rect x="443" y="370" width="36" height="28" rx="5" fill="#c0392b"/>
+    <circle cx="461" cy="361" r="17" fill="#d4956a"/>
+    <circle cx="451" cy="349" r="7" fill="#7a4422"/>
+    <circle cx="461" cy="345" r="8" fill="#6b3a1a"/>
+    <circle cx="471" cy="349" r="7" fill="#7a4422"/>
+    <!-- Smile -->
+    <path d="M453 365 Q461 372 469 365" stroke="#c07050" stroke-width="2" fill="none"/>
+  </svg>`,
+
+  // ── CHÂTEAU ──────────────────────────────────────────────
+  'chateau-dragon/s1': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="sky-castle" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#4a1a00"/><stop offset="100%" stop-color="#0a0505"/></radialGradient>
+      <radialGradient id="dragon-glow" cx="55%" cy="55%" r="40%"><stop offset="0%" stop-color="#ff4400" stop-opacity="0.5"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#sky-castle)"/>
+    <ellipse cx="660" cy="500" rx="350" ry="280" fill="url(#dragon-glow)"/>
+    <!-- Sunset clouds -->
+    <ellipse cx="200" cy="150" rx="120" ry="50" fill="#3a1a00" opacity="0.5"/>
+    <ellipse cx="900" cy="120" rx="100" ry="40" fill="#4a2000" opacity="0.4"/>
+    <ellipse cx="500" cy="100" rx="90" ry="35" fill="#3a1800" opacity="0.5"/>
+    <!-- Castle silhouette -->
+    <rect x="300" y="220" width="200" height="480" fill="#1a0a00"/>
+    <rect x="480" y="180" width="140" height="520" fill="#0d0500"/>
+    <rect x="610" y="240" width="120" height="460" fill="#150800"/>
+    <!-- Castle towers -->
+    <rect x="295" y="150" width="50" height="80" fill="#1a0a00"/>
+    <polygon points="295,150 320,100 345,150" fill="#0a0500"/>
+    <rect x="450" y="120" width="60" height="75" fill="#0d0500"/>
+    <polygon points="450,120 480,65 510,120" fill="#080300"/>
+    <rect x="605" y="155" width="55" height="70" fill="#150800"/>
+    <polygon points="605,155 632,105 660,155" fill="#0a0400"/>
+    <!-- Battlements -->
+    <rect x="300" y="218" width="20" height="25" fill="#1a0a00"/>
+    <rect x="330" y="218" width="20" height="25" fill="#1a0a00"/>
+    <rect x="360" y="218" width="20" height="25" fill="#1a0a00"/>
+    <rect x="390" y="218" width="20" height="25" fill="#1a0a00"/>
+    <!-- Dragon (large, sad) -->
+    <ellipse cx="700" cy="480" rx="160" ry="120" fill="#2a4a1a"/>
+    <ellipse cx="820" cy="420" rx="90" ry="80" fill="#3a5a20"/>
+    <!-- Dragon head -->
+    <ellipse cx="880" cy="370" rx="75" ry="60" fill="#2a4a18"/>
+    <path d="M848 330 L830 280 L866 325" fill="#1a3a10"/>
+    <path d="M892 328 L910 276 L896 324" fill="#1a3a10"/>
+    <!-- Dragon eyes — sad/amber -->
+    <circle cx="864" cy="368" r="16" fill="#fbbf24"/>
+    <circle cx="898" cy="368" r="16" fill="#fbbf24"/>
+    <circle cx="866" cy="370" r="8" fill="#1a0800"/>
+    <circle cx="900" cy="370" r="8" fill="#1a0800"/>
+    <!-- Dragon tear trails of fire -->
+    <path d="M860 386 Q855 400 858 420" stroke="#ff6600" stroke-width="3" fill="none" opacity="0.8"/>
+    <path d="M896 386 Q901 400 898 420" stroke="#ff4400" stroke-width="3" fill="none" opacity="0.8"/>
+    <!-- Small fire tear drops -->
+    <ellipse cx="858" cy="424" rx="5" ry="8" fill="#ff4400" opacity="0.9"/>
+    <ellipse cx="898" cy="424" rx="5" ry="8" fill="#ff6600" opacity="0.9"/>
+    <!-- Wings -->
+    <path d="M600 440 Q500 360 450 420 Q480 480 600 480" fill="#243a14" opacity="0.9"/>
+    <path d="M600 440 Q480 340 430 380 Q450 440 600 480" fill="#1e3010" opacity="0.5"/>
+    <!-- Burning crops -->
+    <path d="M0 650 Q100 620 200 640 Q300 610 400 635 L400 700 L0 700" fill="#3a1a00"/>
+    <path d="M50 640 Q70 610 60 580 Q80 610 90 580 Q100 610 90 640" fill="#ff4400" opacity="0.7"/>
+    <path d="M150 635 Q165 608 158 580 Q175 608 185 580 Q192 608 182 635" fill="#ff6600" opacity="0.6"/>
+  </svg>`,
+
+  'chateau-dragon/s2a': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="bg-s2a-d" cx="50%" cy="50%" r="65%"><stop offset="0%" stop-color="#2a1505"/><stop offset="100%" stop-color="#070503"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#bg-s2a-d)"/>
+    <!-- Dragon lowering head gently -->
+    <ellipse cx="720" cy="400" rx="200" ry="140" fill="#2a4a18"/>
+    <ellipse cx="860" cy="320" rx="110" ry="95" fill="#3a5a20"/>
+    <!-- Dragon head low, gentle -->
+    <ellipse cx="750" cy="430" rx="90" ry="70" fill="#2a4a18"/>
+    <path d="M718 395 L700 345 L738 390" fill="#1a3a10"/>
+    <path d="M768 393 L782 342 L768 390" fill="#1a3a10"/>
+    <circle cx="726" cy="432" r="18" fill="#fbbf24"/>
+    <circle cx="774" cy="432" r="18" fill="#fbbf24"/>
+    <circle cx="728" cy="435" r="9" fill="#1a0800"/>
+    <circle cx="776" cy="435" r="9" fill="#1a0800"/>
+    <!-- Eyes look sad/soft -->
+    <path d="M718 425 Q726 420 734 425" stroke="#1a3a10" stroke-width="3" fill="none"/>
+    <path d="M766 425 Q774 420 782 425" stroke="#1a3a10" stroke-width="3" fill="none"/>
+    <!-- Dragon wings furled -->
+    <path d="M580 440 Q520 390 500 430 Q520 470 580 470" fill="#1e3a12" opacity="0.7"/>
+    <!-- Child standing small but brave before dragon -->
+    <ellipse cx="410" cy="638" rx="15" ry="6" fill="rgba(0,0,0,0.4)"/>
+    <rect x="399" y="582" width="24" height="50" rx="5" fill="#c0392b"/>
+    <rect x="393" y="596" width="36" height="28" rx="5" fill="#3498db"/>
+    <circle cx="411" cy="574" r="17" fill="#d4956a"/>
+    <circle cx="401" cy="562" r="7" fill="#7a4422"/>
+    <circle cx="411" cy="558" r="8" fill="#6b3a1a"/>
+    <circle cx="421" cy="562" r="7" fill="#7a4422"/>
+    <!-- Castle background -->
+    <rect x="900" y="200" width="150" height="500" fill="#0d0500" opacity="0.8"/>
+    <rect x="1020" y="160" width="80" height="540" fill="#0a0400" opacity="0.8"/>
+    <polygon points="900,200 975,140 1050,200" fill="#080300" opacity="0.8"/>
+  </svg>`,
+
+  'chateau-dragon/s2b': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="village-bg" cx="45%" cy="50%" r="60%"><stop offset="0%" stop-color="#2a1a0a"/><stop offset="100%" stop-color="#080505"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#village-bg)"/>
+    <!-- Village houses -->
+    <rect x="60" y="400" width="100" height="300" fill="#3a2010"/>
+    <polygon points="60,400 110,330 160,400" fill="#2a1808"/>
+    <rect x="180" y="420" width="80" height="280" fill="#2e1a0c"/>
+    <polygon points="180,420 220,358 260,420" fill="#221408"/>
+    <rect x="280" y="410" width="90" height="290" fill="#352010"/>
+    <polygon points="280,410 325,345 370,410" fill="#281808"/>
+    <!-- Windows glowing warm -->
+    <rect x="82" y="440" width="25" height="25" rx="3" fill="#ffd700" opacity="0.6"/>
+    <rect x="118" y="440" width="25" height="25" rx="3" fill="#ffd700" opacity="0.5"/>
+    <rect x="195" y="455" width="22" height="22" rx="3" fill="#ffd700" opacity="0.6"/>
+    <rect x="295" y="450" width="24" height="24" rx="3" fill="#ffd700" opacity="0.5"/>
+    <!-- Old woman -->
+    <ellipse cx="580" cy="578" rx="12" ry="5" fill="rgba(0,0,0,0.3)"/>
+    <rect x="566" y="518" width="28" height="58" rx="5" fill="#5a3a2a"/>
+    <circle cx="580" cy="508" r="18" fill="#d4a078"/>
+    <!-- White hair -->
+    <ellipse cx="580" cy="498" rx="16" ry="12" fill="#e8e8e8"/>
+    <circle cx="571" cy="497" r="7" fill="#f0f0f0"/>
+    <circle cx="589" cy="497" r="7" fill="#e0e0e0"/>
+    <!-- Cane -->
+    <line x1="594" y1="576" x2="610" y2="540" stroke="#5a3a10" stroke-width="3"/>
+    <!-- Child listening -->
+    <ellipse cx="700" cy="580" rx="14" ry="5" fill="rgba(0,0,0,0.3)"/>
+    <rect x="688" y="522" width="24" height="52" rx="5" fill="#c0392b"/>
+    <rect x="682" y="536" width="36" height="26" rx="5" fill="#3498db"/>
+    <circle cx="700" cy="514" r="16" fill="#d4956a"/>
+    <circle cx="691" cy="503" r="7" fill="#7a4422"/>
+    <circle cx="700" cy="499" r="8" fill="#6b3a1a"/>
+    <circle cx="709" cy="503" r="7" fill="#7a4422"/>
+    <!-- Dragon on hill in distance -->
+    <ellipse cx="950" cy="380" rx="80" ry="55" fill="#2a4a18" opacity="0.7"/>
+    <ellipse cx="1010" cy="345" rx="45" ry="40" fill="#3a5a20" opacity="0.6"/>
+    <circle cx="1025" cy="338" r="20" fill="#fbbf24" opacity="0.5"/>
+    <circle cx="1038" cy="338" r="20" fill="#fbbf24" opacity="0.5"/>
+  </svg>`,
+
+  'chateau-dragon/s3a': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="reunion-bg" cx="50%" cy="40%" r="65%"><stop offset="0%" stop-color="#3a2a10"/><stop offset="100%" stop-color="#080808"/></radialGradient>
+      <radialGradient id="reunion-glow" cx="50%" cy="55%" r="40%"><stop offset="0%" stop-color="#ffd700" stop-opacity="0.4"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#reunion-bg)"/>
+    <ellipse cx="600" cy="500" rx="360" ry="260" fill="url(#reunion-glow)"/>
+    <!-- Sunset rays -->
+    <path d="M600 0 L200 700" stroke="#ff8800" stroke-width="4" opacity="0.06"/>
+    <path d="M600 0 L1000 700" stroke="#ffd700" stroke-width="4" opacity="0.06"/>
+    <!-- Dragon head lowered in joy -->
+    <ellipse cx="650" cy="350" rx="150" ry="120" fill="#2a4a18"/>
+    <ellipse cx="740" cy="280" rx="80" ry="70" fill="#3a5a20"/>
+    <ellipse cx="680" cy="400" rx="85" ry="65" fill="#2a4a18"/>
+    <circle cx="662" cy="400" r="18" fill="#fbbf24"/>
+    <circle cx="700" cy="400" r="18" fill="#fbbf24"/>
+    <circle cx="664" cy="403" r="9" fill="#1a0800"/>
+    <circle cx="702" cy="403" r="9" fill="#1a0800"/>
+    <!-- Happy eyes -->
+    <path d="M654 394 Q662 389 670 394" stroke="#ffd700" stroke-width="2.5" fill="none"/>
+    <path d="M692 394 Q700 389 708 394" stroke="#ffd700" stroke-width="2.5" fill="none"/>
+    <!-- Joy tears gold -->
+    <path d="M660 420 Q657 434 660 448" stroke="#ffd700" stroke-width="2.5" fill="none" opacity="0.7"/>
+    <path d="M698 420 Q701 434 698 448" stroke="#ffd700" stroke-width="2.5" fill="none" opacity="0.7"/>
+    <!-- Old man -->
+    <ellipse cx="420" cy="590" rx="14" ry="6" fill="rgba(0,0,0,0.4)"/>
+    <rect x="406" y="528" width="28" height="62" rx="6" fill="#6a4a2a"/>
+    <circle cx="420" cy="518" r="20" fill="#d4a070"/>
+    <ellipse cx="420" cy="507" rx="18" ry="13" fill="#e8e8e8"/>
+    <circle cx="410" cy="506" r="8" fill="#f0f0f0"/>
+    <circle cx="430" cy="506" r="8" fill="#e0e0e0"/>
+    <!-- Arms raised toward dragon -->
+    <path d="M408 545 Q380 510 410 480" stroke="#d4a070" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M432 545 Q460 510 440 480" stroke="#d4a070" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <!-- Child witnessing -->
+    <ellipse cx="800" cy="598" rx="14" ry="5" fill="rgba(0,0,0,0.4)"/>
+    <rect x="788" y="542" width="24" height="52" rx="5" fill="#c0392b"/>
+    <circle cx="800" cy="534" r="16" fill="#d4956a"/>
+    <circle cx="791" cy="522" r="7" fill="#7a4422"/>
+    <circle cx="800" cy="518" r="8" fill="#6b3a1a"/>
+    <circle cx="809" cy="522" r="7" fill="#7a4422"/>
+    <!-- Sparkles of joy -->
+    <circle cx="550" cy="350" r="4" fill="#ffd700" opacity="0.9"/>
+    <circle cx="780" cy="330" r="3" fill="#ff8800" opacity="0.8"/>
+    <circle cx="500" cy="420" r="3" fill="#ffd700" opacity="0.7"/>
+    <circle cx="830" cy="400" r="4" fill="#ffcc00" opacity="0.8"/>
+  </svg>`,
+
+  'chateau-dragon/s3b': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="flight-sky" cx="50%" cy="35%" r="65%"><stop offset="0%" stop-color="#1a3a6a"/><stop offset="100%" stop-color="#050810"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#flight-sky)"/>
+    <!-- Sun rays -->
+    <path d="M600 0 Q600 100 600 200" stroke="#ffd700" stroke-width="60" opacity="0.08" stroke-linecap="round"/>
+    <circle cx="600" cy="80" r="60" fill="#ffd700" opacity="0.2"/>
+    <!-- Clouds -->
+    <ellipse cx="200" cy="180" rx="100" ry="40" fill="#1a3060" opacity="0.5"/>
+    <ellipse cx="250" cy="165" rx="70" ry="30" fill="#1a3060" opacity="0.4"/>
+    <ellipse cx="900" cy="150" rx="110" ry="45" fill="#1a3060" opacity="0.5"/>
+    <ellipse cx="960" cy="135" rx="75" ry="32" fill="#1a3060" opacity="0.4"/>
+    <!-- Dragon flying -->
+    <ellipse cx="600" cy="330" rx="200" ry="130" fill="#2a4a18"/>
+    <ellipse cx="730" cy="260" rx="100" ry="85" fill="#3a5a20"/>
+    <!-- Dragon head happy -->
+    <ellipse cx="790" cy="230" rx="72" ry="58" fill="#2a4a18"/>
+    <path d="M760 195 L744 148 L778 190" fill="#1a3a10"/>
+    <path d="M806 193 L820 145 L808 190" fill="#1a3a10"/>
+    <circle cx="772" cy="230" r="17" fill="#fbbf24"/>
+    <circle cx="808" cy="230" r="17" fill="#fbbf24"/>
+    <circle cx="774" cy="233" r="8" fill="#1a0800"/>
+    <circle cx="810" cy="233" r="8" fill="#1a0800"/>
+    <!-- Happy mouth -->
+    <path d="M768 250 Q791 265 814 250" stroke="#ffd700" stroke-width="3" fill="none"/>
+    <!-- Wings spread wide -->
+    <path d="M480 320 Q380 200 320 260 Q360 340 480 360" fill="#1e3a12"/>
+    <path d="M480 320 Q340 180 280 240 Q310 320 480 360" fill="#162e0e" opacity="0.7"/>
+    <path d="M720 320 Q820 200 880 260 Q840 340 720 360" fill="#1e3a12"/>
+    <path d="M720 320 Q860 180 920 240 Q890 320 720 360" fill="#162e0e" opacity="0.7"/>
+    <!-- Child riding, laughing -->
+    <ellipse cx="580" cy="295" rx="17" ry="8" fill="#d4956a"/>
+    <rect x="567" y="260" width="26" height="42" rx="5" fill="#c0392b"/>
+    <circle cx="580" cy="252" r="17" fill="#d4956a"/>
+    <circle cx="570" cy="240" r="7" fill="#7a4422"/>
+    <circle cx="580" cy="236" r="8" fill="#6b3a1a"/>
+    <circle cx="590" cy="240" r="7" fill="#7a4422"/>
+    <!-- Arms outstretched in joy -->
+    <path d="M567 272 Q540 258 520 265" stroke="#d4956a" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M593 272 Q620 258 640 265" stroke="#d4956a" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <!-- Kingdom below -->
+    <rect x="0" y="580" width="1200" height="120" fill="#1a0a00"/>
+    <rect x="100" y="540" width="80" height="160" fill="#0d0600"/>
+    <polygon points="100,540 140,490 180,540" fill="#080400"/>
+    <rect x="350" y="555" width="65" height="145" fill="#0a0500"/>
+    <rect x="800" y="545" width="75" height="155" fill="#0c0600"/>
+    <polygon points="800,545 837,495 875,545" fill="#080400"/>
+  </svg>`,
+
+  'chateau-dragon/s3c': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="rebuild-bg" cx="50%" cy="45%" r="65%"><stop offset="0%" stop-color="#2a1a08"/><stop offset="100%" stop-color="#080604"/></radialGradient>
+      <radialGradient id="hope-light" cx="50%" cy="40%" r="45%"><stop offset="0%" stop-color="#ffd700" stop-opacity="0.3"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#rebuild-bg)"/>
+    <ellipse cx="600" cy="320" rx="320" ry="260" fill="url(#hope-light)"/>
+    <!-- New dawn rays -->
+    <path d="M600 100 L200 700" stroke="#ffd700" stroke-width="3" opacity="0.06"/>
+    <path d="M600 100 L1000 700" stroke="#ff8800" stroke-width="3" opacity="0.06"/>
+    <circle cx="600" cy="80" r="50" fill="#ffd700" opacity="0.15"/>
+    <!-- Houses being rebuilt -->
+    <rect x="100" y="450" width="110" height="250" fill="#3a2510"/>
+    <polygon points="100,450 155,385 210,450" fill="#2a1c0a"/>
+    <rect x="100" y="448" width="20" height="25" fill="#2a1c0a"/>
+    <rect x="140" y="448" width="20" height="25" fill="#2a1c0a"/>
+    <rect x="180" y="448" width="20" height="25" fill="#2a1c0a"/>
+    <!-- Scaffolding -->
+    <line x1="230" y1="700" x2="230" y2="420" stroke="#5a3a10" stroke-width="5"/>
+    <line x1="280" y1="700" x2="280" y2="420" stroke="#5a3a10" stroke-width="5"/>
+    <line x1="230" y1="480" x2="280" y2="480" stroke="#5a3a10" stroke-width="4"/>
+    <line x1="230" y1="540" x2="280" y2="540" stroke="#5a3a10" stroke-width="4"/>
+    <line x1="230" y1="600" x2="280" y2="600" stroke="#5a3a10" stroke-width="4"/>
+    <!-- Dragon helping gently -->
+    <ellipse cx="760" cy="420" rx="160" ry="110" fill="#2a4a18"/>
+    <ellipse cx="860" cy="348" rx="90" ry="78" fill="#3a5a20"/>
+    <ellipse cx="780" cy="460" rx="80" ry="62" fill="#2a4a18"/>
+    <circle cx="762" cy="460" r="16" fill="#fbbf24"/>
+    <circle cx="798" cy="460" r="16" fill="#fbbf24"/>
+    <circle cx="764" cy="463" r="8" fill="#1a0800"/>
+    <circle cx="800" cy="463" r="8" fill="#1a0800"/>
+    <path d="M754 480 Q780 488 806 480" stroke="#ffd700" stroke-width="2" fill="none"/>
+    <!-- Child and dragon talking -->
+    <ellipse cx="520" cy="590" rx="14" ry="5" fill="rgba(0,0,0,0.4)"/>
+    <rect x="508" y="533" width="24" height="52" rx="5" fill="#c0392b"/>
+    <rect x="502" y="547" width="36" height="26" rx="5" fill="#3498db"/>
+    <circle cx="520" cy="524" r="16" fill="#d4956a"/>
+    <circle cx="511" cy="513" r="7" fill="#7a4422"/>
+    <circle cx="520" cy="509" r="8" fill="#6b3a1a"/>
+    <circle cx="529" cy="513" r="7" fill="#7a4422"/>
+    <!-- Speech bubble area suggestion -->
+    <path d="M536 524 Q560 510 600 505" stroke="rgba(255,255,255,0.2)" stroke-width="2" fill="none" stroke-dasharray="4,3"/>
+    <!-- Hope sparkles -->
+    <circle cx="620" cy="280" r="4" fill="#ffd700" opacity="0.8"/>
+    <circle cx="680" cy="260" r="3" fill="#ff8800" opacity="0.7"/>
+    <circle cx="700" cy="300" r="4" fill="#ffd700" opacity="0.6"/>
+  </svg>`
+};
+
+// ═══════════════════════════════════
+// STORIES DATA
+// ═══════════════════════════════════
+const STORIES = [
+  {
+    id:'kiko-etoile',
+    title:'Kiko et l\'Étoile',
+    desc:"Une étoile est tombée du ciel. Kiko le renard veut l'aider !",
+    level:'eveil', thumb:'story-thumb-forest', emoji:'⭐',
+    scenes:[
+      { id:'s1', text:"Kiko voit une lumière tomber du ciel. C'est une petite étoile !",
+        choices:[
+          {text:"🏃 Courir vers elle", next:'s2', pos:{left:'38%',top:'55%'}},
+          {text:"😟 Elle a l'air blessée...", next:'s4', pos:{left:'63%',top:'42%'}}
+        ]
+      },
+      { id:'s2', text:"L'étoile est là dans l'herbe. Elle brille doucement.",
+        choices:[
+          {text:"🔍 Chercher comment l'aider", next:'s3', pos:{left:'35%',top:'52%'}},
+          {text:"🦔 Appeler Hana la hérisson", next:'s3b', pos:{left:'64%',top:'40%'}}
+        ]
+      },
+      { id:'s3', text:"Kiko cherche tout seul. Il trouve une fleur qui donne de la lumière !",
+        choices:[
+          {text:"🌸 La donner à l'étoile", next:'fin_a', pos:{left:'40%',top:'50%'}},
+          {text:"💨 Souffler dessus pour l'activer", next:'fin_a2', pos:{left:'65%',top:'38%'}}
+        ]
+      },
+      { id:'s3b', text:"Hana arrive en trottinant. Elle sait exactement quoi faire !",
+        choices:[
+          {text:"👂 L'écouter expliquer", next:'fin_b', pos:{left:'38%',top:'52%'}},
+          {text:"🤝 Faire ensemble ce qu'elle dit", next:'fin_b2', pos:{left:'63%',top:'40%'}}
+        ]
+      },
+      { id:'s4', text:"L'étoile tremble. Elle a froid et peur.",
+        choices:[
+          {text:"🧣 Lui prêter son écharpe", next:'s5', pos:{left:'38%',top:'52%'}},
+          {text:"🦔 Aller chercher Hana", next:'s5b', pos:{left:'63%',top:'42%'}}
+        ]
+      },
+      { id:'s5', text:"L'étoile sourit. Elle se sent mieux. Elle dit : merci !",
+        choices:[
+          {text:"🌟 L'aider à remonter", next:'fin_c', pos:{left:'42%',top:'48%'}},
+          {text:"🎵 Lui chanter une chanson", next:'fin_c2', pos:{left:'65%',top:'38%'}}
+        ]
+      },
+      { id:'s5b', text:"Hana arrive en courant. Elle connaît le chemin vers le ciel !",
+        choices:[
+          {text:"👣 Suivre Hana ensemble", next:'fin_b', pos:{left:'40%',top:'52%'}},
+          {text:"🙏 Laisser Hana guider seule", next:'fin_b2', pos:{left:'63%',top:'40%'}}
+        ]
+      },
+      { id:'fin_a', text:"La fleur brille fort. L'étoile reprend des forces et remonte dans le ciel !",
+        choices:[], end:{star:'🌸', title:'Bravo Kiko !', text:"Tu as cherché tout seul et tu as trouvé.\nQuand on cherche vraiment, on trouve toujours."}
+      },
+      { id:'fin_a2', text:"La fleur explose de lumière. L'étoile rit et s'envole vers les nuages !",
+        choices:[], end:{star:'💨', title:'Bravo Kiko !', text:"Tu as osé essayer quelque chose de nouveau.\nEssayer c'est déjà gagner."}
+      },
+      { id:'fin_b', text:"Hana guide l'étoile doucement. Elle remonte en laissant des étincelles dorées.",
+        choices:[], end:{star:'🦔', title:'Bravo Kiko !', text:"Tu as demandé de l'aide quand tu en avais besoin.\nDemander de l'aide c'est courageux, pas faible."}
+      },
+      { id:'fin_b2', text:"Ensemble avec Hana, vous guidez l'étoile. Elle clignote pour vous remercier.",
+        choices:[], end:{star:'🤝', title:'Bravo Kiko !', text:"Tu as travaillé en équipe.\nÀ deux on va toujours plus loin qu'à un."}
+      },
+      { id:'fin_c', text:"L'étoile monte dans le ciel. Elle clignote trois fois pour dire merci.",
+        choices:[], end:{star:'🌟', title:'Bravo Kiko !', text:"Ta gentillesse a tout changé.\nUn geste doux peut réparer beaucoup de choses."}
+      },
+      { id:'fin_c2', text:"La chanson réchauffe l'étoile. Elle remonte lentement, portée par ta voix.",
+        choices:[], end:{star:'🎵', title:'Bravo Kiko !', text:"Ta douceur a tout changé.\nLes mots et les chansons ont un pouvoir magique."}
+      }
+    ]
+  },
+  {
+    id:'foret-secrets',
+    title:'La Forêt des Secrets',
+    desc:"Léo entre dans une forêt étrange. Chaque chemin cache un mystère.",
+    level:'explorateur', thumb:'story-thumb-forest', emoji:'🌲',
+    scenes:[
+      { id:'s1', text:"La forêt se divise en deux. À gauche, un sentier sombre où brillent des champignons bleus. À droite, un chemin doré baigné de soleil. Léo s'arrête. Son cœur bat plus vite.",
+        choices:[
+          {text:"🍄 Le sentier sombre", next:'s2a', pos:{left:'20%',top:'50%'}},
+          {text:"☀️ Le chemin doré", next:'s2b', pos:{left:'65%',top:'44%'}}
+        ]
+      },
+      { id:'s2a', text:"Les champignons éclairent le sol en bleu. C'est étrange et beau à la fois. Une chouette à lunettes se pose sur une branche basse et le regarde.",
+        choices:[
+          {text:"🚶 Continuer sans s'arrêter", next:'s3a', pos:{left:'30%',top:'55%'}},
+          {text:"🦉 S'arrêter et l'écouter", next:'s3b', pos:{left:'62%',top:'38%'}}
+        ]
+      },
+      { id:'s2b', text:"Le soleil réchauffe le visage de Léo. Les fleurs sont partout. Puis il voit un renard roux coincé dans des ronces épineuses. Il attend sans bouger.",
+        choices:[
+          {text:"🌿 Aller l'aider", next:'s3c', pos:{left:'52%',top:'55%'}},
+          {text:"➡️ Continuer sa route", next:'s3d', pos:{left:'72%',top:'40%'}}
+        ]
+      },
+      { id:'s3a', text:"Léo avance seul dans le noir. Le chemin devient tordu. Il tourne en rond. Puis il remarque que les champignons poussent toujours vers la lumière.",
+        choices:[
+          {text:"🍄 Suivre les champignons", next:'s4a', pos:{left:'35%',top:'52%'}},
+          {text:"⭐ Suivre les étoiles au-dessus", next:'fin_a2', pos:{left:'62%',top:'38%'}}
+        ]
+      },
+      { id:'s3b', text:"'Je m'appelle Madame Hibou', dit-elle. 'Je connais chaque secret de cette forêt. Veux-tu que je t'aide ?' Léo réfléchit.",
+        choices:[
+          {text:"🤝 Oui, guide-moi", next:'s4b', pos:{left:'58%',top:'40%'}},
+          {text:"📖 Lui poser une question d'abord", next:'fin_b2', pos:{left:'32%',top:'56%'}}
+        ]
+      },
+      { id:'s3c', text:"Léo écarte les ronces avec son pull. Le renard ne bouge pas, comme s'il avait compris. Soudain la patte est libre. Le renard se lève et le regarde droit dans les yeux.",
+        choices:[
+          {text:"🦊 Attendre ce qu'il fait", next:'s4c', pos:{left:'48%',top:'50%'}},
+          {text:"🚶 Repartir sans rien attendre", next:'fin_c2', pos:{left:'68%',top:'38%'}}
+        ]
+      },
+      { id:'s3d', text:"Léo continue. Mais après quelques pas, il repense aux yeux du renard. Quelque chose dans son ventre lui dit que ce n'était pas bien.",
+        choices:[
+          {text:"↩️ Faire demi-tour", next:'s4c', pos:{left:'38%',top:'52%'}},
+          {text:"➡️ Continuer quand même", next:'fin_d', pos:{left:'63%',top:'40%'}}
+        ]
+      },
+      { id:'s4a', text:"Les champignons mènent Léo jusqu'à une clairière cachée. Au centre, un vieux coffre couvert de mousse. Il n'y a personne d'autre.",
+        choices:[
+          {text:"🔓 Ouvrir le coffre", next:'fin_a', pos:{left:'50%',top:'50%'}},
+          {text:"🔍 Chercher une clé d'abord", next:'fin_a', pos:{left:'68%',top:'38%'}}
+        ]
+      },
+      { id:'s4b', text:"Madame Hibou vole lentement entre les arbres. Léo la suit en courant. Elle s'arrête devant une porte cachée dans le tronc d'un vieux chêne.",
+        choices:[
+          {text:"🚪 Frapper et entrer", next:'fin_b', pos:{left:'55%',top:'45%'}},
+          {text:"👂 Écouter ce qu'il y a derrière", next:'fin_b', pos:{left:'32%',top:'58%'}}
+        ]
+      },
+      { id:'s4c', text:"Le renard parle. 'Tu m'as aidé', dit-il. 'Ou tu es revenu pour le faire. C'est pareil.' Il lui montre un chemin secret que personne d'autre ne connaît.",
+        choices:[
+          {text:"🌟 Suivre le chemin secret", next:'fin_c', pos:{left:'50%',top:'48%'}},
+          {text:"🦊 Rester encore un moment", next:'fin_c', pos:{left:'68%',top:'38%'}}
+        ]
+      },
+      { id:'fin_a', text:"Dans le coffre, il n'y a qu'une phrase gravée : 'Tu as trouvé ton chemin seul.' Léo sourit. C'est vrai.",
+        choices:[], end:{star:'🍄', title:'Fin de l\'Instinct', text:"Léo n'avait pas besoin qu'on lui montre le chemin.\nIl avait juste besoin de faire confiance à ce qu'il ressentait."}
+      },
+      { id:'fin_a2', text:"Les étoiles guident Léo hors de la forêt. Il sort dans un pré qu'il n'avait jamais vu. Il regarde le ciel et comprend qu'il ne s'est pas perdu — il a découvert.",
+        choices:[], end:{star:'⭐', title:'Fin de la Découverte', text:"Se perdre et découvrir, c'est souvent la même chose.\nLéo ne l'oubliera jamais."}
+      },
+      { id:'fin_b', text:"Derrière la porte, un vieil homme sourit. 'Je t'attendais', dit-il. 'Madame Hibou ne guide que ceux qui savent écouter.'",
+        choices:[], end:{star:'🦉', title:'Fin de la Sagesse', text:"Accepter d'être guidé, ça demande du courage.\nLéo a appris que les meilleurs chemins se trouvent parfois grâce aux autres."}
+      },
+      { id:'fin_b2', text:"Madame Hibou répond à la question de Léo pendant des heures. Quand il ressort de la forêt, il a la tête pleine de choses qu'il ne savait pas le matin.",
+        choices:[], end:{star:'📖', title:'Fin de la Curiosité', text:"Poser des questions, c'est une façon d'être courageux.\nLéo est reparti avec quelque chose d'invisible mais d'immense."}
+      },
+      { id:'fin_c', text:"Le chemin secret mène à une vue sur toute la forêt. Léo comprend qu'il ne se perdra plus jamais ici. Le renard disparaît dans les arbres en remuant la queue.",
+        choices:[], end:{star:'🦊', title:'Fin de la Bonté', text:"Léo a aidé. Ou il est revenu pour le faire.\nDans les deux cas, c'est ça qui a tout changé."}
+      },
+      { id:'fin_c2', text:"Léo repart sans attendre de remerciement. Dans sa poche, il trouve une plume rousse qu'il n'avait pas avant. Il ne sait pas comment elle est arrivée là.",
+        choices:[], end:{star:'🪶', title:'Fin du Geste Pur', text:"Aider sans rien attendre en retour.\nC'est la forme de gentillesse la plus rare et la plus belle."}
+      },
+      { id:'fin_d', text:"Léo sort de la forêt. Il fait beau. Mais ce soir, avant de dormir, il repense aux yeux du renard. Il se dit que demain, il retournera peut-être l'aider.",
+        choices:[], end:{star:'🌙', title:'Fin du Lendemain', text:"On ne fait pas toujours le bon choix sur le moment.\nCe qui compte, c'est ce qu'on ressent après. Et ce qu'on fait ensuite."}
+      }
+    ]
+  },
+  {
+    id:'dragon-chateau',
+    isPremium:true,
+    title:'Le Dragon du Château',
+    desc:"Le dragon Ember brûle les champs. Mais personne ne sait vraiment pourquoi.",
+    level:'aventurier', thumb:'story-thumb-castle', emoji:'🐉',
+    scenes:[
+      { id:'s1', text:"Le roi t'envoie arrêter Ember seul. En approchant du château, tu le vois assis sur les ruines. Il pleure. Ses larmes de feu tombent sur l'herbe et la brûlent. Il ne fait pas ça exprès.",
+        choices:[
+          {text:"💬 Lui parler maintenant", next:'s2a', pos:{left:'62%',top:'44%'}},
+          {text:"🏘️ Interroger les villageois d'abord", next:'s2b', pos:{left:'24%',top:'62%'}}
+        ]
+      },
+      { id:'s2a', text:"'Tu n'as pas peur ?' dit Ember. Sa voix fait trembler les pierres. 'Si', tu réponds. 'Mais je voulais te parler quand même.' Un long silence. C'est la première fois que quelqu'un lui dit ça.",
+        choices:[
+          {text:"🪨 Rester assis en silence avec lui", next:'s3a', pos:{left:'38%',top:'55%'}},
+          {text:"❓ Lui demander pourquoi il pleure", next:'s3b', pos:{left:'64%',top:'40%'}}
+        ]
+      },
+      { id:'s2b', text:"Une vieille femme t'arrête. 'Ember avait un ami. Un jeune homme du village. Il est parti un matin sans rien dire. Depuis, Ember pleure. Son chagrin brûle tout autour de lui.'",
+        choices:[
+          {text:"🐉 Retourner voir Ember avec cette info", next:'s3c', pos:{left:'62%',top:'42%'}},
+          {text:"🔍 Chercher cet ami d'abord", next:'s3d', pos:{left:'34%',top:'56%'}}
+        ]
+      },
+      { id:'s3a', text:"Tu t'assieds sur une pierre en face d'Ember. Des heures passent. Il parle peu. Mais ses larmes ralentissent. Le silence entre vous n'est plus vide — il est plein.",
+        choices:[
+          {text:"🌙 Rester jusqu'au lever du soleil", next:'fin_a', pos:{left:'44%',top:'50%'}},
+          {text:"👑 Proposer un accord au roi", next:'fin_d', pos:{left:'64%',top:'38%'}}
+        ]
+      },
+      { id:'s3b', text:"'Mon seul ami est parti sans rien dire. Ça fait cent ans. Je ne sais toujours pas pourquoi.' Il pose sa tête immense sur ses pattes. Il ressemble à un chien triste.",
+        choices:[
+          {text:"🚶 Proposer de retrouver cet ami", next:'s4b', pos:{left:'40%',top:'52%'}},
+          {text:"📨 Lui dire ce que tu sais déjà", next:'s4b', pos:{left:'63%',top:'40%'}}
+        ]
+      },
+      { id:'s3c', text:"Tu retournes voir Ember. 'J'ai parlé aux gens du village', tu dis. 'Ils m'ont parlé de ton ami.' Ember se fige. Dans ses yeux orange, quelque chose change.",
+        choices:[
+          {text:"💬 Lui raconter ce que tu sais", next:'fin_b', pos:{left:'44%',top:'50%'}},
+          {text:"🔍 Lui dire que tu peux retrouver son ami", next:'s3b', pos:{left:'64%',top:'38%'}}
+        ]
+      },
+      { id:'s3d', text:"Tu trouves Mael dans un village lointain. Il a les mains qui tremblent. Quand tu prononces le nom d'Ember, il pâlit. 'Je savais que ce jour viendrait', murmure-t-il.",
+        choices:[
+          {text:"🚶 Le ramener auprès d'Ember", next:'s4b', pos:{left:'40%',top:'52%'}},
+          {text:"💬 Rapporter la vérité sans lui", next:'fin_b', pos:{left:'63%',top:'40%'}}
+        ]
+      },
+      { id:'s4b', text:"Mael et Ember se font face pour la première fois depuis cent ans. Un silence immense tombe sur la colline. Mael dit : 'Je suis parti parce que j'avais honte. J'aurais dû rester.'",
+        choices:[
+          {text:"🤐 Les laisser seuls", next:'fin_c', pos:{left:'38%',top:'52%'}},
+          {text:"🗣️ Rester pour les aider à parler", next:'fin_c', pos:{left:'63%',top:'40%'}}
+        ]
+      },
+      { id:'fin_a', text:"Au lever du soleil, Ember dit : 'Reviens demain.' C'est la première fois en cent ans qu'il demande quelque chose. Les champs commencent lentement à repousser.",
+        choices:[], end:{star:'🌅', title:'Fin de la Présence', text:"Tu n'as pas résolu le problème d'Ember.\nTu es juste resté.\nEt parfois, c'est la chose la plus courageuse qu'on puisse faire."}
+      },
+      { id:'fin_b', text:"Ember t'écoute sans bouger. Une seule larme de feu tombe. 'Il avait tort d'avoir honte', dit-il doucement. Pour la première fois, ses larmes s'arrêtent d'elles-mêmes.",
+        choices:[], end:{star:'🏰', title:'Fin de la Compréhension', text:"Tu as pris le temps de comprendre avant d'agir.\nLa plupart des gens condamnent avant de chercher à savoir.\nToi, tu as fait l'inverse."}
+      },
+      { id:'fin_c', text:"Ember et Mael parlent jusqu'à l'aube. Le lendemain matin, les champs repoussent. Le dragon ne pleure plus. Cent ans de solitude effacés par quelques mots vrais.",
+        choices:[], end:{star:'🔥', title:'Fin de la Réconciliation', text:"Cent ans perdus à cause d'une honte jamais exprimée.\nTu as compris que la vérité, même difficile, guérit mieux que le silence.\nToujours."}
+      },
+      { id:'fin_d', text:"Tu retournes voir le roi. 'Ember arrêtera les incendies. En échange, quelqu'un devra lui rendre visite chaque semaine.' Le roi hésite. Puis il accepte.",
+        choices:[], end:{star:'👑', title:'Fin du Compromis', text:"Personne n'a tout obtenu.\nMais tout le monde a gagné quelque chose.\nC'est ça, un vrai accord entre gens raisonnables."}
+      }
+    ]
+  }
+];
+
+// ═══════════════════════════════════
+// STATE
+// ═══════════════════════════════════
+let userName='', currentStory=null, currentSceneId=null, visitedScenes=[], currentFilter='all';
+
+// ═══════════════════════════════════
+// SETUP
+// ═══════════════════════════════════
+function showPremiumModal(){
+  document.getElementById('premium-modal').classList.add('show');
+}
+function closePremiumModal(){
+  document.getElementById('premium-modal').classList.remove('show');
+}
+
+function startApp(){
+  const name=document.getElementById('name-input').value.trim();
+  const err=document.getElementById('setup-error');
+  if(!name){err.textContent='Entre ton prénom pour commencer !';return;}
+  err.textContent='';
+  userName=name;
+  document.getElementById('user-avatar').textContent=name[0].toUpperCase();
+  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  renderLibrary();
+}
+document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')startApp();});
+
+// ═══════════════════════════════════
+// LIBRARY
+// ═══════════════════════════════════
+function renderLibrary(){
+  const filtered=currentFilter==='all'?STORIES:STORIES.filter(s=>s.level===currentFilter);
+  document.getElementById('stories-grid').innerHTML=filtered.map(s=>`
+    <div class="story-card" onclick="openStory('${s.id}')">
+      <div class="story-thumb ${s.thumb}"><span style="position:relative;z-index:1;font-size:50px;">${s.emoji}</span></div>
+      <div class="story-info">
+        <span class="story-level level-${s.level}">${levelLabel(s.level)}</span>
+        <div class="story-title">${s.title}</div>
+        <div class="story-desc">${s.desc}</div>
+      </div>
+    </div>`).join('');
+}
+function levelLabel(l){return l==='eveil'?'🌸 Éveil':l==='explorateur'?'⭐ Explorateur':'⚔️ Aventurier';}
+function filterLevel(level,btn){
+  currentFilter=level;
+  document.querySelectorAll('.level-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderLibrary();
+}
+
+// ═══════════════════════════════════
+// STORY
+// ═══════════════════════════════════
+function openStory(storyId){
+  currentStory=STORIES.find(s=>s.id===storyId);
+  currentSceneId=currentStory.scenes[0].id;
+  visitedScenes=[];
+  document.getElementById('library-screen').style.display='none';
+  document.getElementById('story-screen').style.display='block';
+  document.getElementById('end-overlay').classList.remove('show');
+  renderScene(currentSceneId);
+}
+function closeStory(){
+  document.getElementById('story-screen').style.display='none';
+  document.getElementById('library-screen').style.display='block';
+}
+function replayStory(){
+  document.getElementById('end-overlay').classList.remove('show');
+  openStory(currentStory.id);
+}
+
+function renderScene(sceneId){
+  const scene=currentStory.scenes.find(s=>s.id===sceneId);
+  if(!scene)return;
+  currentSceneId=sceneId;
+  if(!visitedScenes.includes(sceneId))visitedScenes.push(sceneId);
+
+  // Progress
+  const prog=document.getElementById('story-progress');
+  prog.innerHTML=visitedScenes.map((_,i)=>{
+    const cls=i<visitedScenes.length-1?'done':'current';
+    return `<div class="progress-dot ${cls}"></div>`;
+  }).join('');
+
+  // SVG background — instant, no loading
+  const svgKey=currentStory.id+'/'+sceneId;
+  const svgBg=document.getElementById('story-svg-bg');
+  if(SCENES_SVG[svgKey]){
+    svgBg.innerHTML=SCENES_SVG[svgKey];
+  } else {
+    // Fallback gradient if scene SVG not defined
+    svgBg.innerHTML=`<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="fb" cx="50%" cy="50%" r="70%"><stop offset="0%" stop-color="#1a1a3a"/><stop offset="100%" stop-color="#07071a"/></radialGradient></defs>
+      <rect width="1200" height="700" fill="url(#fb)"/>
+      <text x="600" y="360" text-anchor="middle" font-size="80" opacity="0.4">${currentStory.emoji}</text>
+    </svg>`;
+  }
+
+  // Narration text
+  document.getElementById('story-text').innerHTML=scene.text.split('\n').filter(l=>l.trim()).map(l=>`<span style="display:block;margin-bottom:4px;">${l}</span>`).join('');
+
+  // Hotspot choices on image
+  const hl=document.getElementById('hotspots-layer');
+  hl.innerHTML='';
+  if(scene.choices.length>0){
+    scene.choices.forEach((c,i)=>{
+      const btn=document.createElement('button');
+      btn.className='hotspot';
+      btn.style.left=c.pos.left;
+      btn.style.top=c.pos.top;
+      btn.style.animationDelay=(i*0.12)+'s';
+      btn.innerHTML=`<span class="hotspot-icon">${String.fromCharCode(65+i)}</span>${c.text}`;
+      btn.onclick=()=>makeChoice(c.next);
+      hl.appendChild(btn);
+    });
+  }
+
+  // End
+  if(scene.end) setTimeout(()=>showEnd(scene.end),800);
+}
+
+function makeChoice(nextId){
+  document.querySelectorAll('.hotspot').forEach(b=>{b.disabled=true;b.style.opacity='0.4';});
+  setTimeout(()=>renderScene(nextId),300);
+}
+
+
+// ═══════════════════════════════════
+// END SCREEN ILLUSTRATIONS
+// ═══════════════════════════════════
+const END_ILLUSTRATIONS = {
+
+  // ── KIKO — Fin A : fleur donnée ──
+  '🌸': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="ea1" cx="50%" cy="40%" r="70%"><stop offset="0%" stop-color="#1a3a0a"/><stop offset="100%" stop-color="#050a03"/></radialGradient>
+      <radialGradient id="ea1g" cx="50%" cy="60%" r="50%"><stop offset="0%" stop-color="#ffd700" stop-opacity="0.5"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#ea1)"/>
+    <ellipse cx="600" cy="420" rx="360" ry="280" fill="url(#ea1g)"/>
+    <!-- Stars field -->
+    <circle cx="100" cy="80" r="2" fill="white" opacity="0.9"/><circle cx="300" cy="50" r="1.5" fill="white" opacity="0.7"/>
+    <circle cx="500" cy="90" r="2" fill="white" opacity="0.8"/><circle cx="800" cy="40" r="1.5" fill="white" opacity="0.9"/>
+    <circle cx="1050" cy="70" r="2" fill="white" opacity="0.7"/><circle cx="950" cy="110" r="1" fill="white" opacity="0.6"/>
+    <circle cx="200" cy="120" r="1.5" fill="white" opacity="0.8"/><circle cx="700" cy="60" r="1" fill="white" opacity="0.9"/>
+    <!-- Star ascending with trail -->
+    <ellipse cx="600" cy="180" rx="80" ry="80" fill="#ffd700" opacity="0.15"/>
+    <ellipse cx="600" cy="200" rx="50" ry="50" fill="#ffd700" opacity="0.25"/>
+    <ellipse cx="600" cy="220" rx="30" ry="30" fill="#fff8cc" opacity="0.6"/>
+    <circle cx="600" cy="200" r="22" fill="#fffbe0"/>
+    <circle cx="594" cy="194" r="9" fill="white" opacity="0.8"/>
+    <!-- Light trail -->
+    <path d="M600 240 Q598 320 600 400" stroke="#ffd700" stroke-width="3" fill="none" opacity="0.3" stroke-dasharray="8,6"/>
+    <!-- Kiko the fox on ground -->
+    <ellipse cx="600" cy="590" rx="18" ry="7" fill="rgba(0,0,0,0.4)"/>
+    <ellipse cx="600" cy="520" rx="50" ry="38" fill="#e86020"/>
+    <ellipse cx="630" cy="498" rx="28" ry="22" fill="#f07838"/>
+    <ellipse cx="648" cy="486" rx="20" ry="17" fill="#e86020"/>
+    <path d="M636 474 L626 452 L644 470" fill="#cc4a10"/>
+    <path d="M654 472 L664 450 L654 470" fill="#cc4a10"/>
+    <circle cx="643" cy="487" r="5" fill="#1a0a00"/>
+    <ellipse cx="648" cy="494" rx="8" ry="5" fill="#f8c0a0"/>
+    <path d="M550 520 Q520 490 510 520 Q525 540 550 520" fill="#e86020"/>
+    <ellipse cx="512" cy="520" rx="10" ry="9" fill="white"/>
+    <!-- Arms raised -->
+    <path d="M578 518 Q555 490 545 470" stroke="#e86020" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M622 518 Q645 490 655 470" stroke="#e86020" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <!-- Sparkles around star -->
+    <circle cx="540" cy="170" r="4" fill="#ffd700" opacity="0.9"/><circle cx="660" cy="155" r="3" fill="#ffcc44" opacity="0.8"/>
+    <circle cx="560" cy="230" r="3" fill="#fff8cc" opacity="0.7"/><circle cx="645" cy="225" r="4" fill="#ffd700" opacity="0.8"/>
+    <!-- Flowers on ground -->
+    <circle cx="420" cy="640" r="7" fill="#ff88cc" opacity="0.8"/><circle cx="460" cy="655" r="5" fill="#ffcc44" opacity="0.7"/>
+    <circle cx="720" cy="638" r="7" fill="#88ffaa" opacity="0.7"/><circle cx="760" cy="652" r="5" fill="#ff88cc" opacity="0.8"/>
+    <circle cx="350" cy="660" r="4" fill="#aaffcc" opacity="0.6"/><circle cx="820" cy="648" r="6" fill="#ffd700" opacity="0.7"/>
+  </svg>`,
+
+  // ── KIKO — Fin A2 : souffler ──
+  '💨': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="ea2" cx="50%" cy="40%" r="70%"><stop offset="0%" stop-color="#0a1a3a"/><stop offset="100%" stop-color="#03060f"/></radialGradient>
+      <radialGradient id="ea2g" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#ea2)"/>
+    <ellipse cx="600" cy="380" rx="400" ry="300" fill="url(#ea2g)"/>
+    <!-- Stars -->
+    <circle cx="150" cy="60" r="2" fill="white" opacity="0.8"/><circle cx="380" cy="40" r="1.5" fill="white" opacity="0.7"/>
+    <circle cx="620" cy="80" r="2" fill="white" opacity="0.9"/><circle cx="900" cy="50" r="1.5" fill="white" opacity="0.8"/>
+    <circle cx="1080" cy="90" r="2" fill="white" opacity="0.6"/>
+    <!-- Exploding flower light -->
+    <ellipse cx="600" cy="280" rx="140" ry="140" fill="#38bdf8" opacity="0.08"/>
+    <ellipse cx="600" cy="280" rx="90" ry="90" fill="#a0e8ff" opacity="0.12"/>
+    <ellipse cx="600" cy="280" rx="50" ry="50" fill="#e0f8ff" opacity="0.3"/>
+    <!-- Light rays explosion -->
+    <path d="M600 280 L520 160" stroke="#38bdf8" stroke-width="2" opacity="0.4"/>
+    <path d="M600 280 L680 160" stroke="#38bdf8" stroke-width="2" opacity="0.4"/>
+    <path d="M600 280 L460 240" stroke="#38bdf8" stroke-width="2" opacity="0.3"/>
+    <path d="M600 280 L740 240" stroke="#38bdf8" stroke-width="2" opacity="0.3"/>
+    <path d="M600 280 L440 320" stroke="#38bdf8" stroke-width="1.5" opacity="0.25"/>
+    <path d="M600 280 L760 320" stroke="#38bdf8" stroke-width="1.5" opacity="0.25"/>
+    <!-- Star -->
+    <circle cx="600" cy="280" r="28" fill="#e0f8ff"/>
+    <circle cx="592" cy="272" r="11" fill="white" opacity="0.9"/>
+    <!-- Wind lines from Kiko -->
+    <path d="M540 460 Q570 430 600 280" stroke="rgba(255,255,255,0.15)" stroke-width="3" fill="none" stroke-dasharray="6,4"/>
+    <!-- Kiko -->
+    <ellipse cx="500" cy="590" rx="18" ry="7" fill="rgba(0,0,0,0.4)"/>
+    <ellipse cx="500" cy="520" rx="50" ry="38" fill="#e86020"/>
+    <ellipse cx="530" cy="498" rx="28" ry="22" fill="#f07838"/>
+    <ellipse cx="548" cy="486" rx="20" ry="17" fill="#e86020"/>
+    <path d="M536 474 L526 452 L544 470" fill="#cc4a10"/>
+    <path d="M554 472 L564 450 L554 470" fill="#cc4a10"/>
+    <circle cx="543" cy="487" r="5" fill="#1a0a00"/>
+    <ellipse cx="548" cy="494" rx="8" ry="5" fill="#f8c0a0"/>
+    <!-- Blowing mouth -->
+    <ellipse cx="556" cy="498" rx="5" ry="4" fill="#cc5500"/>
+    <path d="M450 520 Q420 490 410 520 Q425 540 450 520" fill="#e86020"/>
+    <ellipse cx="412" cy="520" rx="10" ry="9" fill="white"/>
+    <!-- Sparkles everywhere -->
+    <circle cx="650" cy="200" r="5" fill="#38bdf8" opacity="0.9"/><circle cx="700" cy="250" r="3" fill="#a0e8ff" opacity="0.8"/>
+    <circle cx="520" cy="210" r="4" fill="#e0f8ff" opacity="0.7"/><circle cx="480" cy="270" r="3" fill="#38bdf8" opacity="0.8"/>
+  </svg>`,
+
+  // ── KIKO — Fin B : Hana guide ──
+  '🦔': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="eb1" cx="50%" cy="45%" r="65%"><stop offset="0%" stop-color="#1a2a0a"/><stop offset="100%" stop-color="#060a04"/></radialGradient>
+      <radialGradient id="eb1g" cx="55%" cy="45%" r="45%"><stop offset="0%" stop-color="#ffd700" stop-opacity="0.4"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#eb1)"/>
+    <ellipse cx="650" cy="340" rx="340" ry="260" fill="url(#eb1g)"/>
+    <!-- Stars -->
+    <circle cx="120" cy="70" r="2" fill="white" opacity="0.8"/><circle cx="350" cy="45" r="1.5" fill="white" opacity="0.7"/>
+    <circle cx="580" cy="85" r="2" fill="white" opacity="0.9"/><circle cx="850" cy="55" r="1.5" fill="white" opacity="0.8"/>
+    <circle cx="1020" cy="80" r="2" fill="white" opacity="0.6"/>
+    <!-- Star high up, ascending -->
+    <ellipse cx="700" cy="160" rx="55" ry="55" fill="#ffd700" opacity="0.2"/>
+    <ellipse cx="700" cy="170" rx="35" ry="35" fill="#fff8cc" opacity="0.35"/>
+    <circle cx="700" cy="170" r="20" fill="#fffbe0"/>
+    <circle cx="694" cy="164" r="8" fill="white" opacity="0.8"/>
+    <!-- Trail of sparkles -->
+    <circle cx="695" cy="210" r="3" fill="#ffd700" opacity="0.7"/>
+    <circle cx="690" cy="250" r="2.5" fill="#ffcc44" opacity="0.6"/>
+    <circle cx="685" cy="290" r="2" fill="#ffd700" opacity="0.5"/>
+    <!-- Hana the hedgehog -->
+    <ellipse cx="660" cy="530" rx="14" ry="6" fill="rgba(0,0,0,0.3)"/>
+    <ellipse cx="660" cy="490" rx="38" ry="30" fill="#8B6914"/>
+    <!-- Spines -->
+    <path d="M635 475 L622 452" stroke="#5a4008" stroke-width="3" stroke-linecap="round"/>
+    <path d="M648 468 L638 444" stroke="#5a4008" stroke-width="3" stroke-linecap="round"/>
+    <path d="M662 465 L658 440" stroke="#5a4008" stroke-width="3" stroke-linecap="round"/>
+    <path d="M675 468 L682 444" stroke="#5a4008" stroke-width="3" stroke-linecap="round"/>
+    <path d="M685 475 L698 452" stroke="#5a4008" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="645" cy="490" rx="18" ry="16" fill="#d4a870"/>
+    <circle cx="638" cy="485" r="4" fill="#1a0a00"/>
+    <ellipse cx="642" cy="492" rx="6" ry="4" fill="#f8c0a0"/>
+    <!-- Pointing arm up -->
+    <path d="M665 480 Q680 450 700 420" stroke="#8B6914" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <!-- Kiko beside Hana -->
+    <ellipse cx="520" cy="535" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
+    <ellipse cx="520" cy="498" rx="44" ry="34" fill="#e86020"/>
+    <ellipse cx="548" cy="479" rx="24" ry="20" fill="#f07838"/>
+    <ellipse cx="562" cy="469" rx="18" ry="15" fill="#e86020"/>
+    <path d="M551 458 L542 438 L558 454" fill="#cc4a10"/>
+    <path d="M566 457 L574 437 L566 453" fill="#cc4a10"/>
+    <circle cx="557" cy="470" r="4" fill="#1a0a00"/>
+    <path d="M476 498 Q450 472 442 498 Q454 516 476 498" fill="#e86020"/>
+    <ellipse cx="444" cy="498" rx="9" ry="8" fill="white"/>
+    <!-- Looking up at star -->
+    <path d="M548 476 Q570 440 680 310" stroke="rgba(255,215,0,0.2)" stroke-width="2" fill="none" stroke-dasharray="5,4"/>
+  </svg>`,
+
+  // ── KIKO — Fin B2 : ensemble avec Hana ──
+  '🤝': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="eb2" cx="50%" cy="45%" r="65%"><stop offset="0%" stop-color="#1a1a3a"/><stop offset="100%" stop-color="#060608"/></radialGradient>
+      <radialGradient id="eb2g" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#a78bfa" stop-opacity="0.35"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#eb2)"/>
+    <ellipse cx="600" cy="360" rx="380" ry="280" fill="url(#eb2g)"/>
+    <!-- Stars lots -->
+    <circle cx="100" cy="60" r="2" fill="white" opacity="0.9"/><circle cx="280" cy="40" r="1.5" fill="white" opacity="0.8"/>
+    <circle cx="450" cy="75" r="2" fill="white" opacity="0.7"/><circle cx="680" cy="50" r="1.5" fill="white" opacity="0.9"/>
+    <circle cx="870" cy="65" r="2" fill="white" opacity="0.8"/><circle cx="1060" cy="45" r="1.5" fill="white" opacity="0.7"/>
+    <!-- Star and trail of sparkles -->
+    <ellipse cx="600" cy="200" rx="70" ry="70" fill="#a78bfa" opacity="0.15"/>
+    <circle cx="600" cy="200" r="25" fill="#e8e0ff"/>
+    <circle cx="593" cy="193" r="10" fill="white" opacity="0.9"/>
+    <circle cx="600" cy="240" r="4" fill="#a78bfa" opacity="0.7"/>
+    <circle cx="598" cy="280" r="3" fill="#c4b5fd" opacity="0.6"/>
+    <circle cx="596" cy="315" r="2.5" fill="#a78bfa" opacity="0.5"/>
+    <!-- Kiko + Hana side by side, looking up -->
+    <!-- Hana -->
+    <ellipse cx="540" cy="540" rx="14" ry="6" fill="rgba(0,0,0,0.3)"/>
+    <ellipse cx="540" cy="500" rx="38" ry="30" fill="#8B6914"/>
+    <path d="M516 485 L503 462" stroke="#5a4008" stroke-width="3" stroke-linecap="round"/>
+    <path d="M528 478 L518 455" stroke="#5a4008" stroke-width="3" stroke-linecap="round"/>
+    <path d="M541 476 L537 451" stroke="#5a4008" stroke-width="3" stroke-linecap="round"/>
+    <path d="M553 478 L559 455" stroke="#5a4008" stroke-width="3" stroke-linecap="round"/>
+    <path d="M563 485 L574 462" stroke="#5a4008" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="526" cy="500" rx="17" ry="15" fill="#d4a870"/>
+    <circle cx="519" cy="496" r="4" fill="#1a0a00"/>
+    <!-- Kiko -->
+    <ellipse cx="660" cy="540" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
+    <ellipse cx="660" cy="504" rx="44" ry="34" fill="#e86020"/>
+    <ellipse cx="686" cy="485" rx="24" ry="20" fill="#f07838"/>
+    <ellipse cx="700" cy="475" rx="18" ry="15" fill="#e86020"/>
+    <path d="M689 464 L680 444" stroke="#cc4a10" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M704 463 L712 443" stroke="#cc4a10" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <circle cx="695" cy="476" r="4" fill="#1a0a00"/>
+    <path d="M616 504 Q590 478 582 504 Q594 522 616 504" fill="#e86020"/>
+    <ellipse cx="584" cy="504" rx="9" ry="8" fill="white"/>
+    <!-- Holding paws/arms between them -->
+    <path d="M560 504 Q600 490 618 504" stroke="#d4a870" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Shared gaze line to star -->
+    <path d="M540 490 Q570 380 600 240" stroke="rgba(167,139,250,0.2)" stroke-width="2" fill="none" stroke-dasharray="5,4"/>
+    <path d="M690 475 Q650 380 605 240" stroke="rgba(167,139,250,0.2)" stroke-width="2" fill="none" stroke-dasharray="5,4"/>
+  </svg>`,
+
+  // ── KIKO — Fin C : aider à remonter ──
+  '🌟': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="ec1" cx="50%" cy="35%" r="70%"><stop offset="0%" stop-color="#2a1a0a"/><stop offset="100%" stop-color="#080503"/></radialGradient>
+      <radialGradient id="ec1g" cx="50%" cy="35%" r="55%"><stop offset="0%" stop-color="#ff8800" stop-opacity="0.4"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#ec1)"/>
+    <ellipse cx="600" cy="260" rx="380" ry="300" fill="url(#ec1g)"/>
+    <!-- Night sky stars -->
+    <circle cx="140" cy="55" r="2" fill="white" opacity="0.9"/><circle cx="320" cy="35" r="2" fill="white" opacity="0.8"/>
+    <circle cx="560" cy="65" r="1.5" fill="white" opacity="0.7"/><circle cx="780" cy="42" r="2" fill="white" opacity="0.9"/>
+    <circle cx="980" cy="68" r="1.5" fill="white" opacity="0.8"/><circle cx="1140" cy="38" r="2" fill="white" opacity="0.7"/>
+    <circle cx="460" cy="95" r="1" fill="white" opacity="0.6"/><circle cx="840" cy="88" r="1" fill="white" opacity="0.8"/>
+    <!-- Three blink signals from star -->
+    <circle cx="600" cy="150" r="40" fill="#ffd700" opacity="0.2"/>
+    <circle cx="600" cy="150" r="25" fill="#fff8cc" opacity="0.4"/>
+    <circle cx="600" cy="150" r="14" fill="#fffbe0" opacity="0.8"/>
+    <circle cx="600" cy="150" r="8" fill="white"/>
+    <circle cx="596" cy="146" r="3" fill="white" opacity="0.9"/>
+    <!-- Three blink dots -->
+    <circle cx="530" cy="130" r="5" fill="#ffd700" opacity="0.9"/>
+    <circle cx="600" cy="115" r="5" fill="#ffd700" opacity="0.9"/>
+    <circle cx="670" cy="130" r="5" fill="#ffd700" opacity="0.9"/>
+    <!-- Long trail going up -->
+    <path d="M600 165 Q598 250 600 380" stroke="#ffd700" stroke-width="2" fill="none" opacity="0.25" stroke-dasharray="6,5"/>
+    <!-- Kiko with arm up -->
+    <ellipse cx="600" cy="590" rx="18" ry="7" fill="rgba(0,0,0,0.4)"/>
+    <ellipse cx="600" cy="540" rx="50" ry="38" fill="#e86020"/>
+    <ellipse cx="626" cy="520" rx="26" ry="21" fill="#f07838"/>
+    <ellipse cx="640" cy="509" rx="19" ry="16" fill="#e86020"/>
+    <path d="M628 498 L619 477 L636 494" fill="#cc4a10"/>
+    <path d="M643 497 L652 476 L643 493" fill="#cc4a10"/>
+    <circle cx="636" cy="510" r="4.5" fill="#1a0a00"/>
+    <ellipse cx="640" cy="517" rx="7" ry="5" fill="#f8c0a0"/>
+    <!-- Arm raised high -->
+    <path d="M620 520 Q610 490 604 460" stroke="#e86020" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <!-- Scarf given away (floating near star) -->
+    <path d="M580 400 Q600 380 620 400 Q610 420 580 400" fill="#ff6688" opacity="0.7"/>
+    <path d="M620 400 Q640 385 650 405" stroke="#ff6688" stroke-width="4" fill="none" opacity="0.5" stroke-linecap="round"/>
+    <!-- Warm glow on Kiko -->
+    <ellipse cx="600" cy="530" rx="80" ry="60" fill="#ff8800" opacity="0.06"/>
+  </svg>`,
+
+  // ── KIKO — Fin C2 : chanter ──
+  '🎵': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="ec2" cx="50%" cy="45%" r="65%"><stop offset="0%" stop-color="#0a1a2a"/><stop offset="100%" stop-color="#030608"/></radialGradient>
+      <radialGradient id="ec2g" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="#4ade80" stop-opacity="0.2"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#ec2)"/>
+    <ellipse cx="600" cy="380" rx="400" ry="300" fill="url(#ec2g)"/>
+    <!-- Stars -->
+    <circle cx="100" cy="70" r="2" fill="white" opacity="0.8"/><circle cx="290" cy="48" r="1.5" fill="white" opacity="0.9"/>
+    <circle cx="530" cy="80" r="2" fill="white" opacity="0.7"/><circle cx="780" cy="52" r="1.5" fill="white" opacity="0.8"/>
+    <circle cx="1020" cy="72" r="2" fill="white" opacity="0.9"/>
+    <!-- Star gentle glow, carried by song -->
+    <ellipse cx="680" cy="220" rx="65" ry="65" fill="#4ade80" opacity="0.12"/>
+    <ellipse cx="680" cy="225" rx="40" ry="40" fill="#a0ffb8" opacity="0.2"/>
+    <circle cx="680" cy="225" r="22" fill="#e0fff0"/>
+    <circle cx="674" cy="219" r="9" fill="white" opacity="0.9"/>
+    <!-- Musical notes floating up -->
+    <text x="520" y="360" font-size="28" fill="#4ade80" opacity="0.7" transform="rotate(-10,520,360)">♪</text>
+    <text x="560" y="310" font-size="22" fill="#a0ffb8" opacity="0.6" transform="rotate(5,560,310)">♫</text>
+    <text x="600" y="270" font-size="26" fill="#4ade80" opacity="0.7" transform="rotate(-5,600,270)">♪</text>
+    <text x="630" y="310" font-size="20" fill="#a0ffb8" opacity="0.5" transform="rotate(8,630,310)">♫</text>
+    <text x="655" y="260" font-size="18" fill="#4ade80" opacity="0.6" transform="rotate(-3,655,260)">♪</text>
+    <!-- Sound waves from Kiko -->
+    <path d="M520 480 Q540 460 520 440" stroke="#4ade80" stroke-width="2" fill="none" opacity="0.4"/>
+    <path d="M510 490 Q535 465 510 435" stroke="#4ade80" stroke-width="1.5" fill="none" opacity="0.3"/>
+    <path d="M498 500 Q530 468 498 430" stroke="#4ade80" stroke-width="1" fill="none" opacity="0.2"/>
+    <!-- Kiko singing, mouth open -->
+    <ellipse cx="570" cy="555" rx="18" ry="7" fill="rgba(0,0,0,0.3)"/>
+    <ellipse cx="570" cy="514" rx="48" ry="36" fill="#e86020"/>
+    <ellipse cx="595" cy="496" rx="25" ry="20" fill="#f07838"/>
+    <ellipse cx="608" cy="486" rx="18" ry="15" fill="#e86020"/>
+    <path d="M597 475 L588 455 L604 471" fill="#cc4a10"/>
+    <path d="M611 474 L619 454 L611 470" fill="#cc4a10"/>
+    <circle cx="604" cy="487" r="4.5" fill="#1a0a00"/>
+    <!-- Open mouth singing -->
+    <ellipse cx="610" cy="495" rx="7" ry="6" fill="#cc5500"/>
+    <ellipse cx="610" cy="493" rx="5" ry="3" fill="#ff8844"/>
+    <path d="M527 514 Q502 488 494 514 Q506 532 527 514" fill="#e86020"/>
+    <ellipse cx="496" cy="514" rx="9" ry="8" fill="white"/>
+  </svg>`,
+
+  // ── DEFAULT fallback ──
+  'default': `<svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="edef" cx="50%" cy="45%" r="70%"><stop offset="0%" stop-color="#1a1a3a"/><stop offset="100%" stop-color="#06060f"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#edef)"/>
+    <circle cx="600" cy="280" r="60" fill="#ffd700" opacity="0.25"/>
+    <circle cx="600" cy="280" r="35" fill="#fff8cc" opacity="0.5"/>
+    <circle cx="600" cy="280" r="18" fill="white" opacity="0.8"/>
+    <circle cx="100" cy="80" r="2" fill="white" opacity="0.7"/><circle cx="400" cy="50" r="1.5" fill="white" opacity="0.8"/>
+    <circle cx="800" cy="60" r="2" fill="white" opacity="0.6"/><circle cx="1100" cy="90" r="1.5" fill="white" opacity="0.7"/>
+  </svg>`
+};
+
+function showEnd(end){
+  document.getElementById('end-star').textContent=end.star;
+  document.getElementById('end-title').textContent=end.title;
+  document.getElementById('end-text').innerHTML=end.text.split('\n').filter(l=>l.trim()).map(l=>`<span style="display:block;margin-bottom:6px;">${l}</span>`).join('');
+  const illus=document.getElementById('end-illustration');
+  illus.innerHTML=END_ILLUSTRATIONS[end.star]||END_ILLUSTRATIONS['default'];
+  document.getElementById('end-overlay').classList.add('show');
+}
+</script>
+</body>
+</html>
