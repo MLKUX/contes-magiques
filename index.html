@@ -1263,7 +1263,6 @@ const STORIES = [
 // ═══════════════════════════════════
 // STATE
 // ═══════════════════════════════════
-const OPENAI_KEY='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';
 let userName='', currentStory=null, currentSceneId=null, visitedScenes=[], currentFilter='all', imageCache={};
 
 // ═══════════════════════════════════
@@ -1360,8 +1359,8 @@ function renderScene(sceneId){
     </svg>`;
   }
 
-  // DALL-E 3 — direct browser call
-  if(scene.imageDesc && OPENAI_KEY){
+  // DALL-E 3 — via Vercel serverless proxy (avoids CORS & hides API key)
+  if(scene.imageDesc){
     const cacheKey=currentStory.id+'/'+sceneId+'/dalle';
     if(imageCache[cacheKey]){
       svgBg.innerHTML='';
@@ -1369,16 +1368,12 @@ function renderScene(sceneId){
       svgBg.style.backgroundSize='cover';
       svgBg.style.backgroundPosition='center';
     } else {
-      fetch('https://api.openai.com/v1/images/generations',{
+      fetch('/api/generate-image',{
         method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+OPENAI_KEY},
-        body:JSON.stringify({
-          model:'dall-e-3',
-          prompt:scene.imageDesc+', children book illustration, Pixar 3D style, vibrant colors, no text',
-          n:1, size:'1792x1024', quality:'standard', response_format:'url'
-        })
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({prompt:scene.imageDesc})
       }).then(r=>r.json()).then(data=>{
-        const url=data?.data?.[0]?.url;
+        const url=data?.url;
         if(url && currentSceneId===sceneId){
           imageCache[cacheKey]=url;
           svgBg.style.transition='opacity 0.8s';
