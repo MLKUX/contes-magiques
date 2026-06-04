@@ -1,6 +1,4 @@
-export const config = { api: { bodyParser: true } };
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -8,7 +6,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const prompt = req.body?.prompt;
+  const prompt = req.body && req.body.prompt;
   if (!prompt) return res.status(400).json({ error: 'Prompt required' });
 
   try {
@@ -16,7 +14,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY
       },
       body: JSON.stringify({
         model: 'dall-e-3',
@@ -31,10 +29,10 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(500).json({ error: data.error?.message || 'OpenAI error' });
+      return res.status(500).json({ error: data.error && data.error.message || 'OpenAI error' });
     }
 
-    const url = data.data?.[0]?.url;
+    const url = data.data && data.data[0] && data.data[0].url;
     if (!url) return res.status(500).json({ error: 'No URL in response' });
 
     return res.status(200).json({ url });
@@ -42,4 +40,4 @@ export default async function handler(req, res) {
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
-}
+};
