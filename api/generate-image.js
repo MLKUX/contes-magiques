@@ -1,6 +1,6 @@
-const https = require('https');
+export const config = { api: { bodyParser: true } };
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -8,47 +8,25 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { prompt } = req.body;
+  const prompt = req.body?.prompt;
   if (!prompt) return res.status(400).json({ error: 'Prompt required' });
 
-  try {
-    const body = JSON.stringify({
+  const response = await fetch('https://api.openai.com/v1/images/generations', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
       model: 'dall-e-3',
-      prompt: prompt + ', children book illustration style, Pixar 3D animation style, vibrant colors, safe for kids, no text in image',
+      prompt: prompt + ', children book illustration, Pixar 3D style, vibrant colors, no text',
       n: 1,
       size: '1792x1024',
       quality: 'standard'
-    });
+    })
+  });
 
-    const options = {
-      hostname: 'api.openai.com',
-      path: '/v1/images/generations',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Length': Buffer.byteLength(body)
-      }
-    };
-
-    const data = await new Promise((resolve, reject) => {
-      const request = https.request(options, (response) => {
-        let raw = '';
-        response.on('data', chunk => raw += chunk);
-        response.on('end', () => {
-          try { resolve(JSON.parse(raw)); }
-          catch(e) { reject(new Error('Invalid JSON')); }
-        });
-      });
-      request.on('error', reject);
-      request.write(body);
-      request.end();
-    });
-
-    if (data.error) return res.status(500).json({ error: data.error.message });
-    return res.status(200).json({ url: data.data[0].url });
-
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};
+  const data = await response.json();
+  if (!response.ok) return res.status(500).json({ error: data.error?.message || 'OpenAI error' });
+  return res.status(200).json({ url: data.data[0].url });
+}
