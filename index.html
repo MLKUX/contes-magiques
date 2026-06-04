@@ -54,6 +54,24 @@
   .story-title{font-family:'Fredoka One',cursive;font-size:1.1rem;color:white;margin-bottom:5px;}
   .story-desc{font-size:0.8rem;color:rgba(255,255,255,0.5);line-height:1.5;}
 
+  /* PREMIUM CARD */
+  .story-card.is-premium{cursor:pointer;}
+  .story-card.is-premium:hover{border-color:rgba(255,215,0,0.4);box-shadow:0 12px 40px rgba(255,215,0,0.15);}
+  .premium-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;font-size:2.2rem;z-index:2;backdrop-filter:blur(2px);}
+  .premium-badge{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#FFD700,#FF6B35);color:#1a0a2e;font-family:'Nunito',sans-serif;font-size:0.68rem;font-weight:800;padding:4px 10px;border-radius:999px;z-index:3;letter-spacing:0.5px;}
+
+  /* PREMIUM MODAL */
+  #premium-modal{display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);}
+  #premium-modal.show{display:flex;}
+  .premium-box{background:linear-gradient(160deg,#1a0a2e,#0d0520);border:1px solid rgba(255,215,0,0.25);border-radius:24px;padding:40px 32px;width:100%;max-width:420px;text-align:center;box-shadow:0 0 80px rgba(107,33,168,0.4);}
+  .lock-icon{font-size:48px;display:block;margin-bottom:14px;}
+  .premium-box h2{font-family:'Fredoka One',cursive;font-size:1.7rem;background:linear-gradient(135deg,#FFD700,#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px;}
+  .premium-box p{color:rgba(255,255,255,0.65);font-size:0.9rem;line-height:1.6;margin-bottom:26px;}
+  .btn-subscribe{display:block;width:100%;background:linear-gradient(135deg,#FFD700,#FF6B35);border:none;border-radius:13px;padding:14px;font-family:'Fredoka One',cursive;font-size:1.05rem;color:#1a0a2e;cursor:pointer;margin-bottom:10px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 20px rgba(255,215,0,0.35);}
+  .btn-subscribe:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,215,0,0.5);}
+  .btn-cancel{display:block;width:100%;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:13px;padding:12px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.88rem;color:rgba(255,255,255,0.6);cursor:pointer;transition:border-color 0.2s,color 0.2s;}
+  .btn-cancel:hover{border-color:rgba(255,255,255,0.45);color:white;}
+
   /* STORY SCREEN */
   #story-screen{display:none;position:fixed;inset:0;z-index:50;overflow:hidden;}
 
@@ -1293,15 +1311,22 @@ document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key===
 // ═══════════════════════════════════
 function renderLibrary(){
   const filtered=currentFilter==='all'?STORIES:STORIES.filter(s=>s.level===currentFilter);
-  document.getElementById('stories-grid').innerHTML=filtered.map(s=>`
-    <div class="story-card" onclick="openStory('${s.id}')">
-      <div class="story-thumb ${s.thumb}"><span style="position:relative;z-index:1;font-size:50px;">${s.emoji}</span></div>
+  document.getElementById('stories-grid').innerHTML=filtered.map(s=>{
+    const isPremium=!!s.isPremium;
+    const onclick=isPremium?'showPremiumModal()':'openStory(\''+s.id+'\')';
+    const premiumOverlay=isPremium?'<div class="premium-overlay">🔒</div><div class="premium-badge">✨ Premium</div>':'';
+    return `<div class="story-card${isPremium?' is-premium':''}" onclick="${onclick}">
+      <div class="story-thumb ${s.thumb}" style="position:relative;">
+        <span style="position:relative;z-index:1;font-size:50px;">${s.emoji}</span>
+        ${premiumOverlay}
+      </div>
       <div class="story-info">
         <span class="story-level level-${s.level}">${levelLabel(s.level)}</span>
         <div class="story-title">${s.title}</div>
         <div class="story-desc">${s.desc}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function levelLabel(l){return l==='eveil'?'🌸 Éveil':l==='explorateur'?'⭐ Explorateur':'⚔️ Aventurier';}
 function filterLevel(level,btn){
