@@ -1263,6 +1263,7 @@ const STORIES = [
 // ═══════════════════════════════════
 // STATE
 // ═══════════════════════════════════
+const OPENAI_KEY='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';
 let userName='', currentStory=null, currentSceneId=null, visitedScenes=[], currentFilter='all', imageCache={};
 
 // ═══════════════════════════════════
@@ -1359,8 +1360,8 @@ function renderScene(sceneId){
     </svg>`;
   }
 
-  // DALL-E 3 — load in background, replace SVG when ready
-  if(scene.imageDesc){
+  // DALL-E 3 — direct browser call
+  if(scene.imageDesc && OPENAI_KEY){
     const cacheKey=currentStory.id+'/'+sceneId+'/dalle';
     if(imageCache[cacheKey]){
       svgBg.innerHTML='';
@@ -1368,24 +1369,29 @@ function renderScene(sceneId){
       svgBg.style.backgroundSize='cover';
       svgBg.style.backgroundPosition='center';
     } else {
-      fetch('/api/generate-image',{
+      fetch('https://api.openai.com/v1/images/generations',{
         method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({prompt:scene.imageDesc})
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+OPENAI_KEY},
+        body:JSON.stringify({
+          model:'dall-e-3',
+          prompt:scene.imageDesc+', children book illustration, Pixar 3D style, vibrant colors, no text',
+          n:1, size:'1792x1024', quality:'standard', response_format:'url'
+        })
       }).then(r=>r.json()).then(data=>{
-        if(data.url && currentSceneId===sceneId){
-          imageCache[cacheKey]=data.url;
+        const url=data?.data?.[0]?.url;
+        if(url && currentSceneId===sceneId){
+          imageCache[cacheKey]=url;
           svgBg.style.transition='opacity 0.8s';
           svgBg.style.opacity='0';
           setTimeout(()=>{
             svgBg.innerHTML='';
-            svgBg.style.backgroundImage=`url(${data.url})`;
+            svgBg.style.backgroundImage=`url(${url})`;
             svgBg.style.backgroundSize='cover';
             svgBg.style.backgroundPosition='center';
             svgBg.style.opacity='1';
           },800);
         }
-      }).catch(()=>{/* keep SVG on error */});
+      }).catch(()=>{});
     }
   }
 
