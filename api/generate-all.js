@@ -6,9 +6,9 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { storyId, scenes, storyLevel, maxRetries } = req.body || {};
-  if (!storyId || !Array.isArray(scenes) || !scenes.length) {
-    return res.status(400).json({ error: 'storyId and scenes[] are required' });
+  const { scene, storyLevel, maxRetries } = req.body || {};
+  if (!scene || !scene.id || !scene.imagePrompt) {
+    return res.status(400).json({ error: 'scene with id and imagePrompt is required' });
   }
 
   const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
@@ -16,82 +16,78 @@ module.exports = async function handler(req, res) {
   if (!OPENAI_API_KEY)    return res.status(500).json({ error: 'OPENAI_API_KEY not configured' });
   if (!ANTHROPIC_API_KEY) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
 
+  const { id: sceneId, imagePrompt, sceneText, characterDescriptions } = scene;
   const retries = typeof maxRetries === 'number' ? maxRetries : 3;
-  const results = [];
+  const debugLog = [];
 
-  for (const scene of scenes) {
-    const { id: sceneId, imagePrompt, sceneText, characterDescriptions } = scene;
-    const debugLog = [];
-    let attempts = 0;
-    let approved = false;
-    let imageBase64 = null;
-    let scores = null;
+  let attempts = 0;
+  let approved = false;
+  let imageBase64 = null;
+  let scores = null;
 
-    debugLog.push({ step: 'start', sceneId, imagePrompt: imagePrompt.substring(0, 120) + '…' });
+  debugLog.push({ step: 'start', sceneId });
 
-    while (attempts < retries && !approved) {
-      attempts++;
+  while (attempts < retries && !approved) {
+    attempts++;
 
-      // ── ÉTAPE 1 : Génération OpenAI ─────────────────────────────────────────
-      let openaiStatus = null;
-      let openaiRawText = null;
+    // ── ÉTAPE 1 : Génération OpenAI ───────────────────────────────────────────
+    let openaiStatus = null;
+    let openaiRawText = null;
 
-      try {
-        debugLog.push({ step: 'openai_fetch_start', attempt: attempts });
+    try {
+      debugLog.push({ step: 'openai_fetch_start', attempt: attempts });
 
-        const genResp = await fetch('https://api.openai.com/v1/images/generations', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + OPENAI_API_KEY
-          },
-          body: JSON.stringify({
-            model: 'gpt-image-1',
-            prompt: imagePrompt,
-            n: 1,
-            size: '1536x1024',
-            quality: 'medium'
-          })
-        });
+      const genResp = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + OPENAI_API_KEY
+        },
+        body: JSON.stringify({
+          model: 'gpt-image-1',
+          prompt: imagePrompt,
+          n: 1,
+          size: '1536x1024',
+          quality: 'medium'
+        })
+      });
 
-        openaiStatus = genResp.status;
-        openaiRawText = await genResp.text();
-        debugLog.push({ step: 'openai_response', status: openaiStatus, rawPreview: openaiRawText.substring(0, 300) });
+      openaiStatus = genResp.status;
+      openaiRawText = await genResp.text();
+      debugLog.push({ step: 'openai_response', status: openaiStatus, rawPreview: openaiRawText.substring(0, 300) });
 
-        if (!genResp.ok) {
-          scores = { error: 'OpenAI request failed', step: 'openai_generation', httpStatus: openaiStatus, rawResponse: openaiRawText };
-          break;
-        }
-
-        let genData;
-        try {
-          genData = JSON.parse(openaiRawText);
-        } catch (parseErr) {
-          scores = { error: 'Failed to parse OpenAI JSON', step: 'openai_json_parse', httpStatus: openaiStatus, rawResponse: openaiRawText, parseError: parseErr.message };
-          break;
-        }
-
-        debugLog.push({ step: 'openai_parsed', dataLength: genData.data ? genData.data.length : 0 });
-
-        const b64raw = genData.data && genData.data[0] && genData.data[0].b64_json;
-        if (!b64raw) {
-          scores = { error: 'No b64_json in OpenAI response', step: 'openai_extract_image', httpStatus: openaiStatus, dataItem: genData.data ? genData.data[0] : null };
-          break;
-        }
-
-        imageBase64 = 'data:image/png;base64,' + b64raw;
-        debugLog.push({ step: 'openai_success', imageSizeChars: imageBase64.length });
-
-      } catch (err) {
-        scores = { error: 'Exception during OpenAI fetch: ' + err.message, step: 'openai_exception', httpStatus: openaiStatus, rawResponse: openaiRawText };
+      if (!genResp.ok) {
+        scores = { error: 'OpenAI request failed', step: 'openai_generation', httpStatus: openaiStatus, rawResponse: openaiRawText };
         break;
       }
 
-      // ── ÉTAPE 2 : Validation Anthropic ──────────────────────────────────────
-      let anthropicStatus = null;
-      let anthropicRawText = null;
+      let genData;
+      try {
+        genData = JSON.parse(openaiRawText);
+      } catch (parseErr) {
+        scores = { error: 'Failed to parse OpenAI JSON', step: 'openai_json_parse', httpStatus: openaiStatus, rawResponse: openaiRawText, parseError: parseErr.message };
+        break;
+      }
 
-      const userPrompt = `Analyze this illustration for a children's storybook scene.
+      const b64raw = genData.data && genData.data[0] && genData.data[0].b64_json;
+      if (!b64raw) {
+        scores = { error: 'No b64_json in OpenAI response', step: 'openai_extract_image', httpStatus: openaiStatus };
+        break;
+      }
+
+      imageBase64 = 'data:image/png;base64,' + b64raw;
+      debugLog.push({ step: 'openai_success', imageSizeChars: imageBase64.length });
+
+    } catch (err) {
+      scores = { error: 'Exception during OpenAI fetch: ' + err.message, step: 'openai_exception' };
+      break;
+    }
+
+    // ── ÉTAPE 2 : Validation Anthropic ────────────────────────────────────────
+    let anthropicStatus = null;
+    let anthropicRawText = null;
+
+    const userPrompt = `Analyze this illustration for a children's storybook scene.
 
 Scene text: ${sceneText}
 Expected characters: ${characterDescriptions || 'not specified'}
@@ -122,94 +118,89 @@ Respond ONLY with this JSON format :
   "rejection_reason": ""
 }`;
 
-      try {
-        debugLog.push({ step: 'anthropic_fetch_start', attempt: attempts });
+    try {
+      debugLog.push({ step: 'anthropic_fetch_start', attempt: attempts });
 
-        const b64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+      const b64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
 
-        const valResp = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': ANTHROPIC_API_KEY,
-            'anthropic-version': '2023-06-01'
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 1024,
-            system: 'You are a quality checker for a children\'s illustrated storybook app. You analyze AI-generated illustrations and rate their quality on specific criteria. Always respond with valid JSON only, no other text.',
-            messages: [{
-              role: 'user',
-              content: [
-                { type: 'image', source: { type: 'base64', media_type: 'image/png', data: b64 } },
-                { type: 'text', text: userPrompt }
-              ]
-            }]
-          })
-        });
+      const valResp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1024,
+          system: 'You are a quality checker for a children\'s illustrated storybook app. You analyze AI-generated illustrations and rate their quality on specific criteria. Always respond with valid JSON only, no other text.',
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: 'image/png', data: b64 } },
+              { type: 'text', text: userPrompt }
+            ]
+          }]
+        })
+      });
 
-        anthropicStatus = valResp.status;
-        anthropicRawText = await valResp.text();
-        debugLog.push({ step: 'anthropic_response', status: anthropicStatus, rawPreview: anthropicRawText.substring(0, 500) });
+      anthropicStatus = valResp.status;
+      anthropicRawText = await valResp.text();
+      debugLog.push({ step: 'anthropic_response', status: anthropicStatus, rawPreview: anthropicRawText.substring(0, 500) });
 
-        if (!valResp.ok) {
-          scores = { error: 'Anthropic request failed', status: anthropicStatus, body: anthropicRawText };
-          approved = false;
-          continue;
-        }
-
-        let valData;
-        try {
-          valData = JSON.parse(anthropicRawText);
-        } catch (parseErr) {
-          scores = { error: 'Failed to parse Anthropic JSON', step: 'anthropic_json_parse', httpStatus: anthropicStatus, rawResponse: anthropicRawText, parseError: parseErr.message };
-          approved = false;
-          continue;
-        }
-
-        debugLog.push({ step: 'anthropic_parsed', contentLength: valData.content ? valData.content.length : 0 });
-
-        const rawText = valData.content && valData.content[0] && valData.content[0].text;
-        if (!rawText) {
-          scores = { error: 'No text content in Anthropic response', step: 'anthropic_extract_text', httpStatus: anthropicStatus, parsedKeys: Object.keys(valData) };
-          approved = false;
-          continue;
-        }
-
-        debugLog.push({ step: 'anthropic_raw_text', text: rawText });
-
-        let parsedScores;
-        try {
-          const cleaned = rawText.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
-          parsedScores = JSON.parse(cleaned);
-        } catch (parseErr) {
-          scores = { error: 'Failed to parse Claude scores JSON', step: 'scores_json_parse', rawClaudeText: rawText, parseError: parseErr.message };
-          approved = false;
-          continue;
-        }
-
-        scores = parsedScores;
-        approved = !!scores.approved;
-        debugLog.push({ step: 'anthropic_success', approved, scores });
-
-      } catch (err) {
-        scores = { error: 'Exception during Anthropic fetch: ' + err.message, step: 'anthropic_exception', httpStatus: anthropicStatus, rawResponse: anthropicRawText };
+      if (!valResp.ok) {
+        scores = { error: 'Anthropic request failed', status: anthropicStatus, body: anthropicRawText };
         approved = false;
+        continue;
       }
-    }
 
-    results.push({
-      sceneId,
-      imageBase64,
-      approved,
-      needsReview: !approved,
-      scores,
-      attempts,
-      debugLog
-    });
+      let valData;
+      try {
+        valData = JSON.parse(anthropicRawText);
+      } catch (parseErr) {
+        scores = { error: 'Failed to parse Anthropic JSON', httpStatus: anthropicStatus, rawResponse: anthropicRawText, parseError: parseErr.message };
+        approved = false;
+        continue;
+      }
+
+      const rawText = valData.content && valData.content[0] && valData.content[0].text;
+      if (!rawText) {
+        scores = { error: 'No text content in Anthropic response', httpStatus: anthropicStatus };
+        approved = false;
+        continue;
+      }
+
+      debugLog.push({ step: 'anthropic_raw_text', text: rawText });
+
+      let parsedScores;
+      try {
+        const cleaned = rawText.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+        parsedScores = JSON.parse(cleaned);
+      } catch (parseErr) {
+        scores = { error: 'Failed to parse Claude scores JSON', rawClaudeText: rawText, parseError: parseErr.message };
+        approved = false;
+        continue;
+      }
+
+      scores = parsedScores;
+      approved = !!scores.approved;
+      debugLog.push({ step: 'anthropic_success', approved, scores });
+
+    } catch (err) {
+      scores = { error: 'Exception during Anthropic fetch: ' + err.message, step: 'anthropic_exception' };
+      approved = false;
+    }
   }
 
-  return res.status(200).json(results);
+  return res.status(200).json({
+    sceneId,
+    imageBase64,
+    approved,
+    needsReview: !approved,
+    scores,
+    attempts,
+    debugLog
+  });
 };
 
-module.exports.config = { maxDuration: 300 };
+module.exports.config = { maxDuration: 60 };

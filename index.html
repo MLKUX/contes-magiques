@@ -1854,45 +1854,55 @@ function openGenAllModal(storyId) {
 }
 
 async function runGenerateAll(story, scenes) {
-  document.getElementById('genall-subtitle').textContent = 'Génération en cours… (peut prendre quelques minutes)';
   const charDesc = STORY_CHARACTERS[story.id] || '';
-  const payload = {
-    storyId: story.id,
-    scenes: scenes.map(s => ({
-      id: s.id,
-      imagePrompt: s.imagePrompt,
-      sceneText: s.text,
-      characterDescriptions: charDesc
-    })),
-    storyLevel: story.level,
-    maxRetries: 3
-  };
+  const total = scenes.length;
 
-  try {
-    const resp = await fetch('/api/generate-all', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const results = await resp.json();
-    if (!Array.isArray(results)) throw new Error(results.error || 'Réponse invalide');
-    genAllResults = results;
+  for (let i = 0; i < total; i++) {
+    const s = scenes[i];
 
-    // Mettre à jour chaque ligne avec son résultat
-    results.forEach(r => {
-      const score = r.scores && typeof r.scores.overall_score === 'number' ? r.scores.overall_score.toFixed(1) : '?';
-      const el = document.getElementById('gen-status-' + r.sceneId);
-      if (!el) return;
-      if (r.needsReview) el.textContent = '⚠️ À revoir (' + score + '/10)';
-      else if (r.approved) el.textContent = '✅ Approuvée (' + score + '/10)';
-      else el.textContent = '⚠️ À revoir';
-    });
+    // 1. Statut → en cours
+    const statusEl = document.getElementById('gen-status-' + s.id);
+    if (statusEl) statusEl.textContent = '⏳ En cours…';
+    document.getElementById('genall-subtitle').textContent = 'Scène ' + (i + 1) + ' / ' + total + ' — ' + s.id;
+    document.getElementById('genall-bar').style.width = Math.round((i / total) * 100) + '%';
 
-    document.getElementById('genall-bar').style.width = '100%';
-    showGenAllSummary(results, scenes.length);
-  } catch (err) {
-    document.getElementById('genall-subtitle').textContent = '❌ Erreur : ' + err.message;
+    // 2. Appel API pour cette scène uniquement
+    let result;
+    try {
+      const resp = await fetch('/api/generate-all', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          scene: {
+            id: s.id,
+            imagePrompt: s.imagePrompt,
+            sceneText: s.text,
+            characterDescriptions: charDesc
+          },
+          storyLevel: story.level,
+          maxRetries: 3
+        })
+      });
+      result = await resp.json();
+      if (result.error) throw new Error(result.error);
+    } catch (err) {
+      result = { sceneId: s.id, imageBase64: null, approved: false, needsReview: true, scores: { error: err.message }, attempts: 0 };
+    }
+
+    // 3. Mise à jour du statut
+    const score = result.scores && typeof result.scores.overall_score === 'number' ? result.scores.overall_score.toFixed(1) : '?';
+    if (statusEl) {
+      if (result.approved) statusEl.textContent = '✅ Approuvée (' + score + '/10)';
+      else statusEl.textContent = '⚠️ À revoir (' + score + '/10)';
+    }
+
+    // 4. Stocker le résultat
+    genAllResults.push(result);
   }
+
+  // 5. Barre à 100% et résumé final
+  document.getElementById('genall-bar').style.width = '100%';
+  showGenAllSummary(genAllResults, total);
 }
 
 function showGenAllSummary(results, total) {
