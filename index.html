@@ -232,6 +232,7 @@
 
   /* ── LANDING PAGE ─────────────────────────────────────── */
   #landing-screen{overflow-y:auto;overflow-x:hidden;height:100vh;background:var(--theme-bg);}
+  .lp-mute-btn{position:fixed;top:14px;right:14px;z-index:200;}
   .lp-hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
   .lp-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,var(--theme-glow1) 0%,transparent 60%),radial-gradient(ellipse at 70% 70%,var(--theme-glow2) 0%,transparent 60%);pointer-events:none;}
   .lp-stars{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
@@ -281,6 +282,7 @@
 
 <!-- LANDING PAGE -->
 <div id="landing-screen">
+  <button class="header-btn lp-mute-btn" id="mute-btn-landing" onclick="toggleMute()" title="Son">🔊</button>
   <!-- HERO -->
   <section class="lp-hero">
     <div class="lp-stars" id="lp-stars"></div>
@@ -1186,7 +1188,6 @@ function startApp(){
   document.getElementById('user-avatar').textContent=name[0].toUpperCase();
   document.getElementById('landing-screen').style.display='none';
   document.getElementById('app').style.display='block';
-  initAudio();
   updateMuteUI();
   renderLibrary();
 }
@@ -2015,11 +2016,13 @@ function initAudio() {
 
 function updateMuteUI() {
   const icon = muted ? '&#x1F507;' : '&#x1F50A;';
-  const b1 = document.getElementById('mute-btn-lib');
-  const b2 = document.getElementById('mute-btn-story');
-  if (b1) b1.innerHTML = icon;
-  if (b2) b2.innerHTML = icon;
+  ['mute-btn-lib','mute-btn-story','mute-btn-landing'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.innerHTML = icon;
+  });
 }
+
+document.addEventListener('click', () => initAudio(), {once: true});
 
 function toggleMute() {
   muted = !muted;
@@ -2119,7 +2122,6 @@ function initStars() {
     document.getElementById('landing-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     document.getElementById('user-avatar').textContent = saved[0].toUpperCase();
-    initAudio();
     renderLibrary();
   }
 })();
