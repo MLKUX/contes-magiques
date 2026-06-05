@@ -50,10 +50,15 @@ module.exports = async function handler(req, res) {
     const storyPattern = new RegExp("id:\\s*['\"]" + escapeRegex(storyId) + "['\"]");
     const storyMatch = storyPattern.exec(content);
     if (!storyMatch) {
+      const kikoIdx = content.indexOf('kiko-etoile');
       return res.status(404).json({
         error: 'Story not found in index.html',
         storyId,
-        searchedPattern: storyPattern.source
+        searchedPattern: storyPattern.source,
+        contentLength: content.length,
+        contentFirst100: content.substring(0, 100),
+        kikoEtoileFound: kikoIdx !== -1,
+        kikoEtoilePosition: kikoIdx
       });
     }
     const storyStart = storyMatch.index;
