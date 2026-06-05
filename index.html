@@ -3,16 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contes Magiques</title>
+<title>Liito — Histoires Interactives</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --gold:#FFD700; --purple:#6B21A8; --purple-light:#A855F7;
-    --teal:#0D9488; --dark:#07071a; --card-bg:rgba(255,255,255,0.07);
+    --theme-bg:#07071a;
+    --theme-primary:#6B21A8;
+    --theme-secondary:#A855F7;
+    --theme-accent:#FFD700;
+    --theme-glow1:rgba(107,33,168,0.35);
+    --theme-glow2:rgba(13,148,136,0.2);
+    --card-bg:rgba(255,255,255,0.07);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:'Nunito',sans-serif;background:var(--dark);color:#F1F0FF;min-height:100vh;overflow-x:hidden;}
-  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(107,33,168,0.3) 0%,transparent 55%),radial-gradient(ellipse at 80% 80%,rgba(13,148,136,0.2) 0%,transparent 55%);pointer-events:none;z-index:0;}
+  body{font-family:'Nunito',sans-serif;background:var(--theme-bg);color:#F1F0FF;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,var(--theme-glow1) 0%,transparent 55%),radial-gradient(ellipse at 80% 80%,var(--theme-glow2) 0%,transparent 55%);pointer-events:none;z-index:0;}
 
   /* SETUP */
   #setup-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:100;background:radial-gradient(ellipse at center,#1a0a2e 0%,#07071a 100%);}
@@ -34,7 +39,7 @@
   #library-screen{padding:28px 20px;max-width:920px;margin:0 auto;}
   .library-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;}
   .library-header h1{font-family:'Fredoka One',cursive;font-size:1.85rem;background:linear-gradient(135deg,#FFD700,#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-  .avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--purple-light),var(--teal));display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:1rem;border:2px solid rgba(255,215,0,0.4);}
+  .avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--theme-secondary),var(--theme-secondary));display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:1rem;border:2px solid rgba(255,215,0,0.4);}
   .level-tabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
   .level-tab{padding:7px 18px;border-radius:999px;border:1px solid rgba(255,255,255,0.14);background:transparent;color:rgba(255,255,255,0.45);font-family:'Nunito',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;transition:all 0.2s;}
   .level-tab.active{background:linear-gradient(135deg,#6B21A8,#A855F7);border-color:transparent;color:white;box-shadow:0 2px 16px rgba(168,85,247,0.4);}
@@ -49,7 +54,7 @@
   .story-info{padding:14px 16px 18px;}
   .story-level{display:inline-block;font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;padding:3px 9px;border-radius:999px;margin-bottom:7px;}
   .level-eveil{background:rgba(255,192,203,0.2);color:#FFB6C1;border:1px solid rgba(255,182,193,0.3);}
-  .level-explorateur{background:rgba(255,215,0,0.15);color:#FFD700;border:1px solid rgba(255,215,0,0.3);}
+  .level-explorateur{background:rgba(255,215,0,0.15);color:#FFD700;border:1px solid rgba(255,215,0,0.3);}
   .story-title{font-family:'Fredoka One',cursive;font-size:1.1rem;color:white;margin-bottom:5px;}
   .story-desc{font-size:0.8rem;color:rgba(255,255,255,0.5);line-height:1.5;}
 
@@ -200,34 +205,148 @@
   .btn-replay:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,215,0,0.55);}
   .btn-library{background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.3);border-radius:13px;padding:11px 24px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.88rem;color:rgba(255,255,255,0.8);cursor:pointer;transition:all 0.2s;display:block;width:100%;max-width:260px;backdrop-filter:blur(8px);}
   .btn-library:hover{border-color:rgba(255,255,255,0.6);color:white;}
+
+  /* ── HEADER BUTTONS ──────────────────────────────────── */
+  .header-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);color:white;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;flex-shrink:0;}
+  .header-btn:hover{background:rgba(255,255,255,0.18);}
+  .library-header-actions{display:flex;align-items:center;gap:8px;}
+
+  /* ── THEME MODAL ──────────────────────────────────────── */
+  #theme-modal{display:none;position:fixed;inset:0;z-index:300;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);}
+  #theme-modal.show{display:flex;}
+  .theme-box{background:linear-gradient(160deg,#14002e,#0d0520);border:1px solid rgba(255,215,0,0.2);border-radius:20px;padding:28px 24px;width:100%;max-width:420px;text-align:center;}
+  .theme-box h3{font-family:'Fredoka One',cursive;font-size:1.3rem;color:white;margin-bottom:20px;}
+  .theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+  .theme-item{cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;padding:10px 6px;border-radius:12px;border:2px solid transparent;transition:border-color 0.2s;}
+  .theme-item:hover{background:rgba(255,255,255,0.06);}
+  .theme-item.active{border-color:rgba(255,215,0,0.8);}
+  .theme-circle{width:48px;height:48px;border-radius:50%;position:relative;flex-shrink:0;}
+  .theme-lock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1rem;background:rgba(0,0,0,0.45);border-radius:50%;}
+  .theme-name{font-size:0.68rem;color:rgba(255,255,255,0.7);font-weight:700;text-align:center;}
+  .btn-theme-close{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:9px 22px;color:rgba(255,255,255,0.7);font-family:'Nunito',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;transition:background 0.2s;}
+  .btn-theme-close:hover{background:rgba(255,255,255,0.15);}
+
+  /* ── STORY MUTE BUTTON ────────────────────────────────── */
+  .story-mute-btn{position:absolute;top:18px;right:18px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);color:white;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:background 0.2s;z-index:10;}
+  .story-mute-btn:hover{background:rgba(255,255,255,0.15);}
+
+  /* ── LANDING PAGE ─────────────────────────────────────── */
+  #landing-screen{overflow-y:auto;overflow-x:hidden;height:100vh;background:var(--theme-bg);}
+  .lp-hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+  .lp-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,var(--theme-glow1) 0%,transparent 60%),radial-gradient(ellipse at 70% 70%,var(--theme-glow2) 0%,transparent 60%);pointer-events:none;}
+  .lp-stars{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+  .lp-star{position:absolute;background:white;border-radius:50%;animation:lp-twinkle var(--dur,3s) ease-in-out infinite var(--delay,0s);}
+  @keyframes lp-twinkle{0%,100%{opacity:0.15;transform:scale(1);}50%{opacity:1;transform:scale(1.5);}}
+  .lp-hero-content{position:relative;z-index:1;text-align:center;padding:40px 24px;max-width:600px;}
+  .lp-logo{font-family:'Fredoka One',cursive;font-size:clamp(3rem,10vw,5.5rem);background:linear-gradient(135deg,var(--theme-accent),#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:16px;animation:lp-in 0.8s ease both;}
+  .lp-tagline{font-family:'Fredoka One',cursive;font-size:clamp(1.1rem,3.5vw,1.7rem);color:white;line-height:1.4;margin-bottom:10px;animation:lp-in 0.8s 0.2s ease both;opacity:0;}
+  .lp-subtitle{font-size:0.9rem;color:rgba(255,255,255,0.5);margin-bottom:28px;animation:lp-in 0.8s 0.4s ease both;opacity:0;}
+  .lp-badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:36px;animation:lp-in 0.8s 0.6s ease both;opacity:0;}
+  .lp-badge{padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:800;font-family:'Nunito',sans-serif;}
+  .lp-badge-eveil{background:rgba(255,182,193,0.2);color:#FFB6C1;border:1px solid rgba(255,182,193,0.3);}
+  .lp-badge-explorer{background:rgba(255,215,0,0.12);color:var(--theme-accent);border:1px solid rgba(255,215,0,0.25);}
+  .btn-lp-cta{display:inline-block;background:linear-gradient(135deg,var(--theme-accent),#FF6B35);border:none;border-radius:14px;padding:16px 38px;font-family:'Fredoka One',cursive;font-size:1.2rem;color:#1a0a2e;cursor:pointer;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 24px rgba(255,215,0,0.3);animation:lp-in 0.8s 0.8s ease both;opacity:0;}
+  .btn-lp-cta:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(255,215,0,0.45);}
+  @keyframes lp-in{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+  .lp-how{padding:80px 24px;text-align:center;background:rgba(255,255,255,0.02);}
+  .lp-section-title{font-family:'Fredoka One',cursive;font-size:1.6rem;color:white;margin-bottom:32px;}
+  .lp-how-cards{display:flex;gap:18px;max-width:820px;margin:0 auto;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory;}
+  .lp-how-cards::-webkit-scrollbar{height:4px;}
+  .lp-how-cards::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:2px;}
+  .lp-how-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:28px 22px;min-width:220px;flex:1;scroll-snap-align:start;}
+  .lp-how-icon{font-size:2.2rem;margin-bottom:12px;}
+  .lp-how-title{font-family:'Fredoka One',cursive;font-size:1.1rem;color:white;margin-bottom:8px;}
+  .lp-how-desc{font-size:0.82rem;color:rgba(255,255,255,0.55);line-height:1.6;}
+  .lp-name-section{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:60px 24px;}
+  .lp-name-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:40px 32px;width:100%;max-width:440px;text-align:center;backdrop-filter:blur(16px);}
+  .lp-name-title{font-family:'Fredoka One',cursive;font-size:1.6rem;color:white;margin-bottom:20px;}
+  .lp-name-label{display:block;text-align:left;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:rgba(255,215,0,0.8);margin-bottom:7px;}
+  .lp-name-card input{width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:13px 16px;color:white;font-family:'Nunito',sans-serif;font-size:0.9rem;margin-bottom:18px;outline:none;transition:border-color 0.2s;box-sizing:border-box;}
+  .lp-name-card input:focus{border-color:rgba(255,215,0,0.5);}
+  .lp-name-hint{font-size:0.78rem;color:rgba(255,255,255,0.35);margin-top:10px;}
+
+  /* ── COMPLETION ───────────────────────────────────────── */
+  .story-completion{font-size:0.72rem;color:rgba(255,255,255,0.4);margin-top:4px;}
+  .story-completion.full{color:var(--theme-accent);font-weight:800;}
+
+  @media(max-width:600px){
+    .lp-how-cards{padding:0 24px 12px;}
+    .lp-name-card{padding:28px 20px;}
+    .library-header h1{font-size:1.4rem;}
+  }
+
 </style>
 </head>
 <body>
 
-<!-- SETUP -->
-<div id="setup-screen">
-  <div class="setup-box">
-    <span class="setup-emoji">✨</span>
-    <h1>Contes Magiques</h1>
-    <p>Entre ton prénom pour commencer l'aventure !</p>
-    <label>Ton prénom</label>
-    <input type="text" id="name-input" placeholder="Ex : Léo" maxlength="20"/>
-    <button class="btn-start" onclick="startApp()">Commencer l'aventure 🚀</button>
-    <div id="setup-error"></div>
-  </div>
+<!-- LANDING PAGE -->
+<div id="landing-screen">
+  <!-- HERO -->
+  <section class="lp-hero">
+    <div class="lp-stars" id="lp-stars"></div>
+    <div class="lp-hero-content">
+      <div class="lp-logo">Liito ✨</div>
+      <div class="lp-tagline">Des histoires magiques<br>qui grandissent avec toi</div>
+      <div class="lp-subtitle">Pour les petits curieux de 3 à 8 ans</div>
+      <div class="lp-badges">
+        <span class="lp-badge lp-badge-eveil">🌸 Éveil 3-5 ans</span>
+        <span class="lp-badge lp-badge-explorer">⭐ Explorateur 6-8 ans</span>
+      </div>
+      <button class="btn-lp-cta" onclick="document.getElementById('lp-name-section').scrollIntoView({behavior:'smooth'})">Commencer ✨</button>
+    </div>
+  </section>
+  <!-- COMMENT ÇA MARCHE -->
+  <section class="lp-how">
+    <h2 class="lp-section-title">Comment ça marche ?</h2>
+    <div class="lp-how-cards">
+      <div class="lp-how-card">
+        <div class="lp-how-icon">🎯</div>
+        <div class="lp-how-title">Choisis ton histoire</div>
+        <div class="lp-how-desc">Deux niveaux adaptés à l'âge de ton enfant</div>
+      </div>
+      <div class="lp-how-card">
+        <div class="lp-how-icon">📖</div>
+        <div class="lp-how-title">Vis l'aventure</div>
+        <div class="lp-how-desc">Chaque choix change l'histoire. À toi de décider !</div>
+      </div>
+      <div class="lp-how-card">
+        <div class="lp-how-icon">⭐</div>
+        <div class="lp-how-title">Découvre ta fin</div>
+        <div class="lp-how-desc">Des dizaines de fins différentes à explorer</div>
+      </div>
+    </div>
+  </section>
+  <!-- PRÉNOM -->
+  <section class="lp-name-section" id="lp-name-section">
+    <div class="lp-name-card">
+      <div class="lp-name-title">Comment tu t'appelles ?</div>
+      <label class="lp-name-label">Ton prénom</label>
+      <input type="text" id="name-input" placeholder="Ex : Léo" maxlength="20"/>
+      <button class="btn-start" onclick="startApp()">C'est parti ! 🚀</button>
+      <div class="lp-name-hint">Tes aventures t'attendent</div>
+      <div id="setup-error"></div>
+    </div>
+  </section>
 </div>
+
+<audio id="bg-music" src="/sounds/music-bg.mp3" loop preload="none"></audio>
 
 <!-- APP -->
 <div id="app">
   <div id="library-screen">
     <div class="library-header">
-      <h1>✨ Contes Magiques</h1>
-      <div class="avatar" id="user-avatar">?</div>
+      <h1>✨ Liito</h1>
+      <div class="library-header-actions">
+        <button class="header-btn" id="mute-btn-lib" onclick="toggleMute()" title="Son">🔊</button>
+        <button class="header-btn" onclick="renderThemeGrid();openThemeModal()" title="Thème">🎨</button>
+        <button class="header-btn" onclick="changeName()" title="Changer de prénom" style="font-size:0.85rem">✏️</button>
+        <div class="avatar" id="user-avatar">?</div>
+      </div>
     </div>
     <div class="level-tabs">
       <button class="level-tab active" onclick="filterLevel('all',this)">Tous</button>
       <button class="level-tab" onclick="filterLevel('eveil',this)">🌸 Éveil (3-5 ans)</button>
-      <button class="level-tab" onclick="filterLevel('explorateur',this)">⭐ Explorateur (6-8 ans)</button>
+      <button class="level-tab" onclick="filterLevel('explorateur',this)">⭐ Explorateur (6-8 ans)</button>
     </div>
     <div class="stories-grid" id="stories-grid"></div>
   </div>
@@ -236,6 +355,7 @@
     <div id="story-svg-bg"></div>
     <div class="story-gradient"></div>
     <button class="story-back-btn" onclick="closeStory()">←</button>
+  <button class="story-mute-btn" id="mute-btn-story" onclick="toggleMute()">🔊</button>
     <div class="story-progress" id="story-progress"></div>
     <!-- Hotspots injected here dynamically -->
     <div id="hotspots-layer"></div>
@@ -285,6 +405,15 @@
       <button class="btn-genall-save" id="btn-genall-save" onclick="saveApprovedAll()">✅ Sauvegarder les images approuvées</button>
     </div>
     <button class="btn-genall-close" onclick="closeGenModal()">✕ Fermer</button>
+  </div>
+</div>
+
+<!-- THEME MODAL -->
+<div id="theme-modal">
+  <div class="theme-box">
+    <h3>🎨 Choisis ton thème</h3>
+    <div class="theme-grid" id="theme-grid"></div>
+    <button class="btn-theme-close" onclick="closeThemeModal()">Fermer</button>
   </div>
 </div>
 
@@ -1053,9 +1182,12 @@ function startApp(){
   if(!name){err.textContent='Entre ton prénom pour commencer !';return;}
   err.textContent='';
   userName=name;
+  localStorage.setItem('liito-username',name);
   document.getElementById('user-avatar').textContent=name[0].toUpperCase();
-  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('landing-screen').style.display='none';
   document.getElementById('app').style.display='block';
+  initAudio();
+  updateMuteUI();
   renderLibrary();
 }
 document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')startApp();});
@@ -1069,6 +1201,9 @@ function renderLibrary(){
     const isPremium=!!s.isPremium;
     const onclick=isPremium?'showPremiumModal()':'openStory(\''+s.id+'\')';
     const premiumOverlay=isPremium?'<div class="premium-overlay">🔒</div><div class="premium-badge">✨ Premium</div>':'';
+    const _te=s.scenes.filter(sc=>sc.end).length;
+    const _de=countCompletedForStory(s.id);
+    const _ch=_te>0?('<div class="story-completion'+(_de>=_te?' full':'')+'">'+(_de>=_te?'&#x2705; Complété !':_de+'/'+_te+' fins ⭐')+'</div>'):''; 
     const genAllBtn=IS_ADMIN?`<button class="story-card-genall" onclick="event.stopPropagation();openGenAllModal('${s.id}')">🎨 Générer toute l'histoire</button>`:'';
     return `<div class="story-card${isPremium?' is-premium':''}" onclick="${onclick}">
       <div class="story-thumb ${s.thumb}" style="position:relative;">
@@ -1079,6 +1214,7 @@ function renderLibrary(){
         <span class="story-level level-${s.level}">${levelLabel(s.level)}</span>
         <div class="story-title">${s.title}</div>
         <div class="story-desc">${s.desc}</div>
+        ${_ch}
         ${genAllBtn}
       </div>
     </div>`;
@@ -1096,6 +1232,7 @@ function filterLevel(level,btn){
 // STORY
 // ═══════════════════════════════════
 function openStory(storyId){
+  SFX.open();
   currentStory=STORIES.find(s=>s.id===storyId);
   currentSceneId=currentStory.scenes[0].id;
   visitedScenes=[];
@@ -1107,6 +1244,7 @@ function openStory(storyId){
 function closeStory(){
   document.getElementById('story-screen').style.display='none';
   document.getElementById('library-screen').style.display='block';
+  const _bgm=document.getElementById('bg-music');if(_bgm&&!muted&&audioInited)_bgm.play().catch(()=>{});
 }
 function replayStory(){
   document.getElementById('end-overlay').classList.remove('show');
@@ -1114,6 +1252,7 @@ function replayStory(){
 }
 
 function renderScene(sceneId){
+  SFX.transition();
   const scene=currentStory.scenes.find(s=>s.id===sceneId);
   if(!scene)return;
   currentSceneId=sceneId;
@@ -1196,7 +1335,7 @@ function renderScene(sceneId){
       btn.style.top=c.pos.top;
       btn.style.animationDelay=(i*0.12)+'s';
       btn.innerHTML=`<span class="hotspot-icon">${String.fromCharCode(65+i)}</span>${c.text}`;
-      btn.onclick=()=>makeChoice(c.next);
+      btn.onclick=()=>{SFX.click();makeChoice(c.next);};
       hl.appendChild(btn);
     });
   }
@@ -1506,7 +1645,7 @@ const END_ILLUSTRATIONS = {
 // ═══════════════════════════════════
 const STORY_CHARACTERS = {
   'kiko-etoile':   'Kiko: small round orange fox cub, big simple eyes, chubby cheeks, tiny round nose. Lumi: tiny glowing yellow star with simple smiley face, soft warm glow. Hana: small round brown hedgehog with simple bright eyes and warm smile.',
-  'foret-secrets': 'Leo: curly-haired boy in red jacket and blue jeans. Madame Hibou: round owl with round spectacles. Red fox with amber eyes.',
+  'foret-secrets': 'Leo: curly-haired boy in red jacket and blue jeans. Madame Hibou: round owl with round spectacles. Red fox with amber eyes.',
 };
 
 let genAllResults = [];
@@ -1772,6 +1911,9 @@ closeStory=function(){
 };
 
 function showEnd(end){
+  SFX.success();
+  if(currentStory&&currentSceneId)saveCompleted(currentStory.id,currentSceneId);
+  const _bgm=document.getElementById('bg-music');if(_bgm)_bgm.pause();
   document.getElementById('end-star').textContent=end.star;
   document.getElementById('end-title').textContent=end.title;
   document.getElementById('end-text').innerHTML=end.text.split('\n').filter(l=>l.trim()).map(l=>`<span style="display:block;margin-bottom:6px;">${l}</span>`).join('');
@@ -1788,6 +1930,181 @@ function showEnd(end){
   }
   document.getElementById('end-overlay').classList.add('show');
 }
+
+// ════════════════════════════════════
+// THEMES
+// ════════════════════════════════════
+const THEMES = {
+  'nuit-magique':    {name:'Nuit Magique',      bg:'#07071a',primary:'#6B21A8',secondary:'#A855F7',accent:'#FFD700', glow1:'rgba(107,33,168,0.35)',glow2:'rgba(13,148,136,0.2)',   free:true},
+  'foret-enchantee':{name:'For\u00eat Enchant\u00e9e',bg:'#071a0a',primary:'#166534',secondary:'#22c55e',accent:'#fbbf24',glow1:'rgba(22,101,52,0.35)', glow2:'rgba(34,197,94,0.2)',   free:true},
+  'ocean-profond':  {name:'Oc\u00e9an Profond',  bg:'#030f1a',primary:'#1e40af',secondary:'#3b82f6',accent:'#38bdf8',glow1:'rgba(30,64,175,0.35)', glow2:'rgba(59,130,246,0.2)',  free:true},
+  'aurore-boreale': {name:'Aurore Bor\u00e9ale', bg:'#0a0a1a',primary:'#6d28d9',secondary:'#ec4899',accent:'#34d399',glow1:'rgba(109,40,217,0.35)',glow2:'rgba(236,72,153,0.2)',  free:false},
+  'coucher-soleil': {name:'Coucher de Soleil',  bg:'#1a0a07',primary:'#c2410c',secondary:'#f97316',accent:'#fcd34d',glow1:'rgba(194,65,12,0.35)', glow2:'rgba(249,115,22,0.2)',  free:false},
+  'cerisier':       {name:'Cerisier en Fleurs', bg:'#1a071a',primary:'#9d174d',secondary:'#ec4899',accent:'#fbcfe8',glow1:'rgba(157,23,77,0.3)',  glow2:'rgba(236,72,153,0.2)', free:false}
+};
+let currentTheme = localStorage.getItem('liito-theme') || 'nuit-magique';
+
+function applyTheme(id, save) {
+  const t = THEMES[id] || THEMES['nuit-magique'];
+  const r = document.documentElement;
+  r.style.setProperty('--theme-bg', t.bg);
+  r.style.setProperty('--theme-primary', t.primary);
+  r.style.setProperty('--theme-secondary', t.secondary);
+  r.style.setProperty('--theme-accent', t.accent);
+  r.style.setProperty('--theme-glow1', t.glow1);
+  r.style.setProperty('--theme-glow2', t.glow2);
+  document.body.style.backgroundColor = t.bg;
+  currentTheme = id;
+  if (save !== false) localStorage.setItem('liito-theme', id);
+  document.querySelectorAll('.theme-item').forEach(el => el.classList.toggle('active', el.dataset.theme === id));
+}
+
+function renderThemeGrid() {
+  const grid = document.getElementById('theme-grid');
+  if (!grid) return;
+  grid.innerHTML = Object.entries(THEMES).map(([id, t]) => {
+    const locked = !t.free;
+    return '<div class="theme-item' + (id===currentTheme?' active':'') + '" data-theme="' + id + '"'
+      + ' onclick="' + (locked ? 'closeThemeModal();showPremiumModal()' : "selectTheme('" + id + "')") + '">'
+      + '<div class="theme-circle" style="background:linear-gradient(135deg,' + t.primary + ',' + t.secondary + ');">'
+      + (locked ? '<div class="theme-lock">&#x1F512;</div>' : '')
+      + '</div><div class="theme-name">' + t.name + '</div></div>';
+  }).join('');
+}
+
+function openThemeModal()  { document.getElementById('theme-modal').classList.add('show');    }
+function closeThemeModal() { document.getElementById('theme-modal').classList.remove('show'); }
+function selectTheme(id) {
+  if (!THEMES[id] || !THEMES[id].free) { closeThemeModal(); showPremiumModal(); return; }
+  applyTheme(id);
+  closeThemeModal();
+}
+
+// ════════════════════════════════════
+// AUDIO
+// ════════════════════════════════════
+let audioCtx = null;
+let audioInited = false;
+let muted = localStorage.getItem('liito-muted') === 'true';
+
+function initAudio() {
+  if (audioInited) return;
+  audioInited = true;
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return; }
+  const bgm = document.getElementById('bg-music');
+  if (bgm) { bgm.volume = 0.3; bgm.muted = muted; bgm.play().catch(() => {}); }
+}
+
+function updateMuteUI() {
+  const icon = muted ? '&#x1F507;' : '&#x1F50A;';
+  const b1 = document.getElementById('mute-btn-lib');
+  const b2 = document.getElementById('mute-btn-story');
+  if (b1) b1.innerHTML = icon;
+  if (b2) b2.innerHTML = icon;
+}
+
+function toggleMute() {
+  muted = !muted;
+  localStorage.setItem('liito-muted', muted);
+  const bgm = document.getElementById('bg-music');
+  if (bgm) bgm.muted = muted;
+  updateMuteUI();
+}
+
+const SFX = {
+  _p(f1, f2, dur, gain) {
+    if (!audioCtx || muted) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.type = 'sine';
+    o.frequency.setValueAtTime(f1, audioCtx.currentTime);
+    if (f2 !== f1) o.frequency.linearRampToValueAtTime(f2, audioCtx.currentTime + dur);
+    g.gain.setValueAtTime(gain, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.start(); o.stop(audioCtx.currentTime + dur + 0.01);
+  },
+  click()      { this._p(880, 1100, 0.15, 0.25); },
+  transition() { this._p(520, 260,  0.35, 0.12); },
+  success() {
+    if (!audioCtx || muted) return;
+    [261, 329, 392, 523].forEach((f, i) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.connect(g); g.connect(audioCtx.destination);
+      o.type = 'sine'; o.frequency.value = f;
+      const t = audioCtx.currentTime + i * 0.18;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.2, t + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      o.start(t); o.stop(t + 0.22);
+    });
+  },
+  open() {
+    if (!audioCtx || muted) return;
+    [261, 329, 392].forEach(f => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.connect(g); g.connect(audioCtx.destination);
+      o.type = 'sine'; o.frequency.value = f;
+      const t = audioCtx.currentTime;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.1, t + 0.15);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      o.start(t); o.stop(t + 0.55);
+    });
+  }
+};
+
+// ════════════════════════════════════
+// PROFILE PERSISTENCE
+// ════════════════════════════════════
+function getCompleted() {
+  try { return JSON.parse(localStorage.getItem('liito-completed') || '[]'); } catch { return []; }
+}
+function saveCompleted(storyId, sceneId) {
+  const arr = getCompleted(), key = storyId + '/' + sceneId;
+  if (!arr.includes(key)) { arr.push(key); localStorage.setItem('liito-completed', JSON.stringify(arr)); }
+}
+function countCompletedForStory(storyId) {
+  return getCompleted().filter(k => k.startsWith(storyId + '/')).length;
+}
+function changeName() {
+  localStorage.removeItem('liito-username');
+  document.getElementById('app').style.display = 'none';
+  const ls = document.getElementById('landing-screen');
+  ls.style.display = 'block'; ls.scrollTop = 0;
+}
+
+// ════════════════════════════════════
+// STARS ANIMATION
+// ════════════════════════════════════
+function initStars() {
+  const c = document.getElementById('lp-stars');
+  if (!c) return;
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('span');
+    s.className = 'lp-star';
+    const sz = (Math.random() * 2 + 0.5).toFixed(1);
+    s.style.cssText = 'width:' + sz + 'px;height:' + sz + 'px;left:' + Math.round(Math.random()*100) + '%;top:' + Math.round(Math.random()*100) + '%;--dur:' + (2 + Math.random()*4).toFixed(1) + 's;--delay:-' + (Math.random()*5).toFixed(1) + 's;';
+    c.appendChild(s);
+  }
+}
+
+// ════════════════════════════════════
+// INITIALISATION
+// ════════════════════════════════════
+(function init() {
+  applyTheme(currentTheme, false);
+  updateMuteUI();
+  initStars();
+  const saved = localStorage.getItem('liito-username');
+  if (saved) {
+    userName = saved;
+    document.getElementById('landing-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('user-avatar').textContent = saved[0].toUpperCase();
+    renderLibrary();
+  }
+})();
+
 </script>
 </body>
 </html>
