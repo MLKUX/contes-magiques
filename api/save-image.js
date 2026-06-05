@@ -14,6 +14,52 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // ── Route de debug GET ?debug=true ──────────────────────────────────────────
+  if (req.method === 'GET' && req.query && req.query.debug === 'true') {
+    const debugStoryId = req.query.storyId || 'kiko-etoile';
+    const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+    const GITHUB_REPO  = process.env.GITHUB_REPO;
+    if (!GITHUB_TOKEN || !GITHUB_REPO) {
+      return res.status(500).json({ error: 'GITHUB_TOKEN or GITHUB_REPO not configured' });
+    }
+    const API = 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/index.html';
+    const headers = {
+      'Authorization': 'Bearer ' + GITHUB_TOKEN,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    };
+    try {
+      const getRes = await fetch(API, { headers });
+      if (!getRes.ok) {
+        const err = await getRes.json();
+        return res.status(500).json({ error: 'GitHub GET failed', details: err });
+      }
+      const fileData = await getRes.json();
+      const content = Buffer.from(fileData.content, 'base64').toString('utf8');
+
+      const idx = content.indexOf(debugStoryId);
+      const before = idx > -1 ? content.substring(Math.max(0, idx - 50), idx) : null;
+      const after  = idx > -1 ? content.substring(idx, idx + 150) : null;
+
+      const storyPattern = new RegExp("id:\\s*['\"]" + escapeRegex(debugStoryId) + "['\"]");
+      const storyMatch = storyPattern.exec(content);
+
+      return res.status(200).json({
+        storyId: debugStoryId,
+        contentLength: content.length,
+        contentFirst100: content.substring(0, 100),
+        indexOf: idx,
+        context: { before, after },
+        regexPattern: storyPattern.source,
+        regexMatch: storyMatch ? storyMatch[0] : null,
+        regexPosition: storyMatch ? storyMatch.index : null
+      });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { storyId, sceneId, imageBase64 } = req.body || {};
