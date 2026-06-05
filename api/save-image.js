@@ -8,9 +8,43 @@ function escapeRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// Lecture en deux étapes pour supporter les gros fichiers (>1 MB)
+// Étape 1 : /contents/index.html → sha du fichier
+// Étape 2 : /git/blobs/{sha} avec Accept raw → contenu brut
+async function readIndexHtml(GITHUB_REPO, GITHUB_TOKEN) {
+  const baseHeaders = {
+    'Authorization': 'Bearer ' + GITHUB_TOKEN,
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+  const CONTENTS_URL = 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/index.html';
+
+  // Étape 1 : récupérer les métadonnées (sha)
+  const metaRes = await fetch(CONTENTS_URL, {
+    headers: Object.assign({}, baseHeaders, { 'Accept': 'application/vnd.github+json' })
+  });
+  if (!metaRes.ok) {
+    const body = await metaRes.text();
+    throw Object.assign(new Error('GitHub contents fetch failed: ' + metaRes.status), { httpStatus: metaRes.status, body });
+  }
+  const meta = await metaRes.json();
+  const sha = meta.sha;
+
+  // Étape 2 : lire le contenu brut via l'API blobs
+  const blobRes = await fetch(
+    'https://api.github.com/repos/' + GITHUB_REPO + '/git/blobs/' + sha,
+    { headers: Object.assign({}, baseHeaders, { 'Accept': 'application/vnd.github.raw+json' }) }
+  );
+  if (!blobRes.ok) {
+    const body = await blobRes.text();
+    throw Object.assign(new Error('GitHub blob fetch failed: ' + blobRes.status), { httpStatus: blobRes.status, body });
+  }
+  const content = await blobRes.text();
+  return { sha, content };
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -20,51 +54,21 @@ module.exports = async function handler(req, res) {
     const debugStoryId = req.query.storyId || 'kiko-etoile';
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
     const GITHUB_REPO  = process.env.GITHUB_REPO;
-    if (!GITHUB_TOKEN || !GITHUB_REPO) {
-      return res.status(500).json({ error: 'GITHUB_TOKEN or GITHUB_REPO not configured' });
-    }
-    const API = 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/index.html';
-    const headers = {
-      'Authorization': 'Bearer ' + GITHUB_TOKEN,
-      'Accept': 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28'
+
+    const diag = {
+      env: {
+        githubTokenDefined: !!GITHUB_TOKEN,
+        githubRepoDefined:  !!GITHUB_REPO,
+        githubRepoFirst5:   GITHUB_REPO ? GITHUB_REPO.substring(0, 5) : null
+      }
     };
+
+    if (!GITHUB_TOKEN || !GITHUB_REPO) {
+      return res.status(500).json({ error: 'GITHUB_TOKEN or GITHUB_REPO not configured', ...diag });
+    }
+
     try {
-      const getRes = await fetch(API, { headers });
-      const githubStatus = getRes.status;
-      const githubHeaders = {};
-      getRes.headers.forEach((val, key) => { githubHeaders[key] = val; });
-
-      const rawBody = await getRes.text();
-
-      // Diagnostics de base (avant tout parsing)
-      const diag = {
-        env: {
-          githubTokenDefined: !!GITHUB_TOKEN,
-          githubRepoDefined: !!GITHUB_REPO,
-          githubRepoFirst5: GITHUB_REPO ? GITHUB_REPO.substring(0, 5) : null
-        },
-        github: {
-          status: githubStatus,
-          headers: githubHeaders,
-          rawBodyFirst200: rawBody.substring(0, 200)
-        }
-      };
-
-      if (!getRes.ok) {
-        return res.status(500).json({ error: 'GitHub GET failed', ...diag });
-      }
-
-      // Parsing
-      let fileData;
-      try {
-        fileData = JSON.parse(rawBody);
-      } catch (e) {
-        return res.status(500).json({ error: 'Failed to parse GitHub JSON', parseError: e.message, ...diag });
-      }
-
-      const b64Content = fileData.content || '';
-      const content = Buffer.from(b64Content, 'base64').toString('utf8');
+      const { sha, content } = await readIndexHtml(GITHUB_REPO, GITHUB_TOKEN);
 
       const idx = content.indexOf(debugStoryId);
       const before = idx > -1 ? content.substring(Math.max(0, idx - 50), idx) : null;
@@ -75,6 +79,7 @@ module.exports = async function handler(req, res) {
 
       return res.status(200).json({
         ...diag,
+        sha,
         storyId: debugStoryId,
         contentLength: content.length,
         contentFirst100: content.substring(0, 100),
@@ -85,12 +90,13 @@ module.exports = async function handler(req, res) {
         regexPosition: storyMatch ? storyMatch.index : null
       });
     } catch (err) {
-      return res.status(500).json({ error: err.message });
+      return res.status(500).json({ error: err.message, httpStatus: err.httpStatus, body: err.body, ...diag });
     }
   }
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  // ── Route POST : sauvegarder l'image dans index.html ────────────────────────
   const { storyId, sceneId, imageBase64 } = req.body || {};
   if (!storyId || !sceneId || !imageBase64) {
     return res.status(400).json({ error: 'storyId, sceneId and imageBase64 are required' });
@@ -102,26 +108,11 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'GITHUB_TOKEN or GITHUB_REPO not configured' });
   }
 
-  const API = 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/index.html';
-  const headers = {
-    'Authorization': 'Bearer ' + GITHUB_TOKEN,
-    'Accept': 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
-    'Content-Type': 'application/json'
-  };
-
   try {
-    // 1. Récupérer le fichier depuis GitHub
-    const getRes = await fetch(API, { headers });
-    if (!getRes.ok) {
-      const err = await getRes.json();
-      return res.status(500).json({ error: 'GitHub GET failed: ' + (err.message || getRes.status) });
-    }
-    const fileData = await getRes.json();
-    const sha = fileData.sha;
-    const content = Buffer.from(fileData.content, 'base64').toString('utf8');
+    // 1. Lire index.html (deux étapes : sha via /contents, contenu via /git/blobs)
+    const { sha, content } = await readIndexHtml(GITHUB_REPO, GITHUB_TOKEN);
 
-    // 2a. Trouver le début du bloc story (pour borner la recherche)
+    // 2a. Trouver le bloc story
     const storyPattern = new RegExp("id:\\s*['\"]" + escapeRegex(storyId) + "['\"]");
     const storyMatch = storyPattern.exec(content);
     if (!storyMatch) {
@@ -138,80 +129,75 @@ module.exports = async function handler(req, res) {
     }
     const storyStart = storyMatch.index;
 
-    // Trouver le début du prochain story (pour borner la fin)
+    // Borner la fin du bloc story
     const nextStoryPattern = /id:\s*['"][a-z0-9-]+['"],/g;
     nextStoryPattern.lastIndex = storyStart + storyMatch[0].length + 1;
     const nextStoryMatch = nextStoryPattern.exec(content);
     const storyEnd = nextStoryMatch ? nextStoryMatch.index : content.length;
-
     const storyBlock = content.substring(storyStart, storyEnd);
 
     // 2b. Trouver la scène dans le bloc story
-    //     Accepte: id:'sceneId' ou id: 'sceneId' ou id:"sceneId" ou id: "sceneId"
     const scenePattern = new RegExp("id:\\s*['\"]" + escapeRegex(sceneId) + "['\"]");
     const sceneMatch = scenePattern.exec(storyBlock);
-
     if (!sceneMatch) {
-      // Chercher quand même dans tout le fichier pour le debug
       const globalMatch = scenePattern.exec(content);
       const approxIdx = content.indexOf(sceneId);
       const context = approxIdx > -1
         ? content.substring(Math.max(0, approxIdx - 100), approxIdx + 100)
         : '(not found anywhere)';
-
       return res.status(404).json({
         error: 'Scene not found in story block',
-        storyId,
-        sceneId,
+        storyId, sceneId,
         searchedPattern: scenePattern.source,
-        foundInFullFile: globalMatch ? true : false,
+        foundInFullFile: !!globalMatch,
         context200chars: context
       });
     }
 
     const sceneStart = storyStart + sceneMatch.index;
 
-    // Trouver la prochaine scène pour borner la recherche de cachedImage
+    // Borner la fin de la scène
     const nextScenePattern = new RegExp("id:\\s*['\"](?!" + escapeRegex(sceneId) + "['\"])");
     nextScenePattern.lastIndex = sceneMatch.index + sceneMatch[0].length;
     const nextSceneMatch = nextScenePattern.exec(storyBlock);
-    const sceneEnd = nextSceneMatch
-      ? storyStart + nextSceneMatch.index
-      : storyEnd;
-
+    const sceneEnd = nextSceneMatch ? storyStart + nextSceneMatch.index : storyEnd;
     const sceneBlock = content.substring(sceneStart, sceneEnd);
 
-    // 2c. Trouver et remplacer cachedImage dans le bloc de la scène
-    //     Accepte toutes variantes : cachedImage:"" / cachedImage:'' / cachedImage: "" / cachedImage: ''
-    //     Y compris si déjà rempli (re-save)
+    // 2c. Remplacer cachedImage (toutes variantes de guillemets, avec/sans espace)
     const cachedPattern = /cachedImage:\s*["'][^"']*["']/;
     const cachedMatch = cachedPattern.exec(sceneBlock);
-
     if (!cachedMatch) {
       return res.status(404).json({
         error: 'cachedImage field not found in scene block',
-        storyId,
-        sceneId,
+        storyId, sceneId,
         searchedPattern: cachedPattern.source,
         sceneBlockPreview: sceneBlock.substring(0, 300)
       });
     }
 
-    // Remplacer dans le contenu complet
     const cachedAbsoluteIdx = sceneStart + cachedMatch.index;
     const newContent =
       content.substring(0, cachedAbsoluteIdx) +
       'cachedImage:"' + imageBase64 + '"' +
       content.substring(cachedAbsoluteIdx + cachedMatch[0].length);
 
-    // 3. Commit via l'API GitHub
-    const putBody = JSON.stringify({
-      message: 'cache: ' + storyId + '/' + sceneId + ' image validated',
-      content: Buffer.from(newContent, 'utf8').toString('base64'),
-      sha
+    // 3. Écrire via l'API Contents (PUT avec le sha récupéré à l'étape 1)
+    const CONTENTS_URL = 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/index.html';
+    const putRes = await fetch(CONTENTS_URL, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + GITHUB_TOKEN,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: 'cache: ' + storyId + '/' + sceneId + ' image validated',
+        content: Buffer.from(newContent, 'utf8').toString('base64'),
+        sha
+      })
     });
 
-    const putRes = await fetch(API, { method: 'PUT', headers, body: putBody });
     if (!putRes.ok) {
       const err = await putRes.json();
       return res.status(500).json({ error: 'GitHub PUT failed: ' + (err.message || putRes.status) });
@@ -220,6 +206,6 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ success: true });
 
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message, httpStatus: err.httpStatus, body: err.body });
   }
 };
