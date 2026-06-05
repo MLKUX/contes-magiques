@@ -72,6 +72,16 @@
   .btn-cancel{display:block;width:100%;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:13px;padding:12px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.88rem;color:rgba(255,255,255,0.6);cursor:pointer;transition:border-color 0.2s,color 0.2s;}
   .btn-cancel:hover{border-color:rgba(255,255,255,0.45);color:white;}
 
+  /* ADMIN PANEL */
+  #admin-panel{display:none;position:fixed;top:14px;right:14px;z-index:999;background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;backdrop-filter:blur(10px);min-width:170px;font-family:'Nunito',sans-serif;font-size:0.78rem;}
+  #admin-panel.visible{display:block;}
+  #admin-status{font-weight:800;margin-bottom:8px;letter-spacing:0.3px;}
+  .admin-btn{display:block;width:100%;border:none;border-radius:8px;padding:7px 10px;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;cursor:pointer;margin-bottom:5px;transition:opacity 0.2s;}
+  .admin-btn:last-child{margin-bottom:0;}
+  .admin-btn-regen{background:rgba(255,165,0,0.25);color:#FFA500;border:1px solid rgba(255,165,0,0.4);}
+  .admin-btn-save{background:rgba(72,199,116,0.2);color:#48C774;border:1px solid rgba(72,199,116,0.4);}
+  .admin-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
   /* STORY SCREEN */
   #story-screen{display:none;position:fixed;inset:0;z-index:50;overflow:hidden;}
 
@@ -202,6 +212,13 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
+  <div id="admin-status">🔴 SVG fallback</div>
+  <button class="admin-btn admin-btn-regen" onclick="adminRegen()">🔄 Regénérer</button>
+  <button class="admin-btn admin-btn-save" id="admin-save-btn" onclick="adminSave()">✅ Valider</button>
 </div>
 
 <!-- PREMIUM MODAL -->
@@ -1056,43 +1073,43 @@ const STORIES = [
     desc:"Une étoile est tombée du ciel. Kiko le renard veut l'aider !",
     level:'eveil', thumb:'story-thumb-forest', emoji:'⭐',
     scenes:[
-      { id:'s1', imageDesc:"A little fox named Kiko looking up at a glowing star falling from the night sky into a magical forest, Pixar 3D animation style, warm magical atmosphere, vibrant colors", text:"Kiko voit une lumière tomber du ciel. C'est une petite étoile !",
+      { id:'s1', imagePrompt:"Pixar 3D animated movie style. CHARACTERS: Kiko is always a small cute orange fox cub, big expressive brown eyes, soft fluffy rounded face, same design every scene. Lumi is always a small glowing yellow star with a gentle sad face and soft warm aura, same design every scene. COLOR PALETTE: deep midnight blue backgrounds, warm amber-orange for Kiko, soft golden glow for Lumi. Cinematic depth of field, bokeh background, volumetric god rays through trees. No text, no watermark. SCENE: Lumi falls from the night sky as a trail of golden light into the forest below. FOREGROUND: Dewy forest floor with tiny wildflowers and moss. MIDGROUND: Kiko the orange fox cub stands on a mossy path, head tilted upward, eyes wide with amazement. BACKGROUND: Ancient magical forest, towering trees, deep midnight blue sky with scattered stars. MOOD: Wonder and curiosity, warm amber against deep midnight blue, starlight trails.", cachedImage:"", text:"Kiko voit une lumière tomber du ciel. C'est une petite étoile !",
         choices:[
           {text:"🏃 Courir vers elle", next:'s2', pos:{left:'38%',top:'55%'}},
           {text:"😟 Elle a l'air blessée...", next:'s4', pos:{left:'63%',top:'42%'}}
         ]
       },
-      { id:'s2', imageDesc:"A small glowing star lying in the grass of a magical forest at night, softly pulsing with golden light, a curious little fox approaching, Pixar 3D style", text:"L'étoile est là dans l'herbe. Elle brille doucement.",
+      { id:'s2', imagePrompt:"Pixar 3D animated movie style. CHARACTERS: Kiko is always a small cute orange fox cub, big expressive brown eyes, soft fluffy rounded face, same design every scene. Lumi is always a small glowing yellow star with a gentle sad face and soft warm aura, same design every scene. COLOR PALETTE: deep midnight blue backgrounds, warm amber-orange for Kiko, soft golden glow for Lumi. Cinematic depth of field, bokeh background, volumetric god rays through trees. No text, no watermark. SCENE: Lumi rests in the soft grass of a moonlit forest clearing, softly pulsing with golden light. FOREGROUND: Dewy grass blades and tiny glowing flowers at ground level. MIDGROUND: Kiko approaches cautiously, nose stretched forward, tail low with curiosity. BACKGROUND: Dark enchanted forest clearing, silver moonlight filtering through the canopy. MOOD: Gentle mystery, warm golden star glow against deep blue-green forest atmosphere.", cachedImage:"", text:"L'étoile est là dans l'herbe. Elle brille doucement.",
         choices:[
           {text:"🔍 Chercher comment l'aider", next:'s3', pos:{left:'35%',top:'52%'}},
           {text:"🦔 Appeler Hana la hérisson", next:'s3b', pos:{left:'64%',top:'40%'}}
         ]
       },
-      { id:'s3', imageDesc:"A little fox finding a glowing flower in a magical forest, the flower emitting bright light, enchanted atmosphere, Pixar 3D animation style", text:"Kiko cherche tout seul. Il trouve une fleur qui donne de la lumière !",
+      { id:'s3', imagePrompt:"Pixar 3D animated movie style. CHARACTERS: Kiko is always a small cute orange fox cub, big expressive brown eyes, soft fluffy rounded face, same design every scene. Lumi is always a small glowing yellow star with a gentle sad face and soft warm aura, same design every scene. COLOR PALETTE: deep midnight blue backgrounds, warm amber-orange for Kiko, soft golden glow for Lumi. Cinematic depth of field, bokeh background, volumetric god rays through trees. No text, no watermark. SCENE: Kiko discovers a magical luminescent flower growing between ancient mossy roots. FOREGROUND: The glowing flower radiating soft golden light onto the forest floor. MIDGROUND: Kiko crouching down, paw gently reaching toward the flower, eyes wide with discovery. BACKGROUND: Dark enchanted forest with scattered bioluminescent plants, moonlit canopy above. MOOD: Discovery and hope, soft golden light against deep forest shadows.", cachedImage:"", text:"Kiko cherche tout seul. Il trouve une fleur qui donne de la lumière !",
         choices:[
           {text:"🌸 La donner à l'étoile", next:'fin_a', pos:{left:'40%',top:'50%'}},
           {text:"💨 Souffler dessus pour l'activer", next:'fin_a2', pos:{left:'65%',top:'38%'}}
         ]
       },
-      { id:'s3b', imageDesc:"A friendly hedgehog with big eyes arriving in a magical forest clearing, a little fox watching, nighttime magical atmosphere, Pixar 3D animation style", text:"Hana arrive en trottinant. Elle sait exactement quoi faire !",
+      { id:'s3b', imagePrompt:"Pixar 3D animated movie style. CHARACTERS: Kiko is always a small cute orange fox cub, big expressive brown eyes, soft fluffy rounded face, same design every scene. Lumi is always a small glowing yellow star with a gentle sad face and soft warm aura, same design every scene. COLOR PALETTE: deep midnight blue backgrounds, warm amber-orange for Kiko, soft golden glow for Lumi. Cinematic depth of field, bokeh background, volumetric god rays through trees. No text, no watermark. SCENE: Hana the round little hedgehog trots cheerfully into a moonlit forest clearing. FOREGROUND: Small wildflowers and glowing mushrooms dotting the path. MIDGROUND: Hana with small bright eyes and tiny smile, Kiko standing beside her looking relieved. BACKGROUND: Circular forest clearing bathed in silver moonlight, towering dark trees forming a natural ring. MOOD: Friendly warmth and relief, soft moonlit blue-white, warm amber fox beside gentle grey hedgehog.", cachedImage:"", text:"Hana arrive en trottinant. Elle sait exactement quoi faire !",
         choices:[
           {text:"👂 L'écouter expliquer", next:'fin_b', pos:{left:'38%',top:'52%'}},
           {text:"🤝 Faire ensemble ce qu'elle dit", next:'fin_b2', pos:{left:'63%',top:'40%'}}
         ]
       },
-      { id:'s4', imageDesc:"A tiny trembling glowing star on the ground in a magical forest, looking cold and scared, a little fox reaching out gently, Pixar 3D style", text:"L'étoile tremble. Elle a froid et peur.",
+      { id:'s4', imagePrompt:"Pixar 3D animated movie style. CHARACTERS: Kiko is always a small cute orange fox cub, big expressive brown eyes, soft fluffy rounded face, same design every scene. Lumi is always a small glowing yellow star with a gentle sad face and soft warm aura, same design every scene. COLOR PALETTE: deep midnight blue backgrounds, warm amber-orange for Kiko, soft golden glow for Lumi. Cinematic depth of field, bokeh background, volumetric god rays through trees. No text, no watermark. SCENE: Lumi trembles on the cold forest floor, scared and fading, Kiko reaches a gentle paw toward her. FOREGROUND: Cold damp moss, tiny frost crystals on nearby leaves. MIDGROUND: Kiko extending a gentle paw toward the shivering star, expression tender and worried. BACKGROUND: Dark still forest, deep blue shadows, Lumi barely glowing. MOOD: Vulnerability and tenderness, cool blue shadows warmed by the star dimming gold.", cachedImage:"", text:"L'étoile tremble. Elle a froid et peur.",
         choices:[
           {text:"🧣 Lui prêter son écharpe", next:'s5', pos:{left:'38%',top:'52%'}},
           {text:"🦔 Aller chercher Hana", next:'s5b', pos:{left:'63%',top:'42%'}}
         ]
       },
-      { id:'s5', imageDesc:"A glowing star smiling warmly, wrapped in a cozy red scarf, a little fox sitting beside it in a magical forest, Pixar 3D animation style", text:"L'étoile sourit. Elle se sent mieux. Elle dit : merci !",
+      { id:'s5', imagePrompt:"Pixar 3D animated movie style. CHARACTERS: Kiko is always a small cute orange fox cub, big expressive brown eyes, soft fluffy rounded face, same design every scene. Lumi is always a small glowing yellow star with a gentle sad face and soft warm aura, same design every scene. COLOR PALETTE: deep midnight blue backgrounds, warm amber-orange for Kiko, soft golden glow for Lumi. Cinematic depth of field, bokeh background, volumetric god rays through trees. No text, no watermark. SCENE: Lumi wears a tiny cozy red knitted scarf and smiles warmly, Kiko sits close beside her. FOREGROUND: Warm golden light radiating from Lumi onto the soft forest floor. MIDGROUND: Kiko seated with tail curled around, gentle smile. Lumi glowing brighter and happier. BACKGROUND: Forest clearing at night, soft sky, stars visible through the canopy. MOOD: Comfort and connection, warm amber and golden palette, intimate cozy scene.", cachedImage:"", text:"L'étoile sourit. Elle se sent mieux. Elle dit : merci !",
         choices:[
           {text:"🌟 L'aider à remonter", next:'fin_c', pos:{left:'42%',top:'48%'}},
           {text:"🎵 Lui chanter une chanson", next:'fin_c2', pos:{left:'65%',top:'38%'}}
         ]
       },
-      { id:'s5b', imageDesc:"A hedgehog pointing upward toward the starry sky in a magical forest, a little fox and a glowing star watching, Pixar 3D style", text:"Hana arrive en courant. Elle connaît le chemin vers le ciel !",
+      { id:'s5b', imagePrompt:"Pixar 3D animated movie style. CHARACTERS: Kiko is always a small cute orange fox cub, big expressive brown eyes, soft fluffy rounded face, same design every scene. Lumi is always a small glowing yellow star with a gentle sad face and soft warm aura, same design every scene. COLOR PALETTE: deep midnight blue backgrounds, warm amber-orange for Kiko, soft golden glow for Lumi. Cinematic depth of field, bokeh background, volumetric god rays through trees. No text, no watermark. SCENE: Hana stands on her hind legs pointing toward the starry sky, showing Lumi the way home. FOREGROUND: Glowing mushrooms and soft moss lighting the forest floor. MIDGROUND: Hana pointing upward with a tiny arm, Kiko and Lumi both looking up with hope. BACKGROUND: Open night sky visible through the tree canopy, vast constellation of stars. MOOD: Hope and direction, deep midnight blue sky, warm golden star glow, silver moonlight.", cachedImage:"", text:"Hana arrive en courant. Elle connaît le chemin vers le ciel !",
         choices:[
           {text:"👣 Suivre Hana ensemble", next:'fin_b', pos:{left:'40%',top:'52%'}},
           {text:"🙏 Laisser Hana guider seule", next:'fin_b2', pos:{left:'63%',top:'40%'}}
@@ -1124,61 +1141,61 @@ const STORIES = [
     desc:"Léo entre dans une forêt étrange. Chaque chemin cache un mystère.",
     level:'explorateur', thumb:'story-thumb-forest', emoji:'🌲',
     scenes:[
-      { id:'s1', imageDesc:"A young boy with curly brown hair standing at a magical forest crossroads, one path dark with glowing blue mushrooms, one path golden with sunlight and butterflies, Pixar 3D style", text:"La forêt se divise en deux. À gauche, un sentier sombre où brillent des champignons bleus. À droite, un chemin doré baigné de soleil. Léo s'arrête. Son cœur bat plus vite.",
+      { id:'s1', imagePrompt:"Pixar 3D animated movie style, slightly more detailed environments than Kiko. Deep enchanted forest, rich blue-green atmosphere, bioluminescent mushrooms and fireflies. Consistent characters every scene. Cinematic depth of field, dramatic lighting. No text, no watermark. SCENE: A forest path divides into two — left is dark with glowing blue mushrooms, right is golden with sunlight and butterflies. FOREGROUND: The path fork, scattered leaves and small stones at the split. MIDGROUND: Leo, a curly-haired boy in a red jacket and blue jeans, standing still at the crossroads. BACKGROUND: Left path dense dark forest with bioluminescent blue glow. Right path warm golden sunlit clearing with butterflies. MOOD: Decision and tension, dramatic contrast between cool blue-purple shadows and warm golden light.", cachedImage:"", text:"La forêt se divise en deux. À gauche, un sentier sombre où brillent des champignons bleus. À droite, un chemin doré baigné de soleil. Léo s'arrête. Son cœur bat plus vite.",
         choices:[
           {text:"🍄 Le sentier sombre", next:'s2a', pos:{left:'20%',top:'50%'}},
           {text:"☀️ Le chemin doré", next:'s2b', pos:{left:'65%',top:'44%'}}
         ]
       },
-      { id:'s2a', imageDesc:"A dark enchanted forest path lit by glowing blue mushrooms, a wise owl with round glasses perched on a low branch watching a young boy, mysterious atmosphere, Pixar 3D style", text:"Les champignons éclairent le sol en bleu. C'est étrange et beau à la fois. Une chouette à lunettes se pose sur une branche basse et le regarde.",
+      { id:'s2a', imagePrompt:"Pixar 3D animated movie style, slightly more detailed environments than Kiko. Deep enchanted forest, rich blue-green atmosphere, bioluminescent mushrooms and fireflies. Consistent characters every scene. Cinematic depth of field, dramatic lighting. No text, no watermark. SCENE: Leo walks the dark mushroom-lit path as a wise owl with round glasses lands on a low branch nearby. FOREGROUND: Cluster of glowing blue mushrooms illuminating the ground ahead. MIDGROUND: Leo looking cautiously at Madame Hibou, a round owl with round spectacles perched at eye level. BACKGROUND: Dense dark forest canopy, blue bioluminescent glow, distant fireflies floating. MOOD: Mystery and quiet wonder, cool blue and purple palette, soft mushroom glow on their faces.", cachedImage:"", text:"Les champignons éclairent le sol en bleu. C'est étrange et beau à la fois. Une chouette à lunettes se pose sur une branche basse et le regarde.",
         choices:[
           {text:"🚶 Continuer sans s'arrêter", next:'s3a', pos:{left:'30%',top:'55%'}},
           {text:"🦉 S'arrêter et l'écouter", next:'s3b', pos:{left:'62%',top:'38%'}}
         ]
       },
-      { id:'s2b', imageDesc:"A golden sunlit forest clearing with colorful flowers, a red fox trapped in thorny vines looking at a young curly-haired boy with sad eyes, Pixar 3D style", text:"Le soleil réchauffe le visage de Léo. Les fleurs sont partout. Puis il voit un renard roux coincé dans des ronces épineuses. Il attend sans bouger.",
+      { id:'s2b', imagePrompt:"Pixar 3D animated movie style, slightly more detailed environments than Kiko. Deep enchanted forest, rich blue-green atmosphere, bioluminescent mushrooms and fireflies. Consistent characters every scene. Cinematic depth of field, dramatic lighting. No text, no watermark. SCENE: A red fox is caught in thorny bramble vines in a golden sunlit forest clearing, looking at Leo with sad amber eyes. FOREGROUND: Colorful wildflowers and scattered golden leaves surrounding the scene. MIDGROUND: The red fox sitting still, one paw trapped in thorns, eyes sorrowful. Leo approaching carefully with concern. BACKGROUND: Warm sunlit forest clearing, golden light through ancient trees, butterflies drifting. MOOD: Beauty and distress together, warm golden tones, fox orange against rich greens.", cachedImage:"", text:"Le soleil réchauffe le visage de Léo. Les fleurs sont partout. Puis il voit un renard roux coincé dans des ronces épineuses. Il attend sans bouger.",
         choices:[
           {text:"🌿 Aller l'aider", next:'s3c', pos:{left:'52%',top:'55%'}},
           {text:"➡️ Continuer sa route", next:'s3d', pos:{left:'72%',top:'40%'}}
         ]
       },
-      { id:'s3a', imageDesc:"A young boy lost in a dark enchanted forest, glowing blue mushrooms lighting his path, looking at stars above through the tree canopy, Pixar 3D style", text:"Léo avance seul dans le noir. Le chemin devient tordu. Il tourne en rond. Puis il remarque que les champignons poussent toujours vers la lumière.",
+      { id:'s3a', imagePrompt:"Pixar 3D animated movie style, slightly more detailed environments than Kiko. Deep enchanted forest, rich blue-green atmosphere, bioluminescent mushrooms and fireflies. Consistent characters every scene. Cinematic depth of field, dramatic lighting. No text, no watermark. SCENE: Leo is lost in the dark forest but notices all the glowing mushrooms are growing toward the same light. FOREGROUND: A clear trail of blue mushrooms all leaning in one direction. MIDGROUND: Leo crouching to examine them, a hopeful realization crossing his face. BACKGROUND: Dense dark twisted forest, stars barely visible through the canopy. MOOD: Quiet discovery in darkness, deep blue and purple shadows, mushroom glow as a guiding thread.", cachedImage:"", text:"Léo avance seul dans le noir. Le chemin devient tordu. Il tourne en rond. Puis il remarque que les champignons poussent toujours vers la lumière.",
         choices:[
           {text:"🍄 Suivre les champignons", next:'s4a', pos:{left:'35%',top:'52%'}},
           {text:"⭐ Suivre les étoiles au-dessus", next:'fin_a2', pos:{left:'62%',top:'38%'}}
         ]
       },
-      { id:'s3b', imageDesc:"A wise owl with glasses speaking to a young curly-haired boy in a dark magical forest, warm golden light around the owl, Pixar 3D style", text:"'Je m'appelle Madame Hibou', dit-elle. 'Je connais chaque secret de cette forêt. Veux-tu que je t'aide ?' Léo réfléchit.",
+      { id:'s3b', imagePrompt:"Pixar 3D animated movie style, slightly more detailed environments than Kiko. Deep enchanted forest, rich blue-green atmosphere, bioluminescent mushrooms and fireflies. Consistent characters every scene. Cinematic depth of field, dramatic lighting. No text, no watermark. SCENE: Madame Hibou speaks warmly to Leo, a golden light emanating from around her as she shares her knowledge. FOREGROUND: Soft forest floor lit by the owl golden glow. MIDGROUND: Leo listening attentively, seated cross-legged at eye level with the owl, expression open and focused. BACKGROUND: Dark enchanted forest, fireflies drifting in the shadows. MOOD: Wisdom and warmth in darkness, golden light source illuminating their shared moment.", cachedImage:"", text:"'Je m'appelle Madame Hibou', dit-elle. 'Je connais chaque secret de cette forêt. Veux-tu que je t'aide ?' Léo réfléchit.",
         choices:[
           {text:"🤝 Oui, guide-moi", next:'s4b', pos:{left:'58%',top:'40%'}},
           {text:"📖 Lui poser une question d'abord", next:'fin_b2', pos:{left:'32%',top:'56%'}}
         ]
       },
-      { id:'s3c', imageDesc:"A young boy carefully freeing a beautiful red fox from thorny vines in a golden forest clearing, gentle and determined expression, Pixar 3D style", text:"Léo écarte les ronces avec son pull. Le renard ne bouge pas, comme s'il avait compris. Soudain la patte est libre. Le renard se lève et le regarde droit dans les yeux.",
+      { id:'s3c', imagePrompt:"Pixar 3D animated movie style, slightly more detailed environments than Kiko. Deep enchanted forest, rich blue-green atmosphere, bioluminescent mushrooms and fireflies. Consistent characters every scene. Cinematic depth of field, dramatic lighting. No text, no watermark. SCENE: Leo carefully parts the thorny vines with his hands to free the fox trapped paw. FOREGROUND: Close detail of thorny bramble, Leo careful gentle hands working through it. MIDGROUND: Leo kneeling with a focused determined expression. The fox perfectly still, watching him with trust. BACKGROUND: Golden forest clearing, warm dappled sunlight through the canopy. MOOD: Quiet courage and trust, warm golden light, a delicate and tender moment.", cachedImage:"", text:"Léo écarte les ronces avec son pull. Le renard ne bouge pas, comme s'il avait compris. Soudain la patte est libre. Le renard se lève et le regarde droit dans les yeux.",
         choices:[
           {text:"🦊 Attendre ce qu'il fait", next:'s4c', pos:{left:'48%',top:'50%'}},
           {text:"🚶 Repartir sans rien attendre", next:'fin_c2', pos:{left:'68%',top:'38%'}}
         ]
       },
-      { id:'s3d', imageDesc:"A young boy walking away on a golden forest path, looking back over his shoulder with doubt, a trapped red fox visible in the distance, Pixar 3D style", text:"Léo continue. Mais après quelques pas, il repense aux yeux du renard. Quelque chose dans son ventre lui dit que ce n'était pas bien.",
+      { id:'s3d', imagePrompt:"Pixar 3D animated movie style, slightly more detailed environments than Kiko. Deep enchanted forest, rich blue-green atmosphere, bioluminescent mushrooms and fireflies. Consistent characters every scene. Cinematic depth of field, dramatic lighting. No text, no watermark. SCENE: Leo walks away along the golden path, stopping to glance back over his shoulder with doubt. FOREGROUND: Leo footsteps on a golden leaf-covered forest path. MIDGROUND: Leo mid-stride, head turning back, expression conflicted and uncertain. BACKGROUND: The red fox still trapped in thorns visible in the distance, watching him go. MOOD: Regret and moral hesitation, golden light fading toward shadows, emotional tension.", cachedImage:"", text:"Léo continue. Mais après quelques pas, il repense aux yeux du renard. Quelque chose dans son ventre lui dit que ce n'était pas bien.",
         choices:[
           {text:"↩️ Faire demi-tour", next:'s4c', pos:{left:'38%',top:'52%'}},
           {text:"➡️ Continuer quand même", next:'fin_d', pos:{left:'63%',top:'40%'}}
         ]
       },
-      { id:'s4a', imageDesc:"A hidden forest clearing with an ancient moss-covered treasure chest at center, glowing faintly, a young boy approaching with wonder, Pixar 3D style", text:"Les champignons mènent Léo jusqu'à une clairière cachée. Au centre, un vieux coffre couvert de mousse. Il n'y a personne d'autre.",
+      { id:'s4a', imagePrompt:"Pixar 3D animated movie style, slightly more detailed environments than Kiko. Deep enchanted forest, rich blue-green atmosphere, bioluminescent mushrooms and fireflies. Consistent characters every scene. Cinematic depth of field, dramatic lighting. No text, no watermark. SCENE: A hidden circular forest clearing reveals an ancient moss-covered chest glowing faintly at its center. FOREGROUND: A ring of glowing mushrooms surrounding the chest like sentinels. MIDGROUND: Leo approaching slowly, eyes wide with awe and wonder. BACKGROUND: Ancient trees forming a perfect natural cathedral around the clearing, silver moonlight above. MOOD: Discovery and reverence, silver moonlight meets faint golden chest glow, magical silence.", cachedImage:"", text:"Les champignons mènent Léo jusqu'à une clairière cachée. Au centre, un vieux coffre couvert de mousse. Il n'y a personne d'autre.",
         choices:[
           {text:"🔓 Ouvrir le coffre", next:'fin_a', pos:{left:'50%',top:'50%'}},
           {text:"🔍 Chercher une clé d'abord", next:'fin_a', pos:{left:'68%',top:'38%'}}
         ]
       },
-      { id:'s4b', imageDesc:"A wise owl with glasses leading a young boy through a magical forest to a hidden wooden door in an ancient tree trunk, Pixar 3D style", text:"Madame Hibou vole lentement entre les arbres. Léo la suit en courant. Elle s'arrête devant une porte cachée dans le tronc d'un vieux chêne.",
+      { id:'s4b', imagePrompt:"Pixar 3D animated movie style, slightly more detailed environments than Kiko. Deep enchanted forest, rich blue-green atmosphere, bioluminescent mushrooms and fireflies. Consistent characters every scene. Cinematic depth of field, dramatic lighting. No text, no watermark. SCENE: Madame Hibou leads Leo to a mysterious door set into the trunk of a massive ancient oak. FOREGROUND: Gnarled oak roots framing the small wooden door, moss and tiny ferns. MIDGROUND: Leo standing before the door, hand raised to knock. Madame Hibou perched on a root above, watching. BACKGROUND: Deep enchanted forest, shafts of golden light, silent depth. MOOD: Mystery and anticipation, warm light seeping through door cracks against deep forest shadows.", cachedImage:"", text:"Madame Hibou vole lentement entre les arbres. Léo la suit en courant. Elle s'arrête devant une porte cachée dans le tronc d'un vieux chêne.",
         choices:[
           {text:"🚪 Frapper et entrer", next:'fin_b', pos:{left:'55%',top:'45%'}},
           {text:"👂 Écouter ce qu'il y a derrière", next:'fin_b', pos:{left:'32%',top:'58%'}}
         ]
       },
-      { id:'s4c', imageDesc:"A magical red fox leading a young curly-haired boy to a shimmering lake that reflects the stars like a mirror, enchanted forest atmosphere, Pixar 3D style", text:"Le renard parle. 'Tu m'as aidé', dit-il. 'Ou tu es revenu pour le faire. C'est pareil.' Il lui montre un chemin secret que personne d'autre ne connaît.",
+      { id:'s4c', imagePrompt:"Pixar 3D animated movie style, slightly more detailed environments than Kiko. Deep enchanted forest, rich blue-green atmosphere, bioluminescent mushrooms and fireflies. Consistent characters every scene. Cinematic depth of field, dramatic lighting. No text, no watermark. SCENE: The red fox guides Leo to a perfectly still lake that mirrors the entire starry sky like black glass. FOREGROUND: Lake edge with smooth pebbles, moonlit water reflections beginning. MIDGROUND: The red fox pausing at the edge, looking back at Leo with knowing amber eyes. BACKGROUND: The still lake perfectly reflecting the full night sky, stars infinite above and below. MOOD: Magic and wonder as reward, deep blue mirror world, stars above and below creating infinity.", cachedImage:"", text:"Le renard parle. 'Tu m'as aidé', dit-il. 'Ou tu es revenu pour le faire. C'est pareil.' Il lui montre un chemin secret que personne d'autre ne connaît.",
         choices:[
           {text:"🌟 Suivre le chemin secret", next:'fin_c', pos:{left:'50%',top:'48%'}},
           {text:"🦊 Rester encore un moment", next:'fin_c', pos:{left:'68%',top:'38%'}}
@@ -1214,49 +1231,49 @@ const STORIES = [
     desc:"Le dragon Ember brûle les champs. Mais personne ne sait vraiment pourquoi.",
     level:'aventurier', thumb:'story-thumb-castle', emoji:'🐉',
     scenes:[
-      { id:'s1', imageDesc:"A massive sad dragon sitting on ruins near a dark medieval castle, fire tears falling and burning the grass around him, dramatic sunset sky, Pixar 3D cinematic style", text:"Le roi t'envoie arrêter Ember seul. En approchant du château, tu le vois assis sur les ruines. Il pleure. Ses larmes de feu tombent sur l'herbe et la brûlent. Il ne fait pas ça exprès.",
+      { id:'s1', imagePrompt:"Fantasy concept art style, dramatic painterly illustration, slightly more mature than Pixar. Epic medieval castle, stone walls, dragon with iridescent scales. Warm torchlight versus cold moonlight contrast. Cinematic composition. No text, no watermark. SCENE: The enormous dragon Ember sits crying on castle ruins, his fire tears burning the grass below him. FOREGROUND: Burnt grass and scorched stone, small fire tear drops still glowing on the ground. MIDGROUND: Ember the dragon curled around the ruins, enormous iridescent scales, amber eyes glistening with liquid fire tears. BACKGROUND: Dark medieval castle towers silhouetted against crimson and amber sunset sky, smoke wisps rising. MOOD: Melancholy grandeur, deep crimson and amber palette, tragic contrast between the dragon scale and his grief.", cachedImage:"", text:"Le roi t'envoie arrêter Ember seul. En approchant du château, tu le vois assis sur les ruines. Il pleure. Ses larmes de feu tombent sur l'herbe et la brûlent. Il ne fait pas ça exprès.",
         choices:[
           {text:"💬 Lui parler maintenant", next:'s2a', pos:{left:'62%',top:'44%'}},
           {text:"🏘️ Interroger les villageois d'abord", next:'s2b', pos:{left:'24%',top:'62%'}}
         ]
       },
-      { id:'s2a', imageDesc:"A brave child standing calmly before an enormous dragon with amber eyes, the dragon looking down gently with surprise, medieval castle background, Pixar 3D style", text:"'Tu n'as pas peur ?' dit Ember. Sa voix fait trembler les pierres. 'Si', tu réponds. 'Mais je voulais te parler quand même.' Un long silence. C'est la première fois que quelqu'un lui dit ça.",
+      { id:'s2a', imagePrompt:"Fantasy concept art style, dramatic painterly illustration, slightly more mature than Pixar. Epic medieval castle, stone walls, dragon with iridescent scales. Warm torchlight versus cold moonlight contrast. Cinematic composition. No text, no watermark. SCENE: A small brave child stands calm and upright before the enormous dragon Ember who lowers his head in surprise. FOREGROUND: Scorched stone ground between the small child and the massive dragon. MIDGROUND: The child small but completely still, looking up bravely. Ember enormous head lowering toward the child with surprise. BACKGROUND: Medieval castle walls and towers, warm flickering torchlight, dramatic sky. MOOD: Courage meeting surprise, warm torchlight drama, epic scale contrast between tiny child and immense dragon.", cachedImage:"", text:"'Tu n'as pas peur ?' dit Ember. Sa voix fait trembler les pierres. 'Si', tu réponds. 'Mais je voulais te parler quand même.' Un long silence. C'est la première fois que quelqu'un lui dit ça.",
         choices:[
           {text:"🪨 Rester assis en silence avec lui", next:'s3a', pos:{left:'38%',top:'55%'}},
           {text:"❓ Lui demander pourquoi il pleure", next:'s3b', pos:{left:'64%',top:'40%'}}
         ]
       },
-      { id:'s2b', imageDesc:"A child talking to a wise old woman in a medieval village, the sad dragon visible in the distance on a hill, warm village lighting, Pixar 3D style", text:"Une vieille femme t'arrête. 'Ember avait un ami. Un jeune homme du village. Il est parti un matin sans rien dire. Depuis, Ember pleure. Son chagrin brûle tout autour de lui.'",
+      { id:'s2b', imagePrompt:"Fantasy concept art style, dramatic painterly illustration, slightly more mature than Pixar. Epic medieval castle, stone walls, dragon with iridescent scales. Warm torchlight versus cold moonlight contrast. Cinematic composition. No text, no watermark. SCENE: A child listens closely to a wise old village woman who gestures toward the distant hill where Ember sits. FOREGROUND: Cobblestone village street with warm lantern light glowing on worn stones. MIDGROUND: The weathered old woman gesturing toward the hill, the child listening intently beside her. BACKGROUND: Medieval village houses with warm window glow, and on the far hill Ember dark silhouette against cold moonlight. MOOD: Intimate revelation, warm golden village light versus cold distant dragon silhouette on the hill.", cachedImage:"", text:"Une vieille femme t'arrête. 'Ember avait un ami. Un jeune homme du village. Il est parti un matin sans rien dire. Depuis, Ember pleure. Son chagrin brûle tout autour de lui.'",
         choices:[
           {text:"🐉 Retourner voir Ember avec cette info", next:'s3c', pos:{left:'62%',top:'42%'}},
           {text:"🔍 Chercher cet ami d'abord", next:'s3d', pos:{left:'34%',top:'56%'}}
         ]
       },
-      { id:'s3a', imageDesc:"A child sitting on a stone in front of a large dragon, both in silence, fire tears slowing down, emotional connection, medieval landscape, Pixar 3D style", text:"Tu t'assieds sur une pierre en face d'Ember. Des heures passent. Il parle peu. Mais ses larmes ralentissent. Le silence entre vous n'est plus vide — il est plein.",
+      { id:'s3a', imagePrompt:"Fantasy concept art style, dramatic painterly illustration, slightly more mature than Pixar. Epic medieval castle, stone walls, dragon with iridescent scales. Warm torchlight versus cold moonlight contrast. Cinematic composition. No text, no watermark. SCENE: The child sits on a stone in front of Ember in shared silence, the dragon fire tears gradually slowing. FOREGROUND: Warm stone ground, small ember sparks settling like dying fireflies. MIDGROUND: The child seated calmly and small before the enormous dragon head resting nearby. BACKGROUND: Castle ruins at dusk, quiet golden-red sky fading slowly to deep night. MOOD: Emotional connection through silence, warm amber fading to night, intimate despite the epic scale difference.", cachedImage:"", text:"Tu t'assieds sur une pierre en face d'Ember. Des heures passent. Il parle peu. Mais ses larmes ralentissent. Le silence entre vous n'est plus vide — il est plein.",
         choices:[
           {text:"🌙 Rester jusqu'au lever du soleil", next:'fin_a', pos:{left:'44%',top:'50%'}},
           {text:"👑 Proposer un accord au roi", next:'fin_d', pos:{left:'64%',top:'38%'}}
         ]
       },
-      { id:'s3b', imageDesc:"A dragon resting his enormous head on his paws looking sad, a child listening attentively nearby, medieval castle ruins, Pixar 3D style", text:"'Mon seul ami est parti sans rien dire. Ça fait cent ans. Je ne sais toujours pas pourquoi.' Il pose sa tête immense sur ses pattes. Il ressemble à un chien triste.",
+      { id:'s3b', imagePrompt:"Fantasy concept art style, dramatic painterly illustration, slightly more mature than Pixar. Epic medieval castle, stone walls, dragon with iridescent scales. Warm torchlight versus cold moonlight contrast. Cinematic composition. No text, no watermark. SCENE: Ember rests his enormous head on his stone paws like a grieving dog, the child listens attentively nearby. FOREGROUND: The dragon massive iridescent paws resting heavily on cold stone. MIDGROUND: Ember face at ground level, amber eyes sorrowful. The child seated close, completely attentive and still. BACKGROUND: Castle courtyard, cold moonlight on stone, quiet and still. MOOD: Dragon stripped of all menace, pure vulnerability and grief, cold moonlight, scale made irrelevant by sadness.", cachedImage:"", text:"'Mon seul ami est parti sans rien dire. Ça fait cent ans. Je ne sais toujours pas pourquoi.' Il pose sa tête immense sur ses pattes. Il ressemble à un chien triste.",
         choices:[
           {text:"🚶 Proposer de retrouver cet ami", next:'s4b', pos:{left:'40%',top:'52%'}},
           {text:"📨 Lui dire ce que tu sais déjà", next:'s4b', pos:{left:'63%',top:'40%'}}
         ]
       },
-      { id:'s3c', imageDesc:"A child returning to a sad dragon and speaking gently, the dragon's expression shifting from suspicion to hope, medieval castle background, Pixar 3D style", text:"Tu retournes voir Ember. 'J'ai parlé aux gens du village', tu dis. 'Ils m'ont parlé de ton ami.' Ember se fige. Dans ses yeux orange, quelque chose change.",
+      { id:'s3c', imagePrompt:"Fantasy concept art style, dramatic painterly illustration, slightly more mature than Pixar. Epic medieval castle, stone walls, dragon with iridescent scales. Warm torchlight versus cold moonlight contrast. Cinematic composition. No text, no watermark. SCENE: The child returns to Ember and speaks gently, hope beginning to shift in the dragon amber eyes. FOREGROUND: Cracked castle stone with small wildflowers pushing through the cracks. MIDGROUND: The child standing closer than before, speaking softly. Ember expression transforming from suspicion to fragile hope. BACKGROUND: Castle walls and towers, torchlight, stars beginning to appear in the evening sky. MOOD: Hope emerging from grief, warm torchlight contrast against cold stone, emotional turning point.", cachedImage:"", text:"Tu retournes voir Ember. 'J'ai parlé aux gens du village', tu dis. 'Ils m'ont parlé de ton ami.' Ember se fige. Dans ses yeux orange, quelque chose change.",
         choices:[
           {text:"💬 Lui raconter ce que tu sais", next:'fin_b', pos:{left:'44%',top:'50%'}},
           {text:"🔍 Lui dire que tu peux retrouver son ami", next:'s3b', pos:{left:'64%',top:'38%'}}
         ]
       },
-      { id:'s3d', imageDesc:"A child discovering an old trembling man in a distant village, the man looking shocked when hearing a dragon's name, Pixar 3D style", text:"Tu trouves Mael dans un village lointain. Il a les mains qui tremblent. Quand tu prononces le nom d'Ember, il pâlit. 'Je savais que ce jour viendrait', murmure-t-il.",
+      { id:'s3d', imagePrompt:"Fantasy concept art style, dramatic painterly illustration, slightly more mature than Pixar. Epic medieval castle, stone walls, dragon with iridescent scales. Warm torchlight versus cold moonlight contrast. Cinematic composition. No text, no watermark. SCENE: The child finds Mael, a trembling old man, who goes pale the moment the dragon name is spoken. FOREGROUND: A simple wooden table, the old man visibly trembling hands. MIDGROUND: Mael pale and shocked, leaning back slightly. The child leaning gently forward. BACKGROUND: Small cottage interior, warm lantern light, dark evening visible through a small window. MOOD: Old guilt surfacing unexpectedly, warm intimate lantern light, the weight of a hundred years of silence.", cachedImage:"", text:"Tu trouves Mael dans un village lointain. Il a les mains qui tremblent. Quand tu prononces le nom d'Ember, il pâlit. 'Je savais que ce jour viendrait', murmure-t-il.",
         choices:[
           {text:"🚶 Le ramener auprès d'Ember", next:'s4b', pos:{left:'40%',top:'52%'}},
           {text:"💬 Rapporter la vérité sans lui", next:'fin_b', pos:{left:'63%',top:'40%'}}
         ]
       },
-      { id:'s4b', imageDesc:"An old man and a dragon facing each other for the first time in a hundred years, a child standing between them as witness, emotional reunion, epic Pixar 3D style", text:"Mael et Ember se font face pour la première fois depuis cent ans. Un silence immense tombe sur la colline. Mael dit : 'Je suis parti parce que j'avais honte. J'aurais dû rester.'",
+      { id:'s4b', imagePrompt:"Fantasy concept art style, dramatic painterly illustration, slightly more mature than Pixar. Epic medieval castle, stone walls, dragon with iridescent scales. Warm torchlight versus cold moonlight contrast. Cinematic composition. No text, no watermark. SCENE: Mael and Ember face each other for the first time in a hundred years, the child standing as witness between them. FOREGROUND: The child standing small between the old man and the dragon, a bridge between two worlds. MIDGROUND: Mael aged trembling face level with Ember enormous lowered head, both vulnerable and raw. BACKGROUND: Open hilltop at dawn, first light breaking golden behind them on the horizon. MOOD: Reunion and reckoning, dawn light symbolizing beginning again, emotional climax of the story.", cachedImage:"", text:"Mael et Ember se font face pour la première fois depuis cent ans. Un silence immense tombe sur la colline. Mael dit : 'Je suis parti parce que j'avais honte. J'aurais dû rester.'",
         choices:[
           {text:"🤐 Les laisser seuls", next:'fin_c', pos:{left:'38%',top:'52%'}},
           {text:"🗣️ Rester pour les aider à parler", next:'fin_c', pos:{left:'63%',top:'40%'}}
@@ -1281,7 +1298,8 @@ const STORIES = [
 // ═══════════════════════════════════
 // STATE
 // ═══════════════════════════════════
-let userName='', currentStory=null, currentSceneId=null, visitedScenes=[], currentFilter='all', imageCache={};
+const IS_ADMIN = new URLSearchParams(window.location.search).get('admin') === 'true';
+let userName='', currentStory=null, currentSceneId=null, visitedScenes=[], currentFilter='all', imageCache={}, currentImage='';
 
 // ═══════════════════════════════════
 // SETUP
@@ -1384,31 +1402,38 @@ function renderScene(sceneId){
     </svg>`;
   }
 
-  // DALL-E 3 — via Vercel serverless proxy (avoids CORS & hides API key)
-  if(scene.imageDesc){
+  // Image: cachedImage (persistée) → memCache → génération API
+  if(scene.imagePrompt){
     const cacheKey=currentStory.id+'/'+sceneId+'/dalle';
-    if(imageCache[cacheKey]){
+    const applyImage=(url)=>{
+      imageCache[cacheKey]=url;
+      currentImage=url;
       svgBg.innerHTML='';
-      svgBg.style.backgroundImage=`url(${imageCache[cacheKey]})`;
+      svgBg.style.backgroundImage=`url(${url})`;
       svgBg.style.backgroundSize='cover';
       svgBg.style.backgroundPosition='center';
+    };
+    if(scene.cachedImage){
+      applyImage(scene.cachedImage);
+      if(IS_ADMIN) updateAdminStatus('cached');
+    } else if(imageCache[cacheKey]){
+      applyImage(imageCache[cacheKey]);
+      if(IS_ADMIN) updateAdminStatus('generated');
     } else {
+      if(IS_ADMIN) updateAdminStatus('svg');
       fetch('/api/generate-image',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({prompt:scene.imageDesc})
+        body:JSON.stringify({prompt:scene.imagePrompt})
       }).then(r=>r.json()).then(data=>{
         const url=data?.url;
         if(url && currentSceneId===sceneId){
-          imageCache[cacheKey]=url;
           svgBg.style.transition='opacity 0.8s';
           svgBg.style.opacity='0';
           setTimeout(()=>{
-            svgBg.innerHTML='';
-            svgBg.style.backgroundImage=`url(${url})`;
-            svgBg.style.backgroundSize='cover';
-            svgBg.style.backgroundPosition='center';
+            applyImage(url);
             svgBg.style.opacity='1';
+            if(IS_ADMIN) updateAdminStatus('generated');
           },800);
         }
       }).catch(()=>{});
@@ -1732,6 +1757,79 @@ const END_ILLUSTRATIONS = {
     <circle cx="100" cy="80" r="2" fill="white" opacity="0.7"/><circle cx="400" cy="50" r="1.5" fill="white" opacity="0.8"/>
     <circle cx="800" cy="60" r="2" fill="white" opacity="0.6"/><circle cx="1100" cy="90" r="1.5" fill="white" opacity="0.7"/>
   </svg>`
+};
+
+// ═══════════════════════════════════
+// ADMIN
+// ═══════════════════════════════════
+function updateAdminStatus(state){
+  if(!IS_ADMIN) return;
+  const panel=document.getElementById('admin-panel');
+  const status=document.getElementById('admin-status');
+  panel.classList.add('visible');
+  if(state==='cached') status.textContent='🟢 Cachée';
+  else if(state==='generated') status.textContent='🟠 Générée';
+  else status.textContent='🔴 SVG fallback';
+}
+
+function adminRegen(){
+  const scene=currentStory && currentStory.scenes.find(s=>s.id===currentSceneId);
+  if(!scene || !scene.imagePrompt) return;
+  const cacheKey=currentStory.id+'/'+currentSceneId+'/dalle';
+  delete imageCache[cacheKey];
+  const svgBg=document.getElementById('story-svg-bg');
+  svgBg.style.backgroundImage='';
+  updateAdminStatus('svg');
+  fetch('/api/generate-image',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({prompt:scene.imagePrompt})
+  }).then(r=>r.json()).then(data=>{
+    const url=data?.url;
+    if(url){
+      imageCache[cacheKey]=url;
+      currentImage=url;
+      svgBg.innerHTML='';
+      svgBg.style.backgroundImage=`url(${url})`;
+      svgBg.style.backgroundSize='cover';
+      svgBg.style.backgroundPosition='center';
+      updateAdminStatus('generated');
+    }
+  }).catch(()=>{});
+}
+
+function adminSave(){
+  if(!currentImage || !currentStory || !currentSceneId) return;
+  const btn=document.getElementById('admin-save-btn');
+  btn.textContent='⏳ Sauvegarde...';
+  btn.disabled=true;
+  fetch('/api/save-image',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      storyId:currentStory.id,
+      sceneId:currentSceneId,
+      imageBase64:currentImage
+    })
+  }).then(r=>r.json()).then(data=>{
+    if(data.success){
+      btn.textContent='✅ Sauvegardé !';
+      setTimeout(()=>{btn.textContent='✅ Valider';btn.disabled=false;},2500);
+    } else {
+      btn.textContent='❌ Erreur';
+      setTimeout(()=>{btn.textContent='✅ Valider';btn.disabled=false;},2500);
+    }
+  }).catch(()=>{
+    btn.textContent='❌ Erreur';
+    setTimeout(()=>{btn.textContent='✅ Valider';btn.disabled=false;},2500);
+  });
+}
+
+// Masquer le panel admin quand on quitte une histoire
+const _closeStory=closeStory;
+closeStory=function(){
+  document.getElementById('admin-panel').classList.remove('visible');
+  _closeStory();
 };
 
 function showEnd(end){
