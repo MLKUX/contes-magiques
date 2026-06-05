@@ -4,6 +4,10 @@
 // Ajouter ces deux variables dans Vercel Dashboard
 // → Settings → Environment Variables
 
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -42,40 +46,89 @@ module.exports = async function handler(req, res) {
     const sha = fileData.sha;
     const content = Buffer.from(fileData.content, 'base64').toString('utf8');
 
-    // 2. Trouver la scène et remplacer cachedImage
-    // On cherche le bloc de la scène identifiée par id:'<sceneId>' dans l'histoire '<storyId>'
-    // Le pattern ciblé est : cachedImage:"" (vide) dans le contexte de cette scène
-    // Stratégie : remplacer la première occurrence de cachedImage:"" après id:'<sceneId>'
-    const sceneMarker = "id:'" + sceneId + "'";
-    const sceneIdx = content.indexOf(sceneMarker);
-    if (sceneIdx === -1) {
-      // Essayer aussi avec id:"sceneId" au cas où
-      return res.status(404).json({ error: 'Scene not found: ' + storyId + '/' + sceneId });
+    // 2a. Trouver le début du bloc story (pour borner la recherche)
+    const storyPattern = new RegExp("id:\\s*['\"]" + escapeRegex(storyId) + "['\"]");
+    const storyMatch = storyPattern.exec(content);
+    if (!storyMatch) {
+      return res.status(404).json({
+        error: 'Story not found in index.html',
+        storyId,
+        searchedPattern: storyPattern.source
+      });
+    }
+    const storyStart = storyMatch.index;
+
+    // Trouver le début du prochain story (pour borner la fin)
+    const nextStoryPattern = /id:\s*['"][a-z0-9-]+['"],/g;
+    nextStoryPattern.lastIndex = storyStart + storyMatch[0].length + 1;
+    const nextStoryMatch = nextStoryPattern.exec(content);
+    const storyEnd = nextStoryMatch ? nextStoryMatch.index : content.length;
+
+    const storyBlock = content.substring(storyStart, storyEnd);
+
+    // 2b. Trouver la scène dans le bloc story
+    //     Accepte: id:'sceneId' ou id: 'sceneId' ou id:"sceneId" ou id: "sceneId"
+    const scenePattern = new RegExp("id:\\s*['\"]" + escapeRegex(sceneId) + "['\"]");
+    const sceneMatch = scenePattern.exec(storyBlock);
+
+    if (!sceneMatch) {
+      // Chercher quand même dans tout le fichier pour le debug
+      const globalMatch = scenePattern.exec(content);
+      const approxIdx = content.indexOf(sceneId);
+      const context = approxIdx > -1
+        ? content.substring(Math.max(0, approxIdx - 100), approxIdx + 100)
+        : '(not found anywhere)';
+
+      return res.status(404).json({
+        error: 'Scene not found in story block',
+        storyId,
+        sceneId,
+        searchedPattern: scenePattern.source,
+        foundInFullFile: globalMatch ? true : false,
+        context200chars: context
+      });
     }
 
-    // Chercher la prochaine occurrence de cachedImage:"" après la scène
-    const searchFrom = sceneIdx;
-    const oldCached = 'cachedImage:""';
-    const cachedIdx = content.indexOf(oldCached, searchFrom);
-    if (cachedIdx === -1) {
-      return res.status(404).json({ error: 'cachedImage field not found for scene ' + sceneId });
+    const sceneStart = storyStart + sceneMatch.index;
+
+    // Trouver la prochaine scène pour borner la recherche de cachedImage
+    const nextScenePattern = new RegExp("id:\\s*['\"](?!" + escapeRegex(sceneId) + "['\"])");
+    nextScenePattern.lastIndex = sceneMatch.index + sceneMatch[0].length;
+    const nextSceneMatch = nextScenePattern.exec(storyBlock);
+    const sceneEnd = nextSceneMatch
+      ? storyStart + nextSceneMatch.index
+      : storyEnd;
+
+    const sceneBlock = content.substring(sceneStart, sceneEnd);
+
+    // 2c. Trouver et remplacer cachedImage dans le bloc de la scène
+    //     Accepte toutes variantes : cachedImage:"" / cachedImage:'' / cachedImage: "" / cachedImage: ''
+    //     Y compris si déjà rempli (re-save)
+    const cachedPattern = /cachedImage:\s*["'][^"']*["']/;
+    const cachedMatch = cachedPattern.exec(sceneBlock);
+
+    if (!cachedMatch) {
+      return res.status(404).json({
+        error: 'cachedImage field not found in scene block',
+        storyId,
+        sceneId,
+        searchedPattern: cachedPattern.source,
+        sceneBlockPreview: sceneBlock.substring(0, 300)
+      });
     }
 
-    // Vérifier qu'on ne dépasse pas la scène suivante
-    const nextSceneIdx = content.indexOf("id:'", sceneIdx + sceneMarker.length);
-    if (nextSceneIdx !== -1 && cachedIdx > nextSceneIdx) {
-      return res.status(404).json({ error: 'cachedImage not in expected scene ' + sceneId });
-    }
-
-    const newContent = content.substring(0, cachedIdx) +
+    // Remplacer dans le contenu complet
+    const cachedAbsoluteIdx = sceneStart + cachedMatch.index;
+    const newContent =
+      content.substring(0, cachedAbsoluteIdx) +
       'cachedImage:"' + imageBase64 + '"' +
-      content.substring(cachedIdx + oldCached.length);
+      content.substring(cachedAbsoluteIdx + cachedMatch[0].length);
 
     // 3. Commit via l'API GitHub
     const putBody = JSON.stringify({
       message: 'cache: ' + storyId + '/' + sceneId + ' image validated',
       content: Buffer.from(newContent, 'utf8').toString('base64'),
-      sha: sha
+      sha
     });
 
     const putRes = await fetch(API, { method: 'PUT', headers, body: putBody });
