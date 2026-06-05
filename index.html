@@ -329,7 +329,7 @@
   </section>
 </div>
 
-<audio id="bg-music" src="/sounds/music-bg.mp3" loop preload="none"></audio>
+<audio id="bg-music" src="/sounds/music-bg.mp3" loop preload="auto"></audio>
 
 <!-- APP -->
 <div id="app">
@@ -1990,9 +1990,27 @@ let muted = localStorage.getItem('liito-muted') === 'true';
 function initAudio() {
   if (audioInited) return;
   audioInited = true;
-  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return; }
+  console.log('[Audio] initAudio called');
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    console.log('[Audio] AudioContext created, state:', audioCtx.state);
+  } catch(e) {
+    console.error('[Audio] AudioContext creation failed:', e);
+    return;
+  }
   const bgm = document.getElementById('bg-music');
-  if (bgm) { bgm.volume = 0.3; bgm.muted = muted; bgm.play().catch(() => {}); }
+  console.log('[Audio] Audio element:', bgm ? 'found' : 'NOT FOUND');
+  if (bgm) {
+    console.log('[Audio] Audio src:', bgm.src);
+    bgm.volume = 0.3;
+    bgm.muted = muted;
+    console.log('[Audio] Play attempted, muted:', muted);
+    bgm.play().then(() => {
+      console.log('[Audio] Play success');
+    }).catch(e => {
+      console.warn('[Audio] Play failed:', e.message || e);
+    });
+  }
 }
 
 function updateMuteUI() {
@@ -2101,6 +2119,7 @@ function initStars() {
     document.getElementById('landing-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     document.getElementById('user-avatar').textContent = saved[0].toUpperCase();
+    initAudio();
     renderLibrary();
   }
 })();
