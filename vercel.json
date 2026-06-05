@@ -1,1 +1,7 @@
-{}
+{
+  "functions": {
+    "api/generate-all.js": {
+      "maxDuration": 300
+    }
+  }
+}

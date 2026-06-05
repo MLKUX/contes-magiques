@@ -72,6 +72,35 @@
   .btn-cancel{display:block;width:100%;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:13px;padding:12px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.88rem;color:rgba(255,255,255,0.6);cursor:pointer;transition:border-color 0.2s,color 0.2s;}
   .btn-cancel:hover{border-color:rgba(255,255,255,0.45);color:white;}
 
+  /* GENERATE ALL */
+  .story-card-genall{width:100%;margin-top:8px;background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.35);border-radius:10px;padding:8px 12px;font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:800;color:#C084FC;cursor:pointer;transition:all 0.2s;text-align:left;}
+  .story-card-genall:hover{background:rgba(168,85,247,0.3);border-color:rgba(168,85,247,0.6);}
+  #genall-modal{display:none;position:fixed;inset:0;z-index:400;align-items:flex-start;justify-content:center;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);padding:20px;overflow-y:auto;}
+  #genall-modal.show{display:flex;}
+  .genall-box{background:#0d0520;border:1px solid rgba(168,85,247,0.3);border-radius:20px;padding:28px 24px;width:100%;max-width:560px;margin:auto;}
+  .genall-title{font-family:'Fredoka One',cursive;font-size:1.35rem;color:#C084FC;margin-bottom:5px;}
+  .genall-subtitle{font-size:0.8rem;color:rgba(255,255,255,0.5);margin-bottom:16px;}
+  .genall-bar-outer{height:7px;background:rgba(255,255,255,0.08);border-radius:4px;margin-bottom:16px;overflow:hidden;}
+  .genall-bar-inner{height:7px;background:linear-gradient(90deg,#6B21A8,#A855F7);border-radius:4px;transition:width 0.5s ease;}
+  .genall-scene-list{display:flex;flex-direction:column;gap:5px;margin-bottom:18px;max-height:300px;overflow-y:auto;}
+  .genall-scene-item{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.04);border-radius:8px;padding:7px 10px;font-size:0.75rem;}
+  .genall-scene-id{font-weight:800;color:rgba(255,255,255,0.35);min-width:44px;font-size:0.7rem;}
+  .genall-scene-text{color:rgba(255,255,255,0.65);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+  .genall-scene-status{margin-left:auto;font-size:0.72rem;white-space:nowrap;flex-shrink:0;}
+  .genall-summary{background:rgba(255,255,255,0.04);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:0.8rem;line-height:1.9;}
+  .genall-ok{color:#48C774;} .genall-warn{color:#FFA500;}
+  .genall-review-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;}
+  .genall-review-item{background:rgba(255,165,0,0.07);border:1px solid rgba(255,165,0,0.2);border-radius:9px;padding:9px 12px;font-size:0.75rem;}
+  .genall-review-scores{color:rgba(255,255,255,0.4);font-size:0.68rem;margin-top:2px;}
+  .genall-review-reason{color:#FFA500;font-size:0.72rem;margin-top:2px;font-style:italic;}
+  .btn-genall-save{display:block;width:100%;background:linear-gradient(135deg,#48C774,#06B6D4);border:none;border-radius:12px;padding:12px;font-family:'Fredoka One',cursive;font-size:0.95rem;color:white;cursor:pointer;margin-bottom:8px;transition:transform 0.2s,opacity 0.2s;}
+  .btn-genall-save:hover{transform:translateY(-1px);}
+  .btn-genall-save:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+  .btn-genall-close{display:block;width:100%;background:transparent;border:1px solid rgba(255,255,255,0.18);border-radius:12px;padding:10px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.82rem;color:rgba(255,255,255,0.55);cursor:pointer;transition:all 0.2s;}
+  .btn-genall-close:hover{border-color:rgba(255,255,255,0.45);color:white;}
+  .btn-genall-view{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);border-radius:7px;padding:4px 9px;color:rgba(255,255,255,0.7);font-size:0.7rem;cursor:pointer;margin-top:5px;transition:background 0.2s;}
+  .btn-genall-view:hover{background:rgba(255,255,255,0.15);}
+
   /* ADMIN PANEL */
   #admin-panel{display:none;position:fixed;top:14px;right:14px;z-index:999;background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;backdrop-filter:blur(10px);min-width:170px;font-family:'Nunito',sans-serif;font-size:0.78rem;}
   #admin-panel.visible{display:block;}
@@ -211,6 +240,22 @@
         <button class="btn-library" onclick="closeStory()">📚 Autre histoire</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- GENERATE ALL MODAL -->
+<div id="genall-modal">
+  <div class="genall-box">
+    <div class="genall-title" id="genall-story-title">🎨 Génération</div>
+    <div class="genall-subtitle" id="genall-subtitle">Préparation...</div>
+    <div class="genall-bar-outer"><div class="genall-bar-inner" id="genall-bar" style="width:0%"></div></div>
+    <div class="genall-scene-list" id="genall-scene-list"></div>
+    <div id="genall-results" style="display:none">
+      <div class="genall-summary" id="genall-summary"></div>
+      <div class="genall-review-list" id="genall-review-list"></div>
+      <button class="btn-genall-save" id="btn-genall-save" onclick="saveApprovedAll()">✅ Sauvegarder les images approuvées</button>
+    </div>
+    <button class="btn-genall-close" onclick="closeGenModal()">✕ Fermer</button>
   </div>
 </div>
 
@@ -1342,6 +1387,7 @@ function renderLibrary(){
     const isPremium=!!s.isPremium;
     const onclick=isPremium?'showPremiumModal()':'openStory(\''+s.id+'\')';
     const premiumOverlay=isPremium?'<div class="premium-overlay">🔒</div><div class="premium-badge">✨ Premium</div>':'';
+    const genAllBtn=IS_ADMIN?`<button class="story-card-genall" onclick="event.stopPropagation();openGenAllModal('${s.id}')">🎨 Générer toute l'histoire</button>`:'';
     return `<div class="story-card${isPremium?' is-premium':''}" onclick="${onclick}">
       <div class="story-thumb ${s.thumb}" style="position:relative;">
         <span style="position:relative;z-index:1;font-size:50px;">${s.emoji}</span>
@@ -1351,6 +1397,7 @@ function renderLibrary(){
         <span class="story-level level-${s.level}">${levelLabel(s.level)}</span>
         <div class="story-title">${s.title}</div>
         <div class="story-desc">${s.desc}</div>
+        ${genAllBtn}
       </div>
     </div>`;
   }).join('');
@@ -1771,6 +1818,154 @@ const END_ILLUSTRATIONS = {
     <circle cx="800" cy="60" r="2" fill="white" opacity="0.6"/><circle cx="1100" cy="90" r="1.5" fill="white" opacity="0.7"/>
   </svg>`
 };
+
+// ═══════════════════════════════════
+// GENERATE ALL
+// ═══════════════════════════════════
+const STORY_CHARACTERS = {
+  'kiko-etoile':   'Kiko: small round orange fox cub, big simple eyes, chubby cheeks, tiny round nose. Lumi: tiny glowing yellow star with simple smiley face, soft warm glow. Hana: small round brown hedgehog with simple bright eyes and warm smile.',
+  'foret-secrets': 'Leo: curly-haired boy in red jacket and blue jeans. Madame Hibou: round owl with round spectacles. Red fox with amber eyes.',
+  'dragon-chateau':'Ember: large dragon with iridescent scales and amber eyes. Brave child protagonist. Mael: elderly man with trembling hands.'
+};
+
+let genAllResults = [];
+let genAllStory   = null;
+
+function openGenAllModal(storyId) {
+  genAllStory = STORIES.find(s => s.id === storyId);
+  if (!genAllStory) return;
+  const scenes = genAllStory.scenes.filter(s => s.imagePrompt);
+  genAllResults = [];
+
+  document.getElementById('genall-story-title').textContent = '🎨 ' + genAllStory.title;
+  document.getElementById('genall-subtitle').textContent = scenes.length + ' scènes à générer...';
+  document.getElementById('genall-bar').style.width = '0%';
+  document.getElementById('genall-results').style.display = 'none';
+  document.getElementById('genall-scene-list').innerHTML = scenes.map(s =>
+    `<div class="genall-scene-item" id="gen-item-${s.id}">
+      <span class="genall-scene-id">${s.id}</span>
+      <span class="genall-scene-text">${s.text.substring(0,55)}…</span>
+      <span class="genall-scene-status" id="gen-status-${s.id}">⏳ En attente</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('genall-modal').classList.add('show');
+  runGenerateAll(genAllStory, scenes);
+}
+
+async function runGenerateAll(story, scenes) {
+  document.getElementById('genall-subtitle').textContent = 'Génération en cours… (peut prendre quelques minutes)';
+  const charDesc = STORY_CHARACTERS[story.id] || '';
+  const payload = {
+    storyId: story.id,
+    scenes: scenes.map(s => ({
+      id: s.id,
+      imagePrompt: s.imagePrompt,
+      sceneText: s.text,
+      characterDescriptions: charDesc
+    })),
+    storyLevel: story.level,
+    maxRetries: 3
+  };
+
+  try {
+    const resp = await fetch('/api/generate-all', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const results = await resp.json();
+    if (!Array.isArray(results)) throw new Error(results.error || 'Réponse invalide');
+    genAllResults = results;
+
+    // Mettre à jour chaque ligne avec son résultat
+    results.forEach(r => {
+      const score = r.scores && typeof r.scores.overall_score === 'number' ? r.scores.overall_score.toFixed(1) : '?';
+      const el = document.getElementById('gen-status-' + r.sceneId);
+      if (!el) return;
+      if (r.needsReview) el.textContent = '⚠️ À revoir (' + score + '/10)';
+      else if (r.approved) el.textContent = '✅ Approuvée (' + score + '/10)';
+      else el.textContent = '⚠️ À revoir';
+    });
+
+    document.getElementById('genall-bar').style.width = '100%';
+    showGenAllSummary(results, scenes.length);
+  } catch (err) {
+    document.getElementById('genall-subtitle').textContent = '❌ Erreur : ' + err.message;
+  }
+}
+
+function showGenAllSummary(results, total) {
+  const approved    = results.filter(r => r.approved && !r.needsReview);
+  const needsReview = results.filter(r => r.needsReview || !r.approved);
+
+  document.getElementById('genall-subtitle').textContent = 'Terminé — ' + total + ' scènes traitées.';
+  document.getElementById('genall-summary').innerHTML =
+    '<span class="genall-ok">✅ ' + approved.length + ' image' + (approved.length > 1 ? 's' : '') + ' approuvée' + (approved.length > 1 ? 's' : '') + ' automatiquement</span><br>' +
+    '<span class="genall-warn">⚠️ ' + needsReview.length + ' image' + (needsReview.length > 1 ? 's' : '') + ' à revoir manuellement</span>';
+
+  document.getElementById('genall-review-list').innerHTML = needsReview.map(r => {
+    const score  = r.scores && typeof r.scores.overall_score === 'number' ? r.scores.overall_score.toFixed(1) : '?';
+    const reason = r.scores && r.scores.rejection_reason ? r.scores.rejection_reason : '';
+    const detail = r.scores
+      ? ['style_consistency','character_accuracy','emotion_match','technical_quality','age_appropriateness']
+          .filter(k => r.scores[k] !== undefined)
+          .map(k => k.replace(/_/g,' ') + ': ' + r.scores[k])
+          .join(' · ')
+      : '';
+    return `<div class="genall-review-item">
+      <strong>${r.sceneId}</strong> — Score global : ${score}/10
+      ${reason ? '<div class="genall-review-reason">' + reason + '</div>' : ''}
+      <div class="genall-review-scores">${detail}</div>
+      <button class="btn-genall-view" onclick="viewGenResult('${r.sceneId}')">👁 Voir</button>
+    </div>`;
+  }).join('');
+
+  const btn = document.getElementById('btn-genall-save');
+  btn.textContent = '✅ Sauvegarder ' + approved.length + ' image' + (approved.length > 1 ? 's' : '') + ' approuvée' + (approved.length > 1 ? 's' : '');
+  btn.disabled = approved.length === 0;
+  document.getElementById('genall-results').style.display = 'block';
+}
+
+async function saveApprovedAll() {
+  const btn = document.getElementById('btn-genall-save');
+  const approved = genAllResults.filter(r => r.approved && !r.needsReview);
+  if (!approved.length) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Sauvegarde…';
+  let saved = 0;
+  for (const r of approved) {
+    try {
+      const resp = await fetch('/api/save-image', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ storyId: genAllStory.id, sceneId: r.sceneId, imageBase64: r.imageBase64 })
+      });
+      const d = await resp.json();
+      if (d.success) saved++;
+    } catch (_) {}
+  }
+  btn.textContent = '✅ ' + saved + '/' + approved.length + ' sauvegardée' + (saved > 1 ? 's' : '') + ' !';
+}
+
+function viewGenResult(sceneId) {
+  const r = genAllResults.find(x => x.sceneId === sceneId);
+  if (!r || !r.imageBase64 || !genAllStory) return;
+  const cacheKey = genAllStory.id + '/' + sceneId + '/dalle';
+  imageCache[cacheKey] = r.imageBase64;
+  currentImage = r.imageBase64;
+  closeGenModal();
+  currentStory = genAllStory;
+  currentSceneId = sceneId;
+  document.getElementById('library-screen').style.display = 'none';
+  document.getElementById('story-screen').style.display = 'block';
+  document.getElementById('end-overlay').classList.remove('show');
+  renderScene(sceneId);
+}
+
+function closeGenModal() {
+  document.getElementById('genall-modal').classList.remove('show');
+}
 
 // ═══════════════════════════════════
 // ADMIN

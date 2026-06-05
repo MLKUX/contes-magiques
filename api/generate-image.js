@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'gpt-image-1',
-        prompt: prompt + ', children book illustration, Pixar 3D style, vibrant colors, no text',
+        prompt: prompt,
         n: 1,
         size: '1536x1024',
         quality: 'medium'
