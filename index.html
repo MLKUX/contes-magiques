@@ -331,7 +331,9 @@
   </section>
 </div>
 
-<audio id="bg-music" src="/sounds/music-bg.mp3" loop preload="auto"></audio>
+<audio id="bg-music" loop preload="auto">
+  <source src="/sounds/music-bg.mp3" type="audio/mpeg">
+</audio>
 
 <!-- APP -->
 <div id="app">
@@ -1984,95 +1986,39 @@ function selectTheme(id) {
 // ════════════════════════════════════
 // AUDIO
 // ════════════════════════════════════
-let audioCtx = null;
-let audioInited = false;
-let muted = localStorage.getItem('liito-muted') === 'true';
-
 function initAudio() {
-  if (audioInited) return;
-  audioInited = true;
-  console.log('[Audio] initAudio called');
-  try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    console.log('[Audio] AudioContext created, state:', audioCtx.state);
-  } catch(e) {
-    console.error('[Audio] AudioContext creation failed:', e);
-    return;
-  }
-  const bgm = document.getElementById('bg-music');
-  console.log('[Audio] Audio element:', bgm ? 'found' : 'NOT FOUND');
-  if (bgm) {
-    console.log('[Audio] Audio src:', bgm.src);
-    bgm.volume = 0.3;
-    bgm.muted = muted;
-    console.log('[Audio] Play attempted, muted:', muted);
-    bgm.play().then(() => {
-      console.log('[Audio] Play success');
-    }).catch(e => {
-      console.warn('[Audio] Play failed:', e.message || e);
-    });
-  }
+  const music = document.getElementById('bg-music');
+  if (!music) { console.log('[Audio] element not found'); return; }
+  const savedMuted = localStorage.getItem('liito-muted') === 'true';
+  music.volume = 0.3;
+  music.muted = savedMuted;
+  music.play()
+    .then(() => console.log('[Audio] playing'))
+    .catch(e => console.log('[Audio] blocked:', e.message));
 }
 
+document.addEventListener('click', initAudio, {once: true});
+
 function updateMuteUI() {
-  const icon = muted ? '&#x1F507;' : '&#x1F50A;';
+  const music = document.getElementById('bg-music');
+  const isMuted = music ? music.muted : localStorage.getItem('liito-muted') === 'true';
+  const icon = isMuted ? '&#x1F507;' : '&#x1F50A;';
   ['mute-btn-lib','mute-btn-story','mute-btn-landing'].forEach(id => {
     const b = document.getElementById(id);
     if (b) b.innerHTML = icon;
   });
 }
 
-document.addEventListener('click', () => initAudio(), {once: true});
-
 function toggleMute() {
-  muted = !muted;
-  localStorage.setItem('liito-muted', muted);
-  const bgm = document.getElementById('bg-music');
-  if (bgm) bgm.muted = muted;
+  const music = document.getElementById('bg-music');
+  if (music) {
+    music.muted = !music.muted;
+    localStorage.setItem('liito-muted', music.muted);
+  }
   updateMuteUI();
 }
 
-const SFX = {
-  _p(f1, f2, dur, gain) {
-    if (!audioCtx || muted) return;
-    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.connect(g); g.connect(audioCtx.destination);
-    o.type = 'sine';
-    o.frequency.setValueAtTime(f1, audioCtx.currentTime);
-    if (f2 !== f1) o.frequency.linearRampToValueAtTime(f2, audioCtx.currentTime + dur);
-    g.gain.setValueAtTime(gain, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-    o.start(); o.stop(audioCtx.currentTime + dur + 0.01);
-  },
-  click()      { this._p(880, 1100, 0.15, 0.25); },
-  transition() { this._p(520, 260,  0.35, 0.12); },
-  success() {
-    if (!audioCtx || muted) return;
-    [261, 329, 392, 523].forEach((f, i) => {
-      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.connect(g); g.connect(audioCtx.destination);
-      o.type = 'sine'; o.frequency.value = f;
-      const t = audioCtx.currentTime + i * 0.18;
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.2, t + 0.05);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-      o.start(t); o.stop(t + 0.22);
-    });
-  },
-  open() {
-    if (!audioCtx || muted) return;
-    [261, 329, 392].forEach(f => {
-      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.connect(g); g.connect(audioCtx.destination);
-      o.type = 'sine'; o.frequency.value = f;
-      const t = audioCtx.currentTime;
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.1, t + 0.15);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-      o.start(t); o.stop(t + 0.55);
-    });
-  }
-};
+const SFX = { click(){}, transition(){}, success(){}, open(){} };
 
 // ════════════════════════════════════
 // PROFILE PERSISTENCE
