@@ -139,6 +139,7 @@ Respond ONLY with this JSON format :
 
   try {
     debugLog.push({ step: 'anthropic_fetch_start' });
+    debugLog.push('key_prefix: ' + (process.env.ANTHROPIC_API_KEY || 'UNDEFINED').substring(0, 10));
 
     const b64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
 
