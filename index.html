@@ -101,6 +101,23 @@
   .btn-genall-view{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);border-radius:7px;padding:4px 9px;color:rgba(255,255,255,0.7);font-size:0.7rem;cursor:pointer;margin-top:5px;transition:background 0.2s;}
   .btn-genall-view:hover{background:rgba(255,255,255,0.15);}
 
+  /* IMAGE PREVIEW OVERLAY */
+  #img-preview-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.93);flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:16px;overflow-y:auto;}
+  #img-preview-overlay.show{display:flex;}
+  #img-preview-img{max-width:90vw;max-height:55vh;border-radius:12px;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,0.6);}
+  .img-preview-info{width:100%;max-width:560px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 16px;}
+  .img-preview-reason{color:#FFA500;font-size:0.82rem;font-style:italic;margin-bottom:10px;}
+  .img-preview-scores-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:0.75rem;color:rgba(255,255,255,0.6);}
+  .img-preview-score-item{display:flex;justify-content:space-between;}
+  .img-preview-score-val{font-weight:800;color:white;}
+  .img-preview-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%;max-width:560px;}
+  .btn-preview-include{flex:1;min-width:140px;background:linear-gradient(135deg,#48C774,#06B6D4);border:none;border-radius:10px;padding:11px 14px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.82rem;color:white;cursor:pointer;transition:opacity 0.2s;}
+  .btn-preview-include:hover{opacity:0.85;}
+  .btn-preview-ignore{flex:1;min-width:100px;background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.35);border-radius:10px;padding:11px 14px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.82rem;color:rgba(255,120,120,0.9);cursor:pointer;transition:background 0.2s;}
+  .btn-preview-ignore:hover{background:rgba(255,80,80,0.28);}
+  .btn-preview-back{flex:1;min-width:100px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:11px 14px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.82rem;color:rgba(255,255,255,0.6);cursor:pointer;transition:background 0.2s;}
+  .btn-preview-back:hover{background:rgba(255,255,255,0.12);color:white;}
+
   /* ADMIN PANEL */
   #admin-panel{display:none;position:fixed;top:14px;right:14px;z-index:999;background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;backdrop-filter:blur(10px);min-width:170px;font-family:'Nunito',sans-serif;font-size:0.78rem;}
   #admin-panel.visible{display:block;}
@@ -240,6 +257,20 @@
         <button class="btn-library" onclick="closeStory()">📚 Autre histoire</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- IMAGE PREVIEW OVERLAY -->
+<div id="img-preview-overlay">
+  <img id="img-preview-img" src="" alt="Aperçu de la scène"/>
+  <div class="img-preview-info">
+    <div class="img-preview-reason" id="img-preview-reason"></div>
+    <div class="img-preview-scores-grid" id="img-preview-scores"></div>
+  </div>
+  <div class="img-preview-actions">
+    <button class="btn-preview-include" onclick="includeAnyway()">✅ Inclure quand même</button>
+    <button class="btn-preview-ignore" onclick="closeImagePreview()">❌ Ignorer</button>
+    <button class="btn-preview-back" onclick="closeImagePreview()">← Retour</button>
   </div>
 </div>
 
@@ -1830,6 +1861,7 @@ const STORY_CHARACTERS = {
 
 let genAllResults = [];
 let genAllStory   = null;
+let currentPreviewSceneId = null;
 
 function openGenAllModal(storyId) {
   genAllStory = STORIES.find(s => s.id === storyId);
@@ -1960,17 +1992,56 @@ async function saveApprovedAll() {
 
 function viewGenResult(sceneId) {
   const r = genAllResults.find(x => x.sceneId === sceneId);
-  if (!r || !r.imageBase64 || !genAllStory) return;
-  const cacheKey = genAllStory.id + '/' + sceneId + '/dalle';
-  imageCache[cacheKey] = r.imageBase64;
-  currentImage = r.imageBase64;
-  closeGenModal();
-  currentStory = genAllStory;
-  currentSceneId = sceneId;
-  document.getElementById('library-screen').style.display = 'none';
-  document.getElementById('story-screen').style.display = 'block';
-  document.getElementById('end-overlay').classList.remove('show');
-  renderScene(sceneId);
+  if (!r || !r.imageBase64) return;
+  currentPreviewSceneId = sceneId;
+
+  document.getElementById('img-preview-img').src = r.imageBase64;
+
+  const reason = r.scores && r.scores.rejection_reason ? r.scores.rejection_reason : '';
+  const reasonEl = document.getElementById('img-preview-reason');
+  reasonEl.textContent = reason ? '⚠️ ' + reason : '';
+  reasonEl.style.display = reason ? 'block' : 'none';
+
+  const SCORE_LABELS = {
+    style_consistency: 'Style aquarelle',
+    character_accuracy: 'Personnages',
+    emotion_match: 'Émotion',
+    technical_quality: 'Qualité tech.',
+    age_appropriateness: 'Adapté 3-5 ans',
+    overall_score: 'Score global'
+  };
+  const scoresEl = document.getElementById('img-preview-scores');
+  scoresEl.innerHTML = r.scores
+    ? Object.entries(SCORE_LABELS)
+        .filter(([k]) => r.scores[k] !== undefined)
+        .map(([k, label]) =>
+          `<div class="img-preview-score-item">
+            <span>${label}</span>
+            <span class="img-preview-score-val">${typeof r.scores[k] === 'number' ? r.scores[k].toFixed(1) : r.scores[k]}/10</span>
+          </div>`
+        ).join('')
+    : '';
+
+  document.getElementById('img-preview-overlay').classList.add('show');
+}
+
+function closeImagePreview() {
+  document.getElementById('img-preview-overlay').classList.remove('show');
+  document.getElementById('img-preview-img').src = '';
+  currentPreviewSceneId = null;
+}
+
+function includeAnyway() {
+  const r = genAllResults.find(x => x.sceneId === currentPreviewSceneId);
+  if (r) {
+    r.approved = true;
+    r.needsReview = false;
+    const score = r.scores && typeof r.scores.overall_score === 'number' ? r.scores.overall_score.toFixed(1) : '?';
+    const statusEl = document.getElementById('gen-status-' + r.sceneId);
+    if (statusEl) statusEl.textContent = '✅ Incluse (' + score + '/10)';
+    showGenAllSummary(genAllResults, genAllResults.length);
+  }
+  closeImagePreview();
 }
 
 function closeGenModal() {
