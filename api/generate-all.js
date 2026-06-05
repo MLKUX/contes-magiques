@@ -151,7 +151,7 @@ Respond ONLY with this JSON format :
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1024,
         system: 'You are a quality checker for a children\'s illustrated storybook app. You analyze AI-generated illustrations and rate their quality on specific criteria. Always respond with valid JSON only, no other text.',
         messages: [{
