@@ -44,55 +44,10 @@ async function readIndexHtml(GITHUB_REPO, GITHUB_TOKEN) {
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-
-  // ── Route de debug GET ?debug=true ──────────────────────────────────────────
-  if (req.method === 'GET' && req.query && req.query.debug === 'true') {
-    const debugStoryId = req.query.storyId || 'kiko-etoile';
-    const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-    const GITHUB_REPO  = process.env.GITHUB_REPO;
-
-    const diag = {
-      env: {
-        githubTokenDefined: !!GITHUB_TOKEN,
-        githubRepoDefined:  !!GITHUB_REPO,
-        githubRepoFirst5:   GITHUB_REPO ? GITHUB_REPO.substring(0, 5) : null
-      }
-    };
-
-    if (!GITHUB_TOKEN || !GITHUB_REPO) {
-      return res.status(500).json({ error: 'GITHUB_TOKEN or GITHUB_REPO not configured', ...diag });
-    }
-
-    try {
-      const { sha, content } = await readIndexHtml(GITHUB_REPO, GITHUB_TOKEN);
-
-      const idx = content.indexOf(debugStoryId);
-      const before = idx > -1 ? content.substring(Math.max(0, idx - 50), idx) : null;
-      const after  = idx > -1 ? content.substring(idx, idx + 150) : null;
-
-      const storyPattern = new RegExp("id:\\s*['\"]" + escapeRegex(debugStoryId) + "['\"]");
-      const storyMatch = storyPattern.exec(content);
-
-      return res.status(200).json({
-        ...diag,
-        sha,
-        storyId: debugStoryId,
-        contentLength: content.length,
-        contentFirst100: content.substring(0, 100),
-        indexOf: idx,
-        context: { before, after },
-        regexPattern: storyPattern.source,
-        regexMatch: storyMatch ? storyMatch[0] : null,
-        regexPosition: storyMatch ? storyMatch.index : null
-      });
-    } catch (err) {
-      return res.status(500).json({ error: err.message, httpStatus: err.httpStatus, body: err.body, ...diag });
-    }
-  }
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
