@@ -31,12 +31,40 @@ module.exports = async function handler(req, res) {
     };
     try {
       const getRes = await fetch(API, { headers });
+      const githubStatus = getRes.status;
+      const githubHeaders = {};
+      getRes.headers.forEach((val, key) => { githubHeaders[key] = val; });
+
+      const rawBody = await getRes.text();
+
+      // Diagnostics de base (avant tout parsing)
+      const diag = {
+        env: {
+          githubTokenDefined: !!GITHUB_TOKEN,
+          githubRepoDefined: !!GITHUB_REPO,
+          githubRepoFirst5: GITHUB_REPO ? GITHUB_REPO.substring(0, 5) : null
+        },
+        github: {
+          status: githubStatus,
+          headers: githubHeaders,
+          rawBodyFirst200: rawBody.substring(0, 200)
+        }
+      };
+
       if (!getRes.ok) {
-        const err = await getRes.json();
-        return res.status(500).json({ error: 'GitHub GET failed', details: err });
+        return res.status(500).json({ error: 'GitHub GET failed', ...diag });
       }
-      const fileData = await getRes.json();
-      const content = Buffer.from(fileData.content, 'base64').toString('utf8');
+
+      // Parsing
+      let fileData;
+      try {
+        fileData = JSON.parse(rawBody);
+      } catch (e) {
+        return res.status(500).json({ error: 'Failed to parse GitHub JSON', parseError: e.message, ...diag });
+      }
+
+      const b64Content = fileData.content || '';
+      const content = Buffer.from(b64Content, 'base64').toString('utf8');
 
       const idx = content.indexOf(debugStoryId);
       const before = idx > -1 ? content.substring(Math.max(0, idx - 50), idx) : null;
@@ -46,6 +74,7 @@ module.exports = async function handler(req, res) {
       const storyMatch = storyPattern.exec(content);
 
       return res.status(200).json({
+        ...diag,
         storyId: debugStoryId,
         contentLength: content.length,
         contentFirst100: content.substring(0, 100),
