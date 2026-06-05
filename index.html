@@ -1186,19 +1186,19 @@ const STORIES = [
       { id:'s4a', imagePrompt:"Pixar 3D animated movie style, slightly more detailed environments than Kiko. Deep enchanted forest, rich blue-green atmosphere, bioluminescent mushrooms and fireflies. Consistent characters every scene. Cinematic depth of field, dramatic lighting. No text, no watermark. SCENE: A hidden circular forest clearing reveals an ancient moss-covered chest glowing faintly at its center. FOREGROUND: A ring of glowing mushrooms surrounding the chest like sentinels. MIDGROUND: Leo approaching slowly, eyes wide with awe and wonder. BACKGROUND: Ancient trees forming a perfect natural cathedral around the clearing, silver moonlight above. MOOD: Discovery and reverence, silver moonlight meets faint golden chest glow, magical silence.", cachedImage:"", text:"Les champignons mènent Léo jusqu'à une clairière cachée. Au centre, un vieux coffre couvert de mousse. Il n'y a personne d'autre.",
         choices:[
           {text:"🔓 Ouvrir le coffre", next:'fin_a', pos:{left:'50%',top:'50%'}},
-          {text:"🔍 Chercher une clé d'abord", next:'fin_a', pos:{left:'68%',top:'38%'}}
+          {text:"🔍 Chercher une clé d'abord", next:'fin_a3', pos:{left:'68%',top:'38%'}}
         ]
       },
       { id:'s4b', imagePrompt:"Pixar 3D animated movie style, slightly more detailed environments than Kiko. Deep enchanted forest, rich blue-green atmosphere, bioluminescent mushrooms and fireflies. Consistent characters every scene. Cinematic depth of field, dramatic lighting. No text, no watermark. SCENE: Madame Hibou leads Leo to a mysterious door set into the trunk of a massive ancient oak. FOREGROUND: Gnarled oak roots framing the small wooden door, moss and tiny ferns. MIDGROUND: Leo standing before the door, hand raised to knock. Madame Hibou perched on a root above, watching. BACKGROUND: Deep enchanted forest, shafts of golden light, silent depth. MOOD: Mystery and anticipation, warm light seeping through door cracks against deep forest shadows.", cachedImage:"", text:"Madame Hibou vole lentement entre les arbres. Léo la suit en courant. Elle s'arrête devant une porte cachée dans le tronc d'un vieux chêne.",
         choices:[
           {text:"🚪 Frapper et entrer", next:'fin_b', pos:{left:'55%',top:'45%'}},
-          {text:"👂 Écouter ce qu'il y a derrière", next:'fin_b', pos:{left:'32%',top:'58%'}}
+          {text:"👂 Écouter ce qu'il y a derrière", next:'fin_b3', pos:{left:'32%',top:'58%'}}
         ]
       },
       { id:'s4c', imagePrompt:"Pixar 3D animated movie style, slightly more detailed environments than Kiko. Deep enchanted forest, rich blue-green atmosphere, bioluminescent mushrooms and fireflies. Consistent characters every scene. Cinematic depth of field, dramatic lighting. No text, no watermark. SCENE: The red fox guides Leo to a perfectly still lake that mirrors the entire starry sky like black glass. FOREGROUND: Lake edge with smooth pebbles, moonlit water reflections beginning. MIDGROUND: The red fox pausing at the edge, looking back at Leo with knowing amber eyes. BACKGROUND: The still lake perfectly reflecting the full night sky, stars infinite above and below. MOOD: Magic and wonder as reward, deep blue mirror world, stars above and below creating infinity.", cachedImage:"", text:"Le renard parle. 'Tu m'as aidé', dit-il. 'Ou tu es revenu pour le faire. C'est pareil.' Il lui montre un chemin secret que personne d'autre ne connaît.",
         choices:[
           {text:"🌟 Suivre le chemin secret", next:'fin_c', pos:{left:'50%',top:'48%'}},
-          {text:"🦊 Rester encore un moment", next:'fin_c', pos:{left:'68%',top:'38%'}}
+          {text:"🦊 Rester encore un moment", next:'fin_c3', pos:{left:'68%',top:'38%'}}
         ]
       },
       { id:'fin_a', text:"Dans le coffre, il n'y a qu'une phrase gravée : 'Tu as trouvé ton chemin seul.' Léo sourit. C'est vrai.",
@@ -1221,6 +1221,15 @@ const STORIES = [
       },
       { id:'fin_d', text:"Léo sort de la forêt. Il fait beau. Mais ce soir, avant de dormir, il repense aux yeux du renard. Il se dit que demain, il retournera peut-être l'aider.",
         choices:[], end:{star:'🌙', title:'Fin du Lendemain', text:"On ne fait pas toujours le bon choix sur le moment.\nCe qui compte, c'est ce qu'on ressent après. Et ce qu'on fait ensuite."}
+      },
+      { id:'fin_a3', imagePrompt:"", cachedImage:"", text:"Léo cherche longtemps. Il ne trouve pas de clé. Mais en cherchant, il découvre une plante rare qu'il n'aurait jamais vue autrement. Le coffre restera fermé. Ce n'est pas grave.",
+        choices:[], end:{star:'🌿', title:'Bien cherché, Léo !', text:"Parfois le chemin compte plus que le but. Léo a cherché, et c'est ça le vrai trésor."}
+      },
+      { id:'fin_b3', imagePrompt:"", cachedImage:"", text:"Léo colle son oreille à la porte. Il entend une voix qui chante doucement. Il reste là un long moment sans entrer. Certaines choses sont plus belles quand on ne les touche pas.",
+        choices:[], end:{star:'👂', title:'Tu as bien écouté, Léo !', text:"Léo a appris qu'observer en silence, c'est aussi une façon de comprendre le monde."}
+      },
+      { id:'fin_c3', imagePrompt:"", cachedImage:"", text:"Léo s'assoit près du renard. Ils ne parlent pas beaucoup. Quand le soleil descend, Léo rentre chez lui par le chemin ordinaire. Mais il se sent différent.",
+        choices:[], end:{star:'🦊', title:'Bien resté, Léo !', text:"Léo n'a pas trouvé de trésor ni de chemin secret. Il a juste passé du temps avec quelqu'un. Et parfois c'est tout ce dont on a besoin."}
       }
     ]
   },
