@@ -170,9 +170,8 @@ Respond ONLY with this JSON format :
     if (!valResp.ok) {
       return res.status(500).json({
         error: 'Anthropic request failed',
-        step: 'anthropic_validation',
-        httpStatus: anthropicStatus,
-        rawResponse: anthropicRawText,
+        status: anthropicStatus,
+        body: anthropicRawText,
         debugLog
       });
     }
