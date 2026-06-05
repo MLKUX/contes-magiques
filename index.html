@@ -1988,13 +1988,16 @@ function selectTheme(id) {
 // ════════════════════════════════════
 function initAudio() {
   const music = document.getElementById('bg-music');
-  if (!music) { console.log('[Audio] element not found'); return; }
-  const savedMuted = localStorage.getItem('liito-muted') === 'true';
+  if (!music) return;
+  const muted = localStorage.getItem('liito-muted') === 'true';
   music.volume = 0.3;
-  music.muted = savedMuted;
-  music.play()
-    .then(() => console.log('[Audio] playing'))
-    .catch(e => console.log('[Audio] blocked:', e.message));
+  music.muted = muted;
+  music.addEventListener('canplay', function() {
+    music.play()
+      .then(() => console.log('[Audio] playing'))
+      .catch(e => console.log('[Audio] blocked:', e.message));
+  }, {once: true});
+  music.load();
 }
 
 document.addEventListener('click', initAudio, {once: true});
