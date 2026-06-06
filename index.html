@@ -1163,6 +1163,117 @@ const STORIES = [
         choices:[], end:{star:'🦊', title:'Bien resté, Léo !', text:"Léo n'a pas trouvé de trésor ni de chemin secret. Il a juste passé du temps avec quelqu'un. Et parfois c'est tout ce dont on a besoin."}
       }
     ]
+  },
+  {
+    id:'malo-nuage',
+    title:'Malo et le Nuage Perdu',
+    desc:"Un petit nuage est tombé du ciel. Malo l'ours veut l'aider à rentrer !",
+    level:'eveil', thumb:'story-thumb-forest', emoji:'🌥️',
+    scenes:[
+      {
+        id:'s1', cachedImage:'',
+        text:"Dans la vallée, quelque chose brille doucement. Malo s'approche. C'est un petit nuage tout seul, tombé du ciel. Il tremble.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Malo is always a small chubby brown bear with a white belly, big round eyes, tiny round nose, and a red scarf. Plume is always a small fluffy white cloud with a gentle tired face, soft rounded shape, slightly drooping. Noa is always a small bright orange squirrel with a bushy tail, alert round eyes, cheerful expression. Grand-Souffle is always a large old owl with soft grey-white feathers, round wise eyes, a calm kind expression, sitting very still. No text, no watermark, no photography, no 3D rendering. SCENE: Malo stands at the edge of a grassy hill, looking down into the valley below where Plume sits alone on the ground, trembling slightly, very small and far away. FOREGROUND: hillside grass, small wildflowers, Malo's round feet at the very edge. MIDGROUND: Malo leaning forward gently, one paw half-raised, eyes wide and soft with concern. BACKGROUND: the valley floor open and misty, Plume tiny below, the sky above completely empty. MOOD: quiet discovery of something fragile. Pale morning light, soft greens and misty whites.",
+        choices:[
+          {text:"🫂 Descendre le rejoindre", next:'s2a', pos:{left:'36%',top:'58%'}},
+          {text:"🐿️ Appeler Noa d'abord",    next:'s2b', pos:{left:'64%',top:'42%'}}
+        ]
+      },
+      {
+        id:'s2a', cachedImage:'',
+        text:"Malo dévale la colline et prend Plume dans ses bras. Il est doux et froid comme un coussin de neige. Malo regarde la montagne. Il faut monter très haut.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Malo is always a small chubby brown bear with a white belly, big round eyes, tiny round nose, and a red scarf. Plume is always a small fluffy white cloud with a gentle tired face, soft rounded shape, slightly drooping. Noa is always a small bright orange squirrel with a bushy tail, alert round eyes, cheerful expression. Grand-Souffle is always a large old owl with soft grey-white feathers, round wise eyes, a calm kind expression, sitting very still. No text, no watermark, no photography, no 3D rendering. SCENE: Malo walks steadily through the valley, Plume cradled against his chest with both arms, heading toward the mountain in the distance. FOREGROUND: soft valley grass, small stones, Malo's footprints behind him. MIDGROUND: Malo walking with quiet determination, Plume's tired face peeking over his arm, red scarf in a gentle breeze. BACKGROUND: the mountain ahead tall and hazy, peak hidden in clouds, very far. MOOD: tender determination, the weight of a long journey ahead. Soft blues, warm cream, distant grey-blue mountain.",
+        choices:[
+          {text:"Grimper ➜", next:'s3a', pos:{left:'50%',top:'60%'}}
+        ]
+      },
+      {
+        id:'s3a', cachedImage:'',
+        text:"À mi-chemin, les rochers sont glissants. Le pied de Malo dérape. Il lâche Plume ! Plume flotte et commence à redescendre vers la vallée.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Malo is always a small chubby brown bear with a white belly, big round eyes, tiny round nose, and a red scarf. Plume is always a small fluffy white cloud with a gentle tired face, soft rounded shape, slightly drooping. Noa is always a small bright orange squirrel with a bushy tail, alert round eyes, cheerful expression. Grand-Souffle is always a large old owl with soft grey-white feathers, round wise eyes, a calm kind expression, sitting very still. No text, no watermark, no photography, no 3D rendering. SCENE: Malo has just slipped on a wet mossy rock halfway up the mountain. His foot slides sideways, and Plume has slipped from his arms, floating upward and beginning to drift slowly back down toward the valley. FOREGROUND: wet mossy rocks, Malo's foot slipping, small pebbles scattering. MIDGROUND: Malo off-balance, arms wide, eyes huge with alarm. Plume floating just above and slightly away, surprised face, drifting downward slowly. BACKGROUND: the mountain continuing steeply upward, the valley visible far below, the peak still far above. MOOD: sudden shock and fear of losing something precious. Muted greys and greens, soft white of Plume drifting.",
+        choices:[
+          {text:"🏃 Courir rattraper Plume !", next:'s4a', pos:{left:'38%',top:'52%'}},
+          {text:"🦉 Appeler à l'aide !",        next:'s4b', pos:{left:'62%',top:'42%'}}
+        ]
+      },
+      {
+        id:'s4a', cachedImage:'',
+        text:"Malo court de toutes ses pattes. Il grimpe, il saute, il tend les bras. Et il attrape Plume ! Il serre fort. Ensuite il continue à grimper, grimper, grimper jusqu'en haut.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Malo is always a small chubby brown bear with a white belly, big round eyes, tiny round nose, and a red scarf. Plume is always a small fluffy white cloud with a gentle tired face, soft rounded shape, slightly drooping. Grand-Souffle is always a large old owl with soft grey-white feathers, round wise eyes, a calm kind expression, sitting very still. No text, no watermark, no photography, no 3D rendering. SCENE: Malo running uphill at full speed, arms outstretched, just managing to grab Plume who had been drifting downward. Malo's expression transforms from panic to pure relief. FOREGROUND: rocks and grass under Malo's running feet. MIDGROUND: Malo mid-lunge, both arms wrapping around Plume, eyes scrunched with effort and relief. Plume looking startled but safe. BACKGROUND: the steep mountain slope, valley far below, the summit still visible above. MOOD: relief after panic, the triumph of not giving up. Warm golden tones breaking through the grey.",
+        choices:[
+          {text:"Au sommet ➜", next:'fin_a', pos:{left:'50%',top:'60%'}}
+        ]
+      },
+      {
+        id:'s4b', cachedImage:'',
+        text:"Un grand hibou était là, immobile sur un rocher depuis le début. C'est Grand-Souffle. Il déploie ses ailes doucement et souffle... souffle... souffle, jusqu'aux nuages.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Malo is always a small chubby brown bear with a white belly, big round eyes, tiny round nose, and a red scarf. Plume is always a small fluffy white cloud with a gentle tired face, soft rounded shape, slightly drooping. Grand-Souffle is always a large old owl with soft grey-white feathers, round wise eyes, a calm kind expression, sitting very still. No text, no watermark, no photography, no 3D rendering. SCENE: Grand-Souffle sits on a large flat rock on the mountain slope, wings slowly opening, eyes warm and calm. He blows a long steady breath upward toward Plume who had been drifting away. FOREGROUND: large flat mossy rock where Grand-Souffle perches. MIDGROUND: Malo nearby looking up with hope and relief, arms reaching. Grand-Souffle beside him, cheeks puffed gently, eyes soft and kind. BACKGROUND: Plume visible in the distance, beginning to rise back upward toward the clouds, the mountain sky brightening. MOOD: unexpected help, calm wisdom, warmth between unlikely friends. Soft grey and white tones, Grand-Souffle glowing gently golden.",
+        choices:[
+          {text:"Regarder ➜", next:'fin_a2', pos:{left:'50%',top:'60%'}}
+        ]
+      },
+      {
+        id:'fin_a', cachedImage:'',
+        text:"En haut de la montagne, le vent souffle fort. Malo lève Plume au-dessus de sa tête. Le vent l'emporte ! Plume remonte dans le ciel en souriant.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Malo is always a small chubby brown bear with a white belly, big round eyes, tiny round nose, and a red scarf. Plume is always a small fluffy white cloud with a gentle tired face, soft rounded shape, slightly drooping. No text, no watermark, no photography, no 3D rendering. SCENE: Malo stands at the very summit of the mountain, arms raised high above his head, releasing Plume into the strong wind. Plume rises upward, face now bright and happy, spinning gently as he ascends toward the other clouds waiting far above. FOREGROUND: summit rock, Malo's feet planted wide, small mountain flowers. MIDGROUND: Malo from slightly below, arms raised, expression of pure joy. BACKGROUND: vast open sky, Plume rising higher toward distant clouds, warm sunlight breaking through. MOOD: triumph, the joy of completing something alone, the beauty of letting go. Bright warm sky, golden light.",
+        choices:[],
+        end:{star:'🏔️', title:'Bravo Malo !', text:"Tu as grimpé tout seul jusqu'en haut.\nQuand on ne lâche pas, on découvre qu'on était capable."}
+      },
+      {
+        id:'fin_a2', cachedImage:'',
+        text:"Grand-Souffle souffle encore et encore. Plume remonte, remonte... et rejoint les nuages du ciel ! Malo regarde, les yeux brillants.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Malo is always a small chubby brown bear with a white belly, big round eyes, tiny round nose, and a red scarf. Plume is always a small fluffy white cloud with a gentle tired face, soft rounded shape, slightly drooping. Grand-Souffle is always a large old owl with soft grey-white feathers, round wise eyes, a calm kind expression, sitting very still. No text, no watermark, no photography, no 3D rendering. SCENE: Grand-Souffle blows a long steady breath and Plume rises upward, ascending toward the sky. Malo stands nearby watching with bright shining eyes, one paw over his heart. FOREGROUND: mountain rocks, Grand-Souffle's large feet on the stone. MIDGROUND: Malo watching Plume rise with wonder and gratitude. Grand-Souffle beside him, eyes soft and satisfied. BACKGROUND: Plume rising high toward other clouds in the bright sky, getting smaller as he ascends home. MOOD: quiet gratitude, the wisdom of accepting help, warmth between unlikely friends. Soft greys and whites, warm golden light above.",
+        choices:[],
+        end:{star:'🦉', title:'Bravo Malo !', text:"Tu as demandé de l'aide au bon moment.\nAccepter l'aide d'un ami, c'est aussi du courage."}
+      },
+      {
+        id:'s2b', cachedImage:'',
+        text:"Noa arrive en sautant des arbres. Ensemble ils descendent chercher Plume. Malo le prend dans ses bras. Plume regarde autour de lui, ses yeux doux semblent chercher quelque chose.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Malo is always a small chubby brown bear with a white belly, big round eyes, tiny round nose, and a red scarf. Plume is always a small fluffy white cloud with a gentle tired face, soft rounded shape, slightly drooping. Noa is always a small bright orange squirrel with a bushy tail, alert round eyes, cheerful expression. No text, no watermark, no photography, no 3D rendering. SCENE: Malo and Noa walk side by side through the valley, Malo now cradling Plume in his arms, Noa leading the way along a path that curves upward toward the mountain. Plume's eyes look around gently as if sensing something. FOREGROUND: valley path, soft grass, paw prints of both animals. MIDGROUND: Malo holding Plume, looking grateful. Noa beside him, tail up, leading confidently. BACKGROUND: the path curving up ahead toward the mountain, warm forest on both sides, golden light. MOOD: companionship, shared purpose, a hint of Plume's quiet awareness. Warm amber, soft green, gentle gold.",
+        choices:[
+          {text:"Continuer ➜", next:'s3b', pos:{left:'50%',top:'60%'}}
+        ]
+      },
+      {
+        id:'s3b', cachedImage:'',
+        text:"Le chemin s'arrête devant un torrent. L'eau court vite sur les rochers. Comment traverser ?",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Malo is always a small chubby brown bear with a white belly, big round eyes, tiny round nose, and a red scarf. Plume is always a small fluffy white cloud with a gentle tired face, soft rounded shape, slightly drooping. Noa is always a small bright orange squirrel with a bushy tail, alert round eyes, cheerful expression. No text, no watermark, no photography, no 3D rendering. SCENE: Malo and Noa stand at the edge of a rushing stream that cuts across their path. Stepping stones visible in the water. Malo holds Plume tightly. Both animals look at the stream, thinking. FOREGROUND: stream bank, wet grass, water rushing and sparkling close up. MIDGROUND: Malo and Noa side by side, Malo cautious, Noa looking at the stepping stones. Plume cradled between them. BACKGROUND: stepping stones crossing to the mountain path on the other side. MOOD: an obstacle, concentration, problem-solving. Cool blues and greens, sparkling water.",
+        choices:[
+          {text:"🪨 Sauter de pierre en pierre !", next:'s4c', pos:{left:'38%',top:'52%'}},
+          {text:"👀 Observer ce que fait Plume...",  next:'s4d', pos:{left:'62%',top:'42%'}}
+        ]
+      },
+      {
+        id:'s4c', cachedImage:'',
+        text:"Malo glisse Plume sous son écharpe pour avoir les mains libres. Il saute sur la première pierre, la deuxième... et glisse ! Noa attrape son écharpe juste à temps. Ils rient.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Malo is always a small chubby brown bear with a white belly, big round eyes, tiny round nose, and a red scarf. Plume is always a small fluffy white cloud with a gentle tired face, soft rounded shape, slightly drooping. Noa is always a small bright orange squirrel with a bushy tail, alert round eyes, cheerful expression. No text, no watermark, no photography, no 3D rendering. SCENE: Malo is mid-slip on a wet stepping stone, one foot sliding toward the water — but Noa has grabbed his red scarf from behind and is pulling hard. Plume is visible as a small white lump tucked snugly inside the red scarf wrapped around Malo's middle, Plume's face peeking out with wide eyes. FOREGROUND: rushing stream, wet stones, splashing water. MIDGROUND: Malo half-falling, surprised eyes. Noa behind, teeth gritted, holding the scarf. Plume's face peeking from the scarf. BACKGROUND: far bank ahead, almost there. MOOD: near-disaster turning into laughter, the safety of friendship. Cool blues and rushing whites, warm amber of Noa.",
+        choices:[
+          {text:"Continuer ➜", next:'fin_b', pos:{left:'50%',top:'60%'}}
+        ]
+      },
+      {
+        id:'s4d', cachedImage:'',
+        text:"Malo regarde Plume. Plume se penche vers la gauche. Il y a quelque chose là-bas... un vieux pont de bois caché sous les fougères !",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Malo is always a small chubby brown bear with a white belly, big round eyes, tiny round nose, and a red scarf. Plume is always a small fluffy white cloud with a gentle tired face, soft rounded shape, slightly drooping. Noa is always a small bright orange squirrel with a bushy tail, alert round eyes, cheerful expression. No text, no watermark, no photography, no 3D rendering. SCENE: Malo holds Plume up slightly and notices Plume leaning gently to the left. Malo and Noa both look left and see — just visible through hanging ferns — an old mossy wooden bridge hidden beneath them. FOREGROUND: large fern leaves, the edge of the wooden bridge just visible. MIDGROUND: Malo holding Plume out, watching his lean with wonder. Noa beside him, eyes wide with delighted surprise, pointing. BACKGROUND: the hidden bridge becoming visible through the ferns, leading across the stream, the mountain path beyond. MOOD: discovery, the magic of paying attention, Plume's quiet wisdom. Soft greens, warm browns, magical hidden light.",
+        choices:[
+          {text:"Continuer ➜", next:'fin_c', pos:{left:'50%',top:'60%'}}
+        ]
+      },
+      {
+        id:'fin_b', cachedImage:'',
+        text:"Ils finissent de grimper ensemble, soufflant et riant. Enfin, le sommet ! Malo sort Plume de son écharpe et le lève très haut. Le vent l'emporte vers les nuages.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Malo is always a small chubby brown bear with a white belly, big round eyes, tiny round nose, and a red scarf. Plume is always a small fluffy white cloud with a gentle tired face, soft rounded shape, slightly drooping. Noa is always a small bright orange squirrel with a bushy tail, alert round eyes, cheerful expression. No text, no watermark, no photography, no 3D rendering. SCENE: Malo and Noa stand together at the mountain summit. Malo lifts Plume high above his head as a strong wind catches Plume and lifts him upward. Noa stands beside Malo, arm around his shoulder, both looking up with wide smiles. FOREGROUND: summit rocks, small alpine flowers. MIDGROUND: Malo and Noa side by side, Malo's arms raised, Plume just leaving his hands and rising. BACKGROUND: vast open sky, Plume ascending toward distant clouds, warm sunlight flooding the scene. MOOD: shared triumph, the joy of friendship. Bright warm sky, golden light, two small friends at the top of the world.",
+        choices:[],
+        end:{star:'🐿️', title:'Bravo Malo !', text:"Tu n'étais pas seul, et c'est pour ça que tu as réussi.\nL'amitié donne des forces qu'on n'a pas tout seul."}
+      },
+      {
+        id:'fin_c', cachedImage:'',
+        text:"Le pont les mène directement en haut. Plume connaissait le chemin depuis le début ! Arrivé au sommet, il s'envole tout seul, léger comme... un nuage.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Malo is always a small chubby brown bear with a white belly, big round eyes, tiny round nose, and a red scarf. Plume is always a small fluffy white cloud with a gentle tired face, soft rounded shape, slightly drooping. Noa is always a small bright orange squirrel with a bushy tail, alert round eyes, cheerful expression. No text, no watermark, no photography, no 3D rendering. SCENE: Malo and Noa stand on the summit looking up in astonishment as Plume rises by himself into the sky, freely and joyfully, no longer needing to be carried. His face is now fully bright and happy. FOREGROUND: summit rocks, the old bridge path visible far below. MIDGROUND: Malo with hands slightly open in wonder, Noa beside him, both looking up. Plume rising freely, spinning gently, face full of joy. BACKGROUND: wide sky, other clouds welcoming Plume back, warm afternoon light. MOOD: wonder, the gift of trust, Plume's inner strength revealed. Soft golds and whites, gentle magic.",
+        choices:[],
+        end:{star:'🌥️', title:'Bravo Malo !', text:"Tu as écouté Plume et il t'a guidé.\nParfois celui qu'on aide a lui aussi quelque chose à nous apprendre."}
+      }
+    ]
   }
 ];
 // ═══════════════════════════════════
