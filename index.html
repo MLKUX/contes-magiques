@@ -1274,6 +1274,117 @@ const STORIES = [
         end:{star:'🌥️', title:'Bravo Malo !', text:"Tu as écouté Plume et il t'a guidé.\nParfois celui qu'on aide a lui aussi quelque chose à nous apprendre."}
       }
     ]
+  },
+  {
+    id:'zara-graine',
+    title:'Zara et la Graine Magique',
+    desc:"Zara la souris a trouvé une graine qui brille. Qu'est-ce qui va pousser ?",
+    level:'eveil', thumb:'story-thumb-forest', emoji:'🌱',
+    scenes:[
+      {
+        id:'s1', cachedImage:'',
+        text:"Zara trouve une petite graine dans l'herbe. Elle brille comme une étoile minuscule. Zara la serre dans ses pattes. Que faire ?",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Zara is always a small grey mouse with big round ears, a tiny pink nose, bright curious eyes, and a yellow dress. Lolo is always a small friendly earthworm, soft pink-brown, round face with a warm smile. Fée Mousse is always a tiny green fairy no bigger than a finger, soft mossy wings, sleepy gentle expression. No text, no watermark, no photography, no 3D rendering. SCENE: Zara crouches in the grass, both small paws cupped around a tiny glowing seed she has just found. She looks at it with wide eyes full of wonder. FOREGROUND: soft green grass, small pebbles, a ladybug nearby. MIDGROUND: Zara from slightly above, paws cupped, the seed glowing faintly gold between them, her yellow dress bright. BACKGROUND: a sunny meadow, an old tree in the distance, soft blue sky. MOOD: the magic of a small beginning, pure wonder. Warm morning light, soft greens and golden yellow.",
+        choices:[
+          {text:"🌍 La planter tout de suite",       next:'s2a', pos:{left:'36%',top:'58%'}},
+          {text:"🪱 Chercher quelqu'un qui sait",    next:'s2b', pos:{left:'64%',top:'42%'}}
+        ]
+      },
+      {
+        id:'s2a', cachedImage:'',
+        text:"Zara creuse un petit trou avec ses pattes. Elle pose la graine dedans, tout doucement. Elle rebouche la terre. Et maintenant... elle attend.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Zara is always a small grey mouse with big round ears, a tiny pink nose, bright curious eyes, and a yellow dress. No text, no watermark, no photography, no 3D rendering. SCENE: Zara kneels in the earth, carefully patting down the soil over the spot where she has just planted the seed. Her expression is tender and concentrated. FOREGROUND: freshly turned dark soil, Zara's small pawprints, the slight mound where the seed is buried. MIDGROUND: Zara crouching, one paw gently pressing the earth flat, tongue slightly out in concentration. BACKGROUND: the meadow around her, afternoon light, a butterfly passing in the distance. MOOD: gentleness, the act of planting something with care. Warm earth tones, soft golden light.",
+        choices:[
+          {text:"Attendre ➜", next:'s3a', pos:{left:'50%',top:'60%'}}
+        ]
+      },
+      {
+        id:'s3a', cachedImage:'',
+        text:"Un jour passe. Deux jours. Rien ne pousse. Zara revient chaque matin regarder la terre. Elle attend encore.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Zara is always a small grey mouse with big round ears, a tiny pink nose, bright curious eyes, and a yellow dress. No text, no watermark, no photography, no 3D rendering. SCENE: Zara sits cross-legged in front of the patch of soil, chin resting on her paws, staring at the ground with patient eyes. The soil is still undisturbed. Morning light. FOREGROUND: the small mound of earth, a tiny marker stick Zara has placed, dew on the soil. MIDGROUND: Zara sitting very still, expression somewhere between worried and hopeful, yellow dress slightly damp from morning dew. BACKGROUND: the meadow in soft morning mist, the sun just rising, other flowers blooming nearby. MOOD: patience, the quiet difficulty of waiting, hope mixed with uncertainty. Soft misty greens and pale gold.",
+        choices:[
+          {text:"💧 Arroser encore une fois",         next:'s4a', pos:{left:'38%',top:'55%'}},
+          {text:"👂 Écouter ce qu'il y a sous terre", next:'s4b', pos:{left:'62%',top:'42%'}}
+        ]
+      },
+      {
+        id:'s4a', cachedImage:'',
+        text:"Le ciel devient gris. Il pleut ! Zara enlève sa robe jaune et la pose sur la graine pour la protéger. Elle attend sous la pluie, toute mouillée.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Zara is always a small grey mouse with big round ears, a tiny pink nose, bright curious eyes, and a yellow dress. No text, no watermark, no photography, no 3D rendering. SCENE: It is raining. Zara stands in the rain without her yellow dress, which she has spread over the small patch of soil to protect the seed. She is slightly wet, ears drooping, but her expression is determined and caring. FOREGROUND: the yellow dress spread over the soil like a tiny tent, raindrops falling around it. MIDGROUND: Zara standing nearby in just her fur, a little wet, arms crossed for warmth but eyes steady. BACKGROUND: grey rainy sky, the meadow under rain, other flowers bending in the drops. MOOD: sacrifice, caring for something more than yourself, quiet determination. Cool greys and blues, the yellow dress a warm spot of color.",
+        choices:[
+          {text:"Continuer ➜", next:'s5a', pos:{left:'50%',top:'60%'}}
+        ]
+      },
+      {
+        id:'s4b', cachedImage:'',
+        text:"Zara colle son oreille contre la terre froide. Elle entend quelque chose. Un bruit doux. Quelqu'un creuse là-dessous ! C'est Lolo le ver de terre.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Zara is always a small grey mouse with big round ears, a tiny pink nose, bright curious eyes, and a yellow dress. Lolo is always a small friendly earthworm, soft pink-brown, round face with a warm smile. No text, no watermark, no photography, no 3D rendering. SCENE: Zara lies flat on her belly, one large ear pressed against the soil, eyes wide with surprise. Just below the surface, the faint outline of Lolo can be seen tunneling nearby. FOREGROUND: close-up of Zara's ear against dark soil, a tiny crack in the earth nearby. MIDGROUND: Zara prone, yellow dress spread, expression of delighted surprise. BACKGROUND: meadow above, peaceful and still. A very faint translucent view of Lolo just below the ground surface, smiling as he works. MOOD: discovery, the hidden life under our feet, delight. Warm earth tones, soft underground light.",
+        choices:[
+          {text:"Continuer ➜", next:'s5b', pos:{left:'50%',top:'60%'}}
+        ]
+      },
+      {
+        id:'s5a', cachedImage:'',
+        text:"Le soleil revient. Zara remet sa robe jaune. Et là — une petite pousse verte sort de la terre ! Elle pousse, pousse, pousse jusqu'à devenir une grande fleur rose.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Zara is always a small grey mouse with big round ears, a tiny pink nose, bright curious eyes, and a yellow dress. No text, no watermark, no photography, no 3D rendering. SCENE: The sun has returned. A beautiful large pink flower has bloomed right where Zara planted her seed. Zara stands before it, arms spread wide in amazement and joy, yellow dress back on. FOREGROUND: the flower's base, roots visible in the rich dark soil, morning dew on the petals. MIDGROUND: Zara looking up at the flower that towers above her, expression of pure wonder and pride. BACKGROUND: the sunny meadow, other flowers around, warm golden light flooding the scene. MOOD: patience rewarded, the miracle of growth, overwhelming joy. Warm pinks, bright yellows, rich greens.",
+        choices:[],
+        end:{star:'🌸', title:'Bravo Zara !', text:"Tu as attendu et pris soin même sous la pluie.\nLes plus belles choses poussent quand on leur fait confiance."}
+      },
+      {
+        id:'s5b', cachedImage:'',
+        text:"Lolo sort de la terre en souriant. Il retourne la terre autour de la graine avec douceur. Le lendemain matin, une fleur dorée est là !",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Zara is always a small grey mouse with big round ears, a tiny pink nose, bright curious eyes, and a yellow dress. Lolo is always a small friendly earthworm, soft pink-brown, round face with a warm smile. No text, no watermark, no photography, no 3D rendering. SCENE: A golden flower has bloomed overnight. Zara and Lolo stand together beside it in the morning light, both looking up at it. Lolo is half out of the ground, smiling warmly. FOREGROUND: rich dark soil, Lolo's tunnel entrance, the flower's stem. MIDGROUND: Zara beside Lolo, both looking up with joy. BACKGROUND: the meadow in soft morning light, the golden flower glowing. MOOD: friendship, hidden help revealed, gratitude. Warm golds and earthy browns.",
+        choices:[],
+        end:{star:'🪱', title:'Bravo Zara !', text:"Tu as écouté et tu as trouvé un ami sous tes pieds.\nSouvent de l'aide était là depuis le début."}
+      },
+      {
+        id:'s2b', cachedImage:'',
+        text:"Zara cherche quelqu'un qui sait où planter les graines. Elle trouve Lolo le ver de terre qui sort de la terre en souriant. Il dit : suis-moi !",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Zara is always a small grey mouse with big round ears, a tiny pink nose, bright curious eyes, and a yellow dress. Lolo is always a small friendly earthworm, soft pink-brown, round face with a warm smile. No text, no watermark, no photography, no 3D rendering. SCENE: Lolo pops cheerfully out of the ground right in front of Zara, his round face smiling wide. Zara crouches to his level, seed cupped in her paws, looking delighted. FOREGROUND: small mound of earth where Lolo emerged, loose soil, tiny roots. MIDGROUND: Lolo upright, gesturing forward confidently. Zara crouching, eyes bright with relief. BACKGROUND: the meadow ahead, a warm patch of sunlight visible in the distance. MOOD: the arrival of exactly the right help, warm and immediate. Soft earth tones, warm greens.",
+        choices:[
+          {text:"Suivre Lolo ➜", next:'s3b', pos:{left:'50%',top:'60%'}}
+        ]
+      },
+      {
+        id:'s3b', cachedImage:'',
+        text:"Lolo guide Zara jusqu'à un endroit spécial : là où le soleil brille le plus longtemps. Mais soudain, une grosse pie noire plonge vers la graine !",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Zara is always a small grey mouse with big round ears, a tiny pink nose, bright curious eyes, and a yellow dress. Lolo is always a small friendly earthworm, soft pink-brown, round face with a warm smile. No text, no watermark, no photography, no 3D rendering. SCENE: Zara and Lolo have arrived at a bright sunny spot in the meadow. But above them, a large black-and-white magpie is diving down toward Zara's paw where the seed glows. FOREGROUND: the bright sunny soil, Zara's paws with the seed, Lolo beside her. MIDGROUND: Zara looking up in alarm, Lolo curling back in surprise. BACKGROUND: the magpie large and close, wings spread, beak aimed at the seed. Bright sky behind. MOOD: sudden danger, the need for quick thinking. Bright light, sharp contrast of the black magpie against the blue sky.",
+        choices:[
+          {text:"🏃 Courir planter la graine vite !",      next:'s4c', pos:{left:'38%',top:'52%'}},
+          {text:"🧚 Regarder sous la feuille à côté...",   next:'s4d', pos:{left:'62%',top:'42%'}}
+        ]
+      },
+      {
+        id:'s4c', cachedImage:'',
+        text:"Zara court de toutes ses pattes ! Elle plonge vers la terre et plante la graine d'un seul geste. La pie repart, les pattes vides. Lolo applaudit.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Zara is always a small grey mouse with big round ears, a tiny pink nose, bright curious eyes, and a yellow dress. Lolo is always a small friendly earthworm, soft pink-brown, round face with a warm smile. No text, no watermark, no photography, no 3D rendering. SCENE: Zara has just planted the seed in a single swift motion, both paws pressing the soil down firmly. The magpie flies away above, empty-clawed. Lolo beside her applauds with his tiny body wiggling. FOREGROUND: the freshly planted soil, Zara's paws pressing down, the magpie's shadow receding. MIDGROUND: Zara triumphant, slightly out of breath, a huge smile. Lolo wiggling happily. BACKGROUND: the magpie flying away into the bright sky, the meadow peaceful again. MOOD: quick thinking rewarded, triumphant relief, the satisfaction of acting fast. Bright warm light, dynamic energy.",
+        choices:[
+          {text:"Continuer ➜", next:'fin_b', pos:{left:'50%',top:'60%'}}
+        ]
+      },
+      {
+        id:'s4d', cachedImage:'',
+        text:"Sous une grande feuille, une toute petite fée dort sur un lit de mousse. Zara la réveille tout doucement. La fée ouvre un œil et sourit.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Zara is always a small grey mouse with big round ears, a tiny pink nose, bright curious eyes, and a yellow dress. Fée Mousse is always a tiny green fairy no bigger than a finger, soft mossy wings, sleepy gentle expression. No text, no watermark, no photography, no 3D rendering. SCENE: Zara gently lifts the edge of a large leaf to reveal Fée Mousse sleeping on a tiny bed of soft green moss beneath. Fée Mousse opens one eye, expression drowsy and warm. FOREGROUND: the large leaf lifted by Zara's paw, soft green moss bed, tiny mushroom beside the fairy. MIDGROUND: Zara crouching, leaning in gently, expression full of wonder. Fée Mousse tiny and perfect on her moss, one eye open. BACKGROUND: the magpie now gone, the meadow peaceful, dappled light through leaves. MOOD: discovering hidden magic, gentleness, wonder at tiny things. Soft greens, warm dappled light, fairy-tale atmosphere.",
+        choices:[
+          {text:"Continuer ➜", next:'fin_c', pos:{left:'50%',top:'60%'}}
+        ]
+      },
+      {
+        id:'fin_b', cachedImage:'',
+        text:"Le lendemain, une grande fleur bleue a poussé ! Lolo sort la tête pour voir. Zara et Lolo regardent la fleur ensemble, tout heureux.",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Zara is always a small grey mouse with big round ears, a tiny pink nose, bright curious eyes, and a yellow dress. Lolo is always a small friendly earthworm, soft pink-brown, round face with a warm smile. No text, no watermark, no photography, no 3D rendering. SCENE: A tall blue flower has grown overnight in the sunny spot. Zara and Lolo stand side by side in front of it, both looking up with pure happiness. Lolo half out of the ground, Zara standing beside him in her yellow dress. FOREGROUND: the flower's base, rich soil, Lolo's tunnel. MIDGROUND: Zara and Lolo side by side, faces tilted up toward the flower, expressions of shared pride. BACKGROUND: the bright meadow, warm sunlight, the blue flower towering above them both. MOOD: shared joy, the fruit of quick action and good friendship. Bright blues, warm yellows, joyful greens.",
+        choices:[],
+        end:{star:'💨', title:'Bravo Zara !', text:"Tu as agi vite et tu n'as pas abandonné.\nEt avec un bon ami, tout est plus facile."}
+      },
+      {
+        id:'fin_c', cachedImage:'',
+        text:"La fée prend la graine dans ses minuscules mains et souffle dessus. Une lumière dorée explose. Une fleur arc-en-ciel pousse d'un seul coup !",
+        imagePrompt:"Children's watercolor illustration style, picture book for toddlers age 3-5. Soft brush strokes, warm pastel colors, gentle textures, lots of white and light. Simple rounded shapes, no realism, no fine details, no sharp edges. Whimsical and cozy atmosphere. Zara is always a small grey mouse with big round ears, a tiny pink nose, bright curious eyes, and a yellow dress. Fée Mousse is always a tiny green fairy no bigger than a finger, soft mossy wings, sleepy gentle expression. No text, no watermark, no photography, no 3D rendering. SCENE: Fée Mousse holds the tiny seed in both hands and blows on it. An explosion of golden light erupts and a rainbow-colored flower bursts from the ground in an instant, petals of every color opening at once. Zara watches with her mouth open in amazement. FOREGROUND: the rainbow flower emerging from the earth, golden light particles all around. MIDGROUND: Zara standing back slightly, both paws on her cheeks, eyes enormous with wonder. Fée Mousse floating above, arms spread, tiny wings glowing. BACKGROUND: the meadow transformed, the golden light spreading outward. MOOD: pure magic, wonder beyond expectation, the reward of noticing small things. Rich golds, every color of the rainbow, magical light.",
+        choices:[],
+        end:{star:'🧚', title:'Bravo Zara !', text:"Tu as remarqué ce que personne d'autre ne voyait.\nLa magie se cache là où on prend le temps de regarder."}
+      }
+    ]
   }
 ];
 // ═══════════════════════════════════
