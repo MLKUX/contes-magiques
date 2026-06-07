@@ -2270,39 +2270,47 @@ function selectTheme(id) {
 // ════════════════════════════════════
 // AUDIO — MP3 via MediaElementSource + SFX Web Audio API
 // ════════════════════════════════════
-let audioCtx    = null;
-let masterGain  = null;
-let musicGain   = null;
-let sfxGain     = null;
-let audioUnlocked = false;
+let audioCtx, masterGain, musicSource, sfxGain, audioUnlocked = false;
+const isMuted = () => localStorage.getItem('liito-muted') === 'true';
 
-function unlockAudio() {
+async function unlockAudio() {
   if (audioUnlocked) return;
   audioUnlocked = true;
-  try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    masterGain = audioCtx.createGain();
-    masterGain.gain.value = localStorage.getItem('liito-muted') === 'true' ? 0 : 1;
-    masterGain.connect(audioCtx.destination);
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    musicGain = audioCtx.createGain();
-    musicGain.gain.value = 0.4;
-    musicGain.connect(masterGain);
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = isMuted() ? 0 : 1;
+  masterGain.connect(audioCtx.destination);
 
-    sfxGain = audioCtx.createGain();
-    sfxGain.gain.value = 0.6;
-    sfxGain.connect(masterGain);
+  sfxGain = audioCtx.createGain();
+  sfxGain.gain.value = 0.6;
+  sfxGain.connect(masterGain);
 
-    const music = document.getElementById('music-bg');
-    if (music) {
-      audioCtx.createMediaElementSource(music).connect(musicGain);
-      music.play().catch(() => {});
+  const music = document.getElementById('music-bg');
+  if (music) {
+    // Attendre que le fichier soit vraiment chargé avant createMediaElementSource
+    await new Promise((resolve) => {
+      if (music.readyState >= 2) { resolve(); return; }
+      music.addEventListener('canplay', resolve, { once: true });
+      music.load();
+    });
+
+    musicSource = audioCtx.createMediaElementSource(music);
+    musicSource.connect(masterGain);
+
+    try {
+      await audioCtx.resume();
+      await music.play();
+    } catch(e) {
+      console.warn('Audio play failed:', e);
     }
-  } catch(e) {}
+  }
 }
-document.addEventListener('click',      unlockAudio, {once: true, passive: true});
-document.addEventListener('touchstart', unlockAudio, {once: true, passive: true});
+
+['click', 'touchstart'].forEach(evt =>
+  document.addEventListener(evt, unlockAudio, { once: true, passive: true })
+);
 
 function playSound(name) {
   if (!audioCtx || !sfxGain) return;
@@ -2339,8 +2347,7 @@ function playSound(name) {
 }
 
 function updateMuteUI() {
-  const muted = masterGain ? masterGain.gain.value === 0
-                           : localStorage.getItem('liito-muted') === 'true';
+  const muted = masterGain ? masterGain.gain.value === 0 : isMuted();
   const icon = muted ? '&#x1F507;' : '&#x1F50A;';
   ['mute-btn-lib','mute-btn-story','mute-btn-landing'].forEach(id => {
     const b = document.getElementById(id);
@@ -2350,8 +2357,7 @@ function updateMuteUI() {
 
 function toggleMute() {
   if (!masterGain) {
-    const wasMuted = localStorage.getItem('liito-muted') === 'true';
-    localStorage.setItem('liito-muted', String(!wasMuted));
+    localStorage.setItem('liito-muted', String(!isMuted()));
     updateMuteUI();
     return;
   }
