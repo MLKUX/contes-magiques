@@ -353,7 +353,6 @@
   </section>
 </div>
 
-<audio id="music-bg" src="/sounds/music-bg.mp3" loop preload="auto"></audio>
 
 <!-- APP -->
 <div id="app">
@@ -2268,9 +2267,9 @@ function selectTheme(id) {
 }
 
 // ════════════════════════════════════
-// AUDIO — MP3 via MediaElementSource + SFX Web Audio API
+// AUDIO — fetch + decodeAudioData + SFX Web Audio API
 // ════════════════════════════════════
-let audioCtx, masterGain, musicSource, sfxGain, audioUnlocked = false;
+let audioCtx, masterGain, sfxGain, musicBuffer, musicNode, audioUnlocked = false;
 const isMuted = () => localStorage.getItem('liito-muted') === 'true';
 
 async function unlockAudio() {
@@ -2278,34 +2277,35 @@ async function unlockAudio() {
   audioUnlocked = true;
 
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
   masterGain = audioCtx.createGain();
   masterGain.gain.value = isMuted() ? 0 : 1;
   masterGain.connect(audioCtx.destination);
-
   sfxGain = audioCtx.createGain();
   sfxGain.gain.value = 0.6;
   sfxGain.connect(masterGain);
 
-  const music = document.getElementById('music-bg');
-  if (music) {
-    // Attendre que le fichier soit vraiment chargé avant createMediaElementSource
-    await new Promise((resolve) => {
-      if (music.readyState >= 2) { resolve(); return; }
-      music.addEventListener('canplay', resolve, { once: true });
-      music.load();
-    });
+  await audioCtx.resume();
 
-    musicSource = audioCtx.createMediaElementSource(music);
-    musicSource.connect(masterGain);
-
-    try {
-      await audioCtx.resume();
-      await music.play();
-    } catch(e) {
-      console.warn('Audio play failed:', e);
-    }
+  try {
+    const response = await fetch('/sounds/music-bg.mp3');
+    const arrayBuffer = await response.arrayBuffer();
+    musicBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+    playMusic();
+  } catch(e) {
+    console.warn('Music load failed:', e);
   }
+}
+
+function playMusic() {
+  if (!musicBuffer || !audioCtx) return;
+  musicNode = audioCtx.createBufferSource();
+  musicNode.buffer = musicBuffer;
+  musicNode.loop = true;
+  const musicGain = audioCtx.createGain();
+  musicGain.gain.value = 0.4;
+  musicNode.connect(musicGain);
+  musicGain.connect(masterGain);
+  musicNode.start(0);
 }
 
 ['click', 'touchstart'].forEach(evt =>
