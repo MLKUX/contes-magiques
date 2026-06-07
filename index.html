@@ -232,6 +232,26 @@
   .story-mute-btn{position:absolute;top:18px;right:18px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);color:white;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:background 0.2s;z-index:10;}
   .story-mute-btn:hover{background:rgba(255,255,255,0.15);}
 
+  /* ── LEVEL SELECT ────────────────────────────────────── */
+  #level-select-screen{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:40px 20px;background:var(--theme-bg);}
+  #level-select-screen.show{display:flex;}
+  .level-select-title{font-family:'Fredoka One',cursive;font-size:clamp(1.4rem,4vw,2rem);color:white;text-align:center;margin-bottom:36px;animation:lp-in 0.5s ease both;}
+  .level-cards{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;width:100%;max-width:640px;}
+  .level-card{flex:1;min-width:240px;max-width:280px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:36px 24px;text-align:center;cursor:pointer;backdrop-filter:blur(16px);transition:transform 0.3s,box-shadow 0.3s,border-color 0.3s;animation:lp-in 0.5s 0.15s ease both;opacity:0;}
+  .level-card:hover{transform:translateY(-6px);}
+  .level-card-eveil{border-color:rgba(255,182,193,0.25);}
+  .level-card-eveil:hover{box-shadow:0 12px 40px rgba(255,182,193,0.35);border-color:rgba(255,182,193,0.6);}
+  .level-card-explorateur{border-color:rgba(255,215,0,0.2);animation-delay:0.28s;}
+  .level-card-explorateur:hover{box-shadow:0 12px 40px rgba(255,215,0,0.3);border-color:rgba(255,215,0,0.55);}
+  .level-card-emoji{font-size:3rem;margin-bottom:14px;}
+  .level-card-name{font-family:'Fredoka One',cursive;font-size:1.4rem;margin-bottom:8px;}
+  .level-card-eveil .level-card-name{color:#FFB6C1;}
+  .level-card-explorateur .level-card-name{color:var(--theme-accent);}
+  .level-card-desc{font-size:0.82rem;color:rgba(255,255,255,0.5);font-family:'Nunito',sans-serif;font-weight:700;}
+  .btn-level-back{margin-top:28px;background:transparent;border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:9px 22px;color:rgba(255,255,255,0.5);font-family:'Nunito',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;transition:all 0.2s;animation:lp-in 0.5s 0.4s ease both;opacity:0;}
+  .btn-level-back:hover{border-color:rgba(255,255,255,0.4);color:rgba(255,255,255,0.8);}
+  @media(max-width:520px){.level-cards{flex-direction:column;align-items:center;}.level-card{max-width:320px;width:100%;}}
+
   /* ── LANDING PAGE ─────────────────────────────────────── */
   #landing-screen{overflow-y:auto;overflow-x:hidden;height:100vh;background:var(--theme-bg);}
   .lp-mute-btn{position:fixed;top:14px;right:14px;z-index:200;}
@@ -339,6 +359,24 @@
 
 <!-- APP -->
 <div id="app">
+  <!-- LEVEL SELECT -->
+  <div id="level-select-screen">
+    <div class="level-select-title" id="level-select-title">Quel niveau pour toi ?</div>
+    <div class="level-cards">
+      <div class="level-card level-card-eveil" onclick="selectLevel('eveil')">
+        <div class="level-card-emoji">🌸</div>
+        <div class="level-card-name">Éveil</div>
+        <div class="level-card-desc">Pour les petits explorateurs · 3-5 ans</div>
+      </div>
+      <div class="level-card level-card-explorateur" onclick="selectLevel('explorateur')">
+        <div class="level-card-emoji">⭐</div>
+        <div class="level-card-name">Explorateur</div>
+        <div class="level-card-desc">Pour les grands aventuriers · 6-8 ans</div>
+      </div>
+    </div>
+    <button class="btn-level-back" onclick="changeName()">← Changer de prénom</button>
+  </div>
+
   <div id="library-screen">
     <div class="library-header">
       <h1>✨ Liito</h1>
@@ -1420,6 +1458,22 @@ function startApp(){
   document.getElementById('landing-screen').style.display='none';
   document.getElementById('app').style.display='block';
   updateMuteUI();
+  showLevelSelect();
+}
+function showLevelSelect(){
+  document.getElementById('level-select-title').textContent='Quel niveau pour '+userName+' ?';
+  document.getElementById('level-select-screen').classList.add('show');
+  document.getElementById('library-screen').style.display='none';
+}
+function selectLevel(level){
+  currentFilter=level;
+  document.getElementById('level-select-screen').classList.remove('show');
+  document.getElementById('library-screen').style.display='block';
+  // sync level tab UI
+  document.querySelectorAll('.level-tab').forEach(t=>{
+    t.classList.toggle('active', t.textContent.toLowerCase().includes(level));
+  });
+  initAudio();
   renderLibrary();
 }
 document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')startApp();});
