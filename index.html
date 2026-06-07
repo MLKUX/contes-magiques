@@ -353,7 +353,7 @@
   </section>
 </div>
 
-<!-- audio synthétisé via Web Audio API -->
+<audio id="music-bg" src="/sounds/music-bg.mp3" loop preload="auto"></audio>
 
 <!-- APP -->
 <div id="app">
@@ -2268,102 +2268,73 @@ function selectTheme(id) {
 }
 
 // ════════════════════════════════════
-// AUDIO — Web Audio API synthétisé
+// AUDIO — MP3 via MediaElementSource + SFX Web Audio API
 // ════════════════════════════════════
 let audioCtx    = null;
 let masterGain  = null;
-let audioUnlocked   = false;
-let ambienceRunning = false;
-let ambienceTimer   = null;
-
-const PENTATONIC = [261.6, 329.6, 392.0, 440.0, 493.9, 523.3]; // Do Mi Sol La Si Do5
+let musicGain   = null;
+let sfxGain     = null;
+let audioUnlocked = false;
 
 function unlockAudio() {
   if (audioUnlocked) return;
   audioUnlocked = true;
   try {
-    audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
     masterGain = audioCtx.createGain();
     masterGain.gain.value = localStorage.getItem('liito-muted') === 'true' ? 0 : 1;
     masterGain.connect(audioCtx.destination);
-    startAmbience();
+
+    musicGain = audioCtx.createGain();
+    musicGain.gain.value = 0.4;
+    musicGain.connect(masterGain);
+
+    sfxGain = audioCtx.createGain();
+    sfxGain.gain.value = 0.6;
+    sfxGain.connect(masterGain);
+
+    const music = document.getElementById('music-bg');
+    if (music) {
+      audioCtx.createMediaElementSource(music).connect(musicGain);
+      music.play().catch(() => {});
+    }
   } catch(e) {}
 }
-document.addEventListener('click',      unlockAudio, {passive: true});
-document.addEventListener('touchstart', unlockAudio, {passive: true});
-
-function startAmbience() {
-  if (ambienceRunning || !audioCtx) return;
-  ambienceRunning = true;
-  _nextNote();
-}
-
-function _nextNote() {
-  if (!ambienceRunning || !audioCtx) return;
-  const freq = PENTATONIC[Math.floor(Math.random() * PENTATONIC.length)];
-  const f    = Math.random() < 0.2 ? freq / 2 : freq; // parfois une octave plus basse
-  const now  = audioCtx.currentTime;
-
-  const osc   = audioCtx.createOscillator();
-  const gain  = audioCtx.createGain();
-  const delay = audioCtx.createDelay(1.0);
-  const fb    = audioCtx.createGain();
-
-  osc.type              = 'triangle';
-  osc.frequency.value   = f;
-  delay.delayTime.value = 0.28;
-  fb.gain.value         = 0.22;
-
-  osc.connect(gain);
-  gain.connect(masterGain);
-  gain.connect(delay);
-  delay.connect(fb);
-  fb.connect(delay);
-  delay.connect(masterGain);
-
-  gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(0.08, now + 0.04);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
-  osc.start(now);
-  osc.stop(now + 1.5);
-
-  ambienceTimer = setTimeout(_nextNote, 900 + Math.floor(Math.random() * 600));
-}
+document.addEventListener('click',      unlockAudio, {once: true, passive: true});
+document.addEventListener('touchstart', unlockAudio, {once: true, passive: true});
 
 function playSound(name) {
-  unlockAudio();
-  if (!audioCtx || !masterGain) return;
+  if (!audioCtx || !sfxGain) return;
   const now = audioCtx.currentTime;
 
   const tone = (f1, f2, dur, vol, type) => {
     const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.connect(g); g.connect(masterGain);
+    o.connect(g); g.connect(sfxGain);
     o.type = type || 'sine';
     o.frequency.setValueAtTime(f1, now);
     if (f2 !== f1) o.frequency.exponentialRampToValueAtTime(f2, now + dur);
-    g.gain.setValueAtTime(0, now);
-    g.gain.linearRampToValueAtTime(vol, now + 0.02);
+    g.gain.setValueAtTime(vol, now);
     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
     o.start(now); o.stop(now + dur + 0.02);
   };
 
   const arp = (freqs, vol, dur) => freqs.forEach((f, i) => {
     const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.connect(g); g.connect(masterGain);
+    o.connect(g); g.connect(sfxGain);
     o.type = 'sine'; o.frequency.value = f;
-    const t = now + i * 0.14;
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(vol, t + 0.04);
+    const t = now + i * 0.10;
+    g.gain.setValueAtTime(vol, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + dur);
     o.start(t); o.stop(t + dur + 0.02);
   });
 
   switch(name) {
-    case 'click':      tone(880, 1100, 0.12, 0.25); break;
-    case 'hover':      tone(1200, 1200, 0.10, 0.07); break;
-    case 'level':      tone(320, 760, 0.30, 0.20); break;
-    case 'transition': arp([523, 659, 784], 0.15, 0.40); break;
-    case 'success':    arp([523, 659, 784, 1047], 0.20, 0.55); break;
+    case 'click':      tone(520, 520, 0.08, 0.6); break;
+    case 'hover':      tone(800, 800, 0.05, 0.2); break;
+    case 'level':      tone(600, 200, 0.20, 0.5); break;
+    case 'transition': arp([659, 784, 988], 0.4, 0.30); break;
+    case 'success':    arp([523, 659, 784], 0.5, 0.60); break;
   }
 }
 
