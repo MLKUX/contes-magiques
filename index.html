@@ -353,9 +353,7 @@
   </section>
 </div>
 
-<audio id="bg-music" loop preload="auto">
-  <source src="/sounds/music-bg.mp3" type="audio/mpeg">
-</audio>
+<!-- audio synthétisé via Web Audio API -->
 
 <!-- APP -->
 <div id="app">
@@ -363,12 +361,12 @@
   <div id="level-select-screen">
     <div class="level-select-title" id="level-select-title">Quel niveau pour toi ?</div>
     <div class="level-cards">
-      <div class="level-card level-card-eveil" onclick="selectLevel('eveil')">
+      <div class="level-card level-card-eveil" onclick="selectLevel('eveil')" onmouseenter="playSound('hover')">
         <div class="level-card-emoji">🌸</div>
         <div class="level-card-name">Éveil</div>
         <div class="level-card-desc">Pour les petits explorateurs · 3-5 ans</div>
       </div>
-      <div class="level-card level-card-explorateur" onclick="selectLevel('explorateur')">
+      <div class="level-card level-card-explorateur" onclick="selectLevel('explorateur')" onmouseenter="playSound('hover')">
         <div class="level-card-emoji">⭐</div>
         <div class="level-card-name">Explorateur</div>
         <div class="level-card-desc">Pour les grands aventuriers · 6-8 ans</div>
@@ -1466,14 +1464,13 @@ function showLevelSelect(){
   document.getElementById('library-screen').style.display='none';
 }
 function selectLevel(level){
+  playSound('level');
   currentFilter=level;
   document.getElementById('level-select-screen').classList.remove('show');
   document.getElementById('library-screen').style.display='block';
-  // sync level tab UI
   document.querySelectorAll('.level-tab').forEach(t=>{
     t.classList.toggle('active', t.textContent.toLowerCase().includes(level));
   });
-  initAudio();
   renderLibrary();
 }
 document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')startApp();});
@@ -1491,7 +1488,7 @@ function renderLibrary(){
     const _de=countCompletedForStory(s.id);
     const _ch=_te>0?('<div class="story-completion'+(_de>=_te?' full':'')+'">'+(_de>=_te?'&#x2705; Complété !':_de+'/'+_te+' fins ⭐')+'</div>'):''; 
     const genAllBtn=IS_ADMIN?`<button class="story-card-genall" onclick="event.stopPropagation();openGenAllModal('${s.id}')">🎨 Générer toute l'histoire</button>`:'';
-    return `<div class="story-card${isPremium?' is-premium':''}" onclick="${onclick}">
+    return `<div class="story-card${isPremium?' is-premium':''}" onclick="${onclick}" onmouseenter="playSound('hover')">
       <div class="story-thumb ${s.thumb}" style="position:relative;">
         <span style="position:relative;z-index:1;font-size:50px;">${s.emoji}</span>
         ${premiumOverlay}
@@ -1518,7 +1515,7 @@ function filterLevel(level,btn){
 // STORY
 // ═══════════════════════════════════
 function openStory(storyId){
-  SFX.open();
+  playSound('transition');
   currentStory=STORIES.find(s=>s.id===storyId);
   currentSceneId=currentStory.scenes[0].id;
   visitedScenes=[];
@@ -1530,7 +1527,6 @@ function openStory(storyId){
 function closeStory(){
   document.getElementById('story-screen').style.display='none';
   document.getElementById('library-screen').style.display='block';
-  const _bgm=document.getElementById('bg-music');if(_bgm&&!muted&&audioInited)_bgm.play().catch(()=>{});
 }
 function replayStory(){
   document.getElementById('end-overlay').classList.remove('show');
@@ -1538,7 +1534,7 @@ function replayStory(){
 }
 
 function renderScene(sceneId){
-  SFX.transition();
+  playSound('transition');
   const scene=currentStory.scenes.find(s=>s.id===sceneId);
   if(!scene)return;
   currentSceneId=sceneId;
@@ -1621,7 +1617,7 @@ function renderScene(sceneId){
       btn.style.top=c.pos.top;
       btn.style.animationDelay=(i*0.12)+'s';
       btn.innerHTML=`<span class="hotspot-icon">${String.fromCharCode(65+i)}</span>${c.text}`;
-      btn.onclick=()=>{SFX.click();makeChoice(c.next);};
+      btn.onclick=()=>{playSound('click');makeChoice(c.next);};
       hl.appendChild(btn);
     });
   }
@@ -2203,9 +2199,8 @@ closeStory=function(){
 };
 
 function showEnd(end){
-  SFX.success();
+  playSound('success');
   if(currentStory&&currentSceneId)saveCompleted(currentStory.id,currentSceneId);
-  const _bgm=document.getElementById('bg-music');if(_bgm)_bgm.pause();
   document.getElementById('end-star').textContent=end.star;
   document.getElementById('end-title').textContent=end.title;
   document.getElementById('end-text').innerHTML=end.text.split('\n').filter(l=>l.trim()).map(l=>`<span style="display:block;margin-bottom:6px;">${l}</span>`).join('');
@@ -2273,27 +2268,109 @@ function selectTheme(id) {
 }
 
 // ════════════════════════════════════
-// AUDIO
+// AUDIO — Web Audio API synthétisé
 // ════════════════════════════════════
-let audioInitialized = false;
-function initAudio() {
-  if (audioInitialized) return;
-  audioInitialized = true;
-  const music = document.getElementById('bg-music');
-  if (!music) return;
-  music.volume = 0.3;
-  music.muted = localStorage.getItem('liito-muted') === 'true';
-  music.play()
-    .then(() => console.log('[Audio] playing'))
-    .catch(e => console.log('[Audio] blocked:', e.message));
+let audioCtx    = null;
+let masterGain  = null;
+let audioUnlocked   = false;
+let ambienceRunning = false;
+let ambienceTimer   = null;
+
+const PENTATONIC = [261.6, 329.6, 392.0, 440.0, 493.9, 523.3]; // Do Mi Sol La Si Do5
+
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  try {
+    audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = localStorage.getItem('liito-muted') === 'true' ? 0 : 1;
+    masterGain.connect(audioCtx.destination);
+    startAmbience();
+  } catch(e) {}
+}
+document.addEventListener('click',      unlockAudio, {passive: true});
+document.addEventListener('touchstart', unlockAudio, {passive: true});
+
+function startAmbience() {
+  if (ambienceRunning || !audioCtx) return;
+  ambienceRunning = true;
+  _nextNote();
 }
 
-document.addEventListener('click', initAudio, {once: true});
+function _nextNote() {
+  if (!ambienceRunning || !audioCtx) return;
+  const freq = PENTATONIC[Math.floor(Math.random() * PENTATONIC.length)];
+  const f    = Math.random() < 0.2 ? freq / 2 : freq; // parfois une octave plus basse
+  const now  = audioCtx.currentTime;
+
+  const osc   = audioCtx.createOscillator();
+  const gain  = audioCtx.createGain();
+  const delay = audioCtx.createDelay(1.0);
+  const fb    = audioCtx.createGain();
+
+  osc.type              = 'triangle';
+  osc.frequency.value   = f;
+  delay.delayTime.value = 0.28;
+  fb.gain.value         = 0.22;
+
+  osc.connect(gain);
+  gain.connect(masterGain);
+  gain.connect(delay);
+  delay.connect(fb);
+  fb.connect(delay);
+  delay.connect(masterGain);
+
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.08, now + 0.04);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
+  osc.start(now);
+  osc.stop(now + 1.5);
+
+  ambienceTimer = setTimeout(_nextNote, 900 + Math.floor(Math.random() * 600));
+}
+
+function playSound(name) {
+  unlockAudio();
+  if (!audioCtx || !masterGain) return;
+  const now = audioCtx.currentTime;
+
+  const tone = (f1, f2, dur, vol, type) => {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.connect(g); g.connect(masterGain);
+    o.type = type || 'sine';
+    o.frequency.setValueAtTime(f1, now);
+    if (f2 !== f1) o.frequency.exponentialRampToValueAtTime(f2, now + dur);
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(vol, now + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    o.start(now); o.stop(now + dur + 0.02);
+  };
+
+  const arp = (freqs, vol, dur) => freqs.forEach((f, i) => {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.connect(g); g.connect(masterGain);
+    o.type = 'sine'; o.frequency.value = f;
+    const t = now + i * 0.14;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.start(t); o.stop(t + dur + 0.02);
+  });
+
+  switch(name) {
+    case 'click':      tone(880, 1100, 0.12, 0.25); break;
+    case 'hover':      tone(1200, 1200, 0.10, 0.07); break;
+    case 'level':      tone(320, 760, 0.30, 0.20); break;
+    case 'transition': arp([523, 659, 784], 0.15, 0.40); break;
+    case 'success':    arp([523, 659, 784, 1047], 0.20, 0.55); break;
+  }
+}
 
 function updateMuteUI() {
-  const music = document.getElementById('bg-music');
-  const isMuted = music ? music.muted : localStorage.getItem('liito-muted') === 'true';
-  const icon = isMuted ? '&#x1F507;' : '&#x1F50A;';
+  const muted = masterGain ? masterGain.gain.value === 0
+                           : localStorage.getItem('liito-muted') === 'true';
+  const icon = muted ? '&#x1F507;' : '&#x1F50A;';
   ['mute-btn-lib','mute-btn-story','mute-btn-landing'].forEach(id => {
     const b = document.getElementById(id);
     if (b) b.innerHTML = icon;
@@ -2301,15 +2378,17 @@ function updateMuteUI() {
 }
 
 function toggleMute() {
-  const music = document.getElementById('bg-music');
-  if (music) {
-    music.muted = !music.muted;
-    localStorage.setItem('liito-muted', music.muted);
+  if (!masterGain) {
+    const wasMuted = localStorage.getItem('liito-muted') === 'true';
+    localStorage.setItem('liito-muted', String(!wasMuted));
+    updateMuteUI();
+    return;
   }
+  const nowMuted = masterGain.gain.value > 0;
+  masterGain.gain.value = nowMuted ? 0 : 1;
+  localStorage.setItem('liito-muted', String(nowMuted));
   updateMuteUI();
 }
-
-const SFX = { click(){}, transition(){}, success(){}, open(){} };
 
 // ════════════════════════════════════
 // PROFILE PERSISTENCE
