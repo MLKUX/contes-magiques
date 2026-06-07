@@ -2287,7 +2287,7 @@ async function unlockAudio() {
   await audioCtx.resume();
 
   try {
-    const response = await fetch('/sounds/music-bg.mp3');
+    const response = await fetch('/public/sounds/music-bg.mp3');
     const arrayBuffer = await response.arrayBuffer();
     musicBuffer = await audioCtx.decodeAudioData(arrayBuffer);
     playMusic();
