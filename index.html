@@ -230,11 +230,27 @@
   .btn-theme-close{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:9px 22px;color:rgba(255,255,255,0.7);font-family:'Nunito',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;transition:background 0.2s;}
   .btn-theme-close:hover{background:rgba(255,255,255,0.15);}
 
-  /* ── STORY MUTE BUTTON ────────────────────────────────── */
-  .story-mute-btn{position:absolute;top:18px;right:18px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);color:white;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:background 0.2s;z-index:10;}
-  .story-mute-btn:hover{background:rgba(255,255,255,0.15);}
-  .story-narrate-btn{position:absolute;top:18px;right:64px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);color:white;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);z-index:10;}
-  .story-narrate-btn:hover{background:rgba(255,255,255,0.15);}
+  /* ── STORY SETTINGS BUTTON ─────────────────────────────── */
+  .story-settings-btn{position:absolute;top:18px;right:18px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);color:white;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:background 0.2s;z-index:10;}
+  .story-settings-btn:hover{background:rgba(255,255,255,0.15);}
+
+  /* ── SETTINGS MODAL ──────────────────────────────────── */
+  #settings-modal{display:none;position:fixed;inset:0;z-index:500;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);}
+  #settings-modal.show{display:flex;}
+  .settings-box{background:rgba(15,10,30,0.97);border:1px solid rgba(168,85,247,0.4);border-radius:20px;padding:28px;width:100%;max-width:380px;margin:16px;}
+  .settings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+  .settings-title{font-family:'Fredoka One',cursive;font-size:1.5rem;background:linear-gradient(135deg,#a855f7,#FFD700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0;}
+  .settings-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;}
+  .settings-close:hover{background:rgba(255,255,255,0.18);}
+  .settings-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .settings-row:last-child{border-bottom:none;padding-bottom:0;}
+  .settings-row-info{display:flex;flex-direction:column;gap:4px;}
+  .settings-row-label{font-size:0.95rem;font-weight:700;color:white;}
+  .settings-row-desc{font-size:0.78rem;color:rgba(255,255,255,0.45);}
+  .settings-switch{position:relative;width:48px;height:26px;border-radius:999px;border:none;cursor:pointer;background:rgba(255,255,255,0.2);transition:background 0.3s;flex-shrink:0;}
+  .settings-switch.on{background:#a855f7;}
+  .settings-switch::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:white;transition:transform 0.3s;}
+  .settings-switch.on::after{transform:translateX(22px);}
 
   /* ── LEVEL SELECT ────────────────────────────────────── */
   #level-select-screen{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:40px 20px;background:var(--theme-bg);}
@@ -258,7 +274,7 @@
 
   /* ── LANDING PAGE ─────────────────────────────────────── */
   #landing-screen{overflow-y:auto;overflow-x:hidden;height:100vh;background:var(--theme-bg);}
-  .lp-mute-btn{position:fixed;top:14px;right:14px;z-index:200;}
+  .lp-settings-btn{position:fixed;top:14px;right:14px;z-index:200;}
   .lp-hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
   .lp-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,var(--theme-glow1) 0%,transparent 60%),radial-gradient(ellipse at 70% 70%,var(--theme-glow2) 0%,transparent 60%);pointer-events:none;}
   .lp-stars{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
@@ -342,7 +358,7 @@
 
 <!-- LANDING PAGE -->
 <div id="landing-screen">
-  <button class="header-btn lp-mute-btn" id="mute-btn-landing" onclick="toggleMute()" title="Son">🔊</button>
+  <button class="header-btn lp-settings-btn" onclick="openSettings()" title="Réglages">⚙️</button>
   <!-- HERO -->
   <section class="lp-hero">
     <div class="lp-stars" id="lp-stars"></div>
@@ -396,6 +412,7 @@
 <div id="app">
   <!-- LEVEL SELECT -->
   <div id="level-select-screen">
+    <button class="header-btn lp-settings-btn" onclick="openSettings()" title="Réglages">⚙️</button>
     <div class="level-select-title" id="level-select-title">Quel niveau pour toi ?</div>
     <div class="level-cards">
       <div class="level-card level-card-eveil" onclick="selectLevel('eveil')" onmouseenter="playSound('hover')">
@@ -416,7 +433,7 @@
     <div class="library-header">
       <h1>✨ Liito</h1>
       <div class="library-header-actions">
-        <button class="header-btn" id="mute-btn-lib" onclick="toggleMute()" title="Son">🔊</button>
+        <button class="header-btn" onclick="openSettings()" title="Réglages">⚙️</button>
         <button class="header-btn" onclick="renderThemeGrid();openThemeModal()" title="Thème">🎨</button>
         <button class="header-btn" onclick="changeName()" title="Changer de prénom" style="font-size:0.85rem">✏️</button>
         <button class="header-btn" onclick="showAdventures()" title="Mes Aventures">📖</button>
@@ -445,8 +462,7 @@
     <div id="story-svg-bg"></div>
     <div class="story-gradient"></div>
     <button class="story-back-btn" onclick="closeStory()">←</button>
-  <button class="story-narrate-btn" id="narrate-toggle-btn" onclick="toggleNarration()">🎙️</button>
-  <button class="story-mute-btn" id="mute-btn-story" onclick="toggleMute()">🔊</button>
+  <button class="story-settings-btn" onclick="openSettings()" title="Réglages">⚙️</button>
     <div class="story-progress" id="story-progress"></div>
     <!-- Hotspots injected here dynamically -->
     <div id="hotspots-layer"></div>
@@ -1504,7 +1520,6 @@ function startApp(){
   document.getElementById('user-avatar').textContent=name[0].toUpperCase();
   document.getElementById('landing-screen').style.display='none';
   document.getElementById('app').style.display='block';
-  updateMuteUI();
   showLevelSelect();
 }
 function showLevelSelect(){
@@ -1572,7 +1587,6 @@ function openStory(storyId){
   document.getElementById('library-screen').style.display='none';
   document.getElementById('story-screen').style.display='block';
   document.getElementById('end-overlay').classList.remove('show');
-  updateNarrateUI();
   renderScene(currentSceneId);
 }
 function closeStory(){
@@ -2404,8 +2418,9 @@ function selectTheme(id) {
 // ════════════════════════════════════
 // AUDIO — fetch + decodeAudioData + SFX Web Audio API
 // ════════════════════════════════════
-let audioCtx, masterGain, sfxGain, musicBuffer, musicNode, audioUnlocked = false;
-const isMuted = () => localStorage.getItem('liito-muted') === 'true';
+let audioCtx, masterGain, sfxGain, musicGain, musicBuffer, musicNode, audioUnlocked = false;
+const isMusicEnabled = () => localStorage.getItem('liito-music') !== 'false';
+const isSfxEnabled   = () => localStorage.getItem('liito-sfx')   !== 'false';
 
 async function unlockAudio() {
   if (audioUnlocked) return;
@@ -2413,10 +2428,15 @@ async function unlockAudio() {
 
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   masterGain = audioCtx.createGain();
-  masterGain.gain.value = isMuted() ? 0 : 1;
+  masterGain.gain.value = 1;
   masterGain.connect(audioCtx.destination);
+
+  musicGain = audioCtx.createGain();
+  musicGain.gain.value = isMusicEnabled() ? 0.4 : 0;
+  musicGain.connect(masterGain);
+
   sfxGain = audioCtx.createGain();
-  sfxGain.gain.value = 0.6;
+  sfxGain.gain.value = isSfxEnabled() ? 0.6 : 0;
   sfxGain.connect(masterGain);
 
   await audioCtx.resume();
@@ -2432,14 +2452,11 @@ async function unlockAudio() {
 }
 
 function playMusic() {
-  if (!musicBuffer || !audioCtx) return;
+  if (!musicBuffer || !audioCtx || !musicGain) return;
   musicNode = audioCtx.createBufferSource();
   musicNode.buffer = musicBuffer;
   musicNode.loop = true;
-  const musicGain = audioCtx.createGain();
-  musicGain.gain.value = 0.4;
   musicNode.connect(musicGain);
-  musicGain.connect(masterGain);
   musicNode.start(0);
 }
 
@@ -2481,29 +2498,44 @@ function playSound(name) {
   }
 }
 
-function updateMuteUI() {
-  const muted = masterGain ? masterGain.gain.value === 0 : isMuted();
-  const icon = muted ? '&#x1F507;' : '&#x1F50A;';
-  ['mute-btn-lib','mute-btn-story','mute-btn-landing'].forEach(id => {
-    const b = document.getElementById(id);
-    if (b) b.innerHTML = icon;
-  });
+function openSettings() {
+  updateSettingsUI();
+  document.getElementById('settings-modal').classList.add('show');
 }
 
-function toggleMute() {
-  if (!masterGain) {
-    const willMute = !isMuted();
-    localStorage.setItem('liito-muted', String(willMute));
-    if (willMute && window.speechSynthesis) speechSynthesis.cancel();
-    updateMuteUI();
-    return;
-  }
-  const nowMuted = masterGain.gain.value > 0;
-  masterGain.gain.value = nowMuted ? 0 : 1;
-  localStorage.setItem('liito-muted', String(nowMuted));
-  if (nowMuted && window.speechSynthesis) speechSynthesis.cancel();
-  updateMuteUI();
+function closeSettings() {
+  document.getElementById('settings-modal').classList.remove('show');
 }
+
+function updateSettingsUI() {
+  const sw = (id, on) => { const b = document.getElementById(id); if (b) b.classList.toggle('on', on); };
+  sw('toggle-music',    isMusicEnabled());
+  sw('toggle-sfx',      isSfxEnabled());
+  sw('toggle-narration', isNarrationEnabled());
+}
+
+function toggleSettingMusic() {
+  const enabled = !isMusicEnabled();
+  localStorage.setItem('liito-music', String(enabled));
+  if (musicGain) musicGain.gain.value = enabled ? 0.4 : 0;
+  updateSettingsUI();
+}
+
+function toggleSettingSfx() {
+  const enabled = !isSfxEnabled();
+  localStorage.setItem('liito-sfx', String(enabled));
+  if (sfxGain) sfxGain.gain.value = enabled ? 0.6 : 0;
+  updateSettingsUI();
+}
+
+function toggleSettingNarration() {
+  const enabled = !isNarrationEnabled();
+  localStorage.setItem('liito-narration', String(enabled));
+  if (!enabled) stopNarration();
+  updateSettingsUI();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSettings(); });
 
 // ════════════════════════════════════
 // NARRATION — Web Speech API
@@ -2554,17 +2586,6 @@ function _buildChoicesText(choices) {
 
 const isNarrationEnabled = () => localStorage.getItem('liito-narration') !== 'false';
 
-function toggleNarration() {
-  const enabled = !isNarrationEnabled();
-  localStorage.setItem('liito-narration', String(enabled));
-  if (!enabled) stopNarration();
-  updateNarrateUI();
-}
-
-function updateNarrateUI() {
-  const btn = document.getElementById('narrate-toggle-btn');
-  if (btn) btn.innerHTML = isNarrationEnabled() ? '🎙️' : '🔇';
-}
 
 function replayNarration() {
   if (!_narrateScene || !window.speechSynthesis || !isNarrationEnabled()) return;
@@ -2679,7 +2700,6 @@ function initStars() {
 // ════════════════════════════════════
 (function init() {
   applyTheme(currentTheme, false);
-  updateMuteUI();
   initStars();
   const saved = localStorage.getItem('liito-username');
   if (saved) {
@@ -2692,5 +2712,36 @@ function initStars() {
 })();
 
 </script>
+
+<!-- SETTINGS MODAL -->
+<div id="settings-modal">
+  <div class="settings-box">
+    <div class="settings-header">
+      <h2 class="settings-title">Réglages</h2>
+      <button class="settings-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <span class="settings-row-label">🎵 Musique d'ambiance</span>
+        <span class="settings-row-desc">La mélodie de fond pendant les histoires</span>
+      </div>
+      <button class="settings-switch" id="toggle-music" onclick="toggleSettingMusic()"></button>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <span class="settings-row-label">🔊 Effets sonores</span>
+        <span class="settings-row-desc">Les petits sons quand tu appuies sur les boutons</span>
+      </div>
+      <button class="settings-switch" id="toggle-sfx" onclick="toggleSettingSfx()"></button>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <span class="settings-row-label">🎙️ Voix narrative</span>
+        <span class="settings-row-desc">La voix qui lit les histoires à voix haute</span>
+      </div>
+      <button class="settings-switch" id="toggle-narration" onclick="toggleSettingNarration()"></button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
