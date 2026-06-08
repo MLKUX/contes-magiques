@@ -1543,6 +1543,7 @@ function replayStory(){
 function renderScene(sceneId){
   playSound('transition');
   stopNarration();
+  const token = narrationToken;
   const scene=currentStory.scenes.find(s=>s.id===sceneId);
   if(!scene)return;
   currentSceneId=sceneId;
@@ -1647,8 +1648,19 @@ function renderScene(sceneId){
   _replayBtn.onclick=replayNarration;
   document.getElementById('story-text').appendChild(_replayBtn);
 
-  // Narration runs in parallel — interaction is not blocked
-  narrateScene(scene);
+  // Narration runs in parallel — token guards against cancelled utterances
+  if (scene.end) {
+    setTimeout(() => narrateScene(scene.text, token, () => {
+      setTimeout(() => narrateScene(scene.end.text, token), 1500);
+    }), 100);
+  } else {
+    const choicesText = _buildChoicesText(scene.choices);
+    if (choicesText) {
+      setTimeout(() => narrateScene(scene.text, token, () => narrateScene(choicesText, token)), 100);
+    } else {
+      setTimeout(() => narrateScene(scene.text, token), 100);
+    }
+  }
 }
 
 function makeChoice(nextId){
@@ -2395,6 +2407,7 @@ function toggleMute() {
 // NARRATION — Web Speech API
 // ════════════════════════════════════
 let _narrateScene = null;
+let narrationToken = 0;
 
 function _findFrVoice() {
   const v = speechSynthesis.getVoices();
@@ -2404,7 +2417,15 @@ function _findFrVoice() {
     || null;
 }
 
-function _speak(text, onEnd) {
+function stopNarration() {
+  if (!window.speechSynthesis) return;
+  narrationToken++;
+  speechSynthesis.cancel();
+}
+
+function narrateScene(text, token, onEnd) {
+  if (!window.speechSynthesis || !isNarrationEnabled()) return;
+  if (token !== narrationToken) return;
   const utt = new SpeechSynthesisUtterance(text);
   utt.lang = 'fr-FR';
   utt.rate = 0.85;
@@ -2412,16 +2433,10 @@ function _speak(text, onEnd) {
   utt.volume = 1.0;
   const voice = _findFrVoice();
   if (voice) utt.voice = voice;
-  utt.onend = () => onEnd && onEnd();
-  utt.onerror = () => onEnd && onEnd();
+  utt.onend = () => { if (token === narrationToken && onEnd) onEnd(); };
+  utt.onerror = () => { if (token === narrationToken && onEnd) onEnd(); };
+  if (narrationToken !== token) return;
   speechSynthesis.speak(utt);
-}
-
-function stopNarration() {
-  if (!window.speechSynthesis) return;
-  speechSynthesis.cancel();
-  setTimeout(() => speechSynthesis.cancel(), 50);
-  setTimeout(() => speechSynthesis.cancel(), 150);
 }
 
 function _buildChoicesText(choices) {
@@ -2449,24 +2464,11 @@ function updateNarrateUI() {
   if (btn) btn.innerHTML = isNarrationEnabled() ? '🎙️' : '🔇';
 }
 
-function narrateScene(scene) {
-  if (!window.speechSynthesis || !isNarrationEnabled()) return;
-  if (scene.end) {
-    _speak(scene.text, () => setTimeout(() => _speak(scene.end.text, null), 1500));
-    return;
-  }
-  const choicesText = _buildChoicesText(scene.choices);
-  if (choicesText) {
-    _speak(scene.text, () => _speak(choicesText, null));
-  } else {
-    _speak(scene.text, null);
-  }
-}
-
 function replayNarration() {
   if (!_narrateScene || !window.speechSynthesis || !isNarrationEnabled()) return;
   stopNarration();
-  _speak(_narrateScene.text, null);
+  const token = narrationToken;
+  setTimeout(() => narrateScene(_narrateScene.text, token), 100);
 }
 
 if (window.speechSynthesis) {
