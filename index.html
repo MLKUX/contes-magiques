@@ -304,20 +304,28 @@
 
   /* ── AVENTURES ──────────────────────────────────── */
   #adventures-screen{display:none;padding:28px 20px;max-width:920px;margin:0 auto;}
-  .adventures-header{display:flex;align-items:center;gap:14px;margin-bottom:32px;}
+  .adventures-header{display:flex;align-items:center;gap:14px;margin-bottom:10px;}
   .adventures-back-btn{width:36px;height:36px;flex-shrink:0;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);color:white;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;}
   .adventures-back-btn:hover{background:rgba(255,255,255,0.18);}
   .adventures-title{font-family:'Fredoka One',cursive;font-size:1.85rem;background:linear-gradient(135deg,#FFD700,#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0;}
-  .adventures-counter{font-size:0.82rem;color:rgba(255,255,255,0.45);margin:-20px 0 16px 0;padding-left:2px;}
-  .adventures-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding:24px;max-width:900px;margin:0 auto;}
-  .adventure-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:16px;padding:20px;min-height:160px;display:flex;flex-direction:column;gap:8px;transition:transform 0.2s,box-shadow 0.2s;}
+  .adventures-counter{font-size:0.82rem;color:rgba(255,255,255,0.45);margin:0 0 10px 2px;}
+  .adventures-progress-track{width:100%;max-width:300px;height:6px;background:rgba(255,255,255,0.1);border-radius:999px;margin:0 0 24px 2px;overflow:hidden;}
+  .adventures-progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#a855f7,#FFD700);width:0%;transition:width 0.8s cubic-bezier(0.22,1,0.36,1);}
+  .adventures-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding:0 0 24px 0;max-width:900px;margin:0 auto;}
+  .adventure-card{background:rgba(255,255,255,0.1);border:1px solid rgba(255,215,0,0.2);border-radius:16px;padding:20px;min-height:160px;display:flex;flex-direction:column;gap:8px;transition:transform 0.2s,box-shadow 0.2s;opacity:0;transform:translateY(20px);animation:card-enter 0.3s ease-out both;}
+  @keyframes card-enter{to{opacity:1;transform:translateY(0);}}
   .adventure-card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(168,85,247,0.25);}
-  .adventure-star{font-size:2rem;line-height:1;}
+  .adventure-star{font-size:3rem;line-height:1;text-align:center;}
   .adventure-story-name{font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.06em;}
   .adventure-end-title{font-family:'Fredoka One',cursive;font-size:1.05rem;color:white;font-weight:700;}
   .adventure-text{font-size:0.8rem;color:rgba(255,255,255,0.6);line-height:1.5;margin-top:auto;}
-  .adventures-empty{text-align:center;color:rgba(255,255,255,0.4);font-size:1rem;padding:60px 20px;line-height:1.8;}
-  @media(max-width:520px){.adventures-title{font-size:1.4rem;}.adventures-grid{grid-template-columns:1fr;padding:16px;}}
+  .adventures-empty{display:flex;flex-direction:column;align-items:center;gap:14px;padding:60px 20px;text-align:center;}
+  .adventures-empty-emoji{font-size:4rem;line-height:1;}
+  .adventures-empty-title{font-size:1.1rem;color:rgba(255,255,255,0.75);}
+  .adventures-empty-sub{font-size:0.88rem;color:rgba(255,255,255,0.4);}
+  .adventures-empty-btn{margin-top:8px;padding:10px 22px;border-radius:999px;background:linear-gradient(135deg,#a855f7,#FFD700);border:none;color:white;font-size:0.9rem;font-weight:700;cursor:pointer;transition:opacity 0.2s;}
+  .adventures-empty-btn:hover{opacity:0.85;}
+  @media(max-width:520px){.adventures-title{font-size:1.4rem;}.adventures-grid{grid-template-columns:1fr;}}
 
   /* ── CELEBRATION ─────────────────────────────────── */
   .confetti-container{position:fixed;inset:0;z-index:9999;pointer-events:none;overflow:hidden;}
@@ -429,6 +437,7 @@
       <h1 class="adventures-title" id="adventures-title">Mes Aventures</h1>
     </div>
     <p class="adventures-counter" id="adventures-counter"></p>
+    <div class="adventures-progress-track"><div class="adventures-progress-fill" id="adventures-progress-fill"></div></div>
     <div class="adventures-grid" id="adventures-grid"></div>
   </div>
 
@@ -2614,18 +2623,26 @@ function renderAdventures() {
   const endings = getEndings().slice().sort((a, b) => (b.discoveredAt || 0) - (a.discoveredAt || 0));
   const grid = document.getElementById('adventures-grid');
   const counter = document.getElementById('adventures-counter');
+  const fill = document.getElementById('adventures-progress-fill');
   const total = _countTotalEndings();
-  if (counter) counter.textContent = endings.length + ' fin' + (endings.length > 1 ? 's' : '') + ' découverte' + (endings.length > 1 ? 's' : '') + ' sur ' + total + ' au total';
-  if (!endings.length) {
-    grid.innerHTML = '<p class="adventures-empty">Tes aventures apparaîtront ici au fil de tes histoires ✨</p>';
+  const n = endings.length;
+  if (counter) counter.textContent = n + ' fin' + (n > 1 ? 's' : '') + ' découverte' + (n > 1 ? 's' : '') + ' sur ' + total + ' au total';
+  if (fill) { fill.style.width = '0%'; requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = (total > 0 ? Math.round(n / total * 100) : 0) + '%'; })); }
+  if (!n) {
+    grid.innerHTML = `<div class="adventures-empty">
+      <span class="adventures-empty-emoji">🗺️</span>
+      <span class="adventures-empty-title">Tes aventures apparaîtront ici ✨</span>
+      <span class="adventures-empty-sub">Lance-toi dans une histoire pour commencer !</span>
+      <button class="adventures-empty-btn" onclick="closeAdventures()">Choisir une histoire →</button>
+    </div>`;
     return;
   }
-  grid.innerHTML = endings.map(e => {
+  grid.innerHTML = endings.map((e, i) => {
     const story = STORIES.find(s => s.id === e.storyId);
     const storyName = story ? story.title : e.storyId;
     const excerpt = e.text.replace(/\n+/g, ' ');
     const short = excerpt.length > 110 ? excerpt.substring(0, 110) + '…' : excerpt;
-    return `<div class="adventure-card">
+    return `<div class="adventure-card" style="animation-delay:${i * 0.05}s">
       <div class="adventure-star">${e.star}</div>
       <div class="adventure-story-name">${storyName}</div>
       <div class="adventure-end-title">${e.title}</div>
