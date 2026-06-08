@@ -302,6 +302,15 @@
     .library-header h1{font-size:1.4rem;}
   }
 
+  /* ── CELEBRATION ─────────────────────────────────── */
+  .confetti-container{position:fixed;inset:0;z-index:9999;pointer-events:none;overflow:hidden;}
+  .confetti-particle{position:absolute;top:-14px;animation:confetti-fall linear both;}
+  @keyframes confetti-fall{0%{transform:translateY(0) rotate(0deg);opacity:1;}75%{opacity:1;}100%{transform:translateY(105vh) rotate(var(--crot,360deg));opacity:0;}}
+  .burst-star{position:fixed;left:50%;top:50%;font-size:1.5rem;z-index:9999;pointer-events:none;animation:burst-out 0.8s ease-out both;}
+  @keyframes burst-out{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}55%{transform:translate(calc(-50% + var(--tx,0px)),calc(-50% + var(--ty,0px))) scale(1.5);opacity:1;}100%{transform:translate(calc(-50% + var(--tx,0px)),calc(-50% + var(--ty,0px))) scale(0);opacity:0;}}
+  @keyframes end-title-bounce{0%{transform:scale(0);}60%{transform:scale(1.2);}100%{transform:scale(1);}}
+  .end-title-bounce{animation:end-title-bounce 0.5s cubic-bezier(0.34,1.56,0.64,1) both;}
+
 </style>
 </head>
 <body>
@@ -2249,6 +2258,56 @@ function showEnd(end){
     illus.innerHTML=END_ILLUSTRATIONS[end.star]||END_ILLUSTRATIONS['default'];
   }
   document.getElementById('end-overlay').classList.add('show');
+  launchCelebration();
+}
+
+function launchCelebration() {
+  const COLORS = ['#A855F7','#FFD700','#FF6B9D','#ffffff','#06B6D4','#F59E0B'];
+
+  // Confetti
+  const wrap = document.createElement('div');
+  wrap.className = 'confetti-container';
+  for (let i = 0; i < 80; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-particle';
+    const isCircle = Math.random() < 0.3;
+    const isRect   = !isCircle && Math.random() < 0.5;
+    const w = isRect ? 12 : 7;
+    const h = isRect ? 5  : 7;
+    p.style.cssText =
+      `left:${(Math.random()*102-1).toFixed(1)}%;` +
+      `width:${w}px;height:${h}px;` +
+      `background:${COLORS[Math.floor(Math.random()*COLORS.length)]};` +
+      `border-radius:${isCircle?'50%':'2px'};` +
+      `animation-duration:${(2+Math.random()*2).toFixed(2)}s;` +
+      `animation-delay:${(Math.random()*0.8).toFixed(2)}s;` +
+      `--crot:${(Math.random()>0.5?1:-1)*(200+Math.floor(Math.random()*300))}deg;`;
+    wrap.appendChild(p);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(() => wrap.remove(), 5000);
+
+  // Étoiles rayonnantes
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * Math.PI * 2;
+    const dist  = 100 + Math.random() * 80;
+    const star  = document.createElement('div');
+    star.className = 'burst-star';
+    star.textContent = '✨';
+    star.style.setProperty('--tx', `${(Math.cos(angle)*dist).toFixed(1)}px`);
+    star.style.setProperty('--ty', `${(Math.sin(angle)*dist).toFixed(1)}px`);
+    star.style.animationDelay = `${(Math.random()*0.15).toFixed(2)}s`;
+    document.body.appendChild(star);
+    setTimeout(() => star.remove(), 1000);
+  }
+
+  // Rebond sur le titre
+  const title = document.getElementById('end-title');
+  if (title) {
+    title.classList.remove('end-title-bounce');
+    void title.offsetWidth; // force reflow pour réarmer l'animation
+    title.classList.add('end-title-bounce');
+  }
 }
 
 // ════════════════════════════════════
