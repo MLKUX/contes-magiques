@@ -191,6 +191,8 @@
   .story-text{font-size:0.95rem;font-weight:600;line-height:1.65;color:rgba(255,255,255,0.92);}
   .btn-continue{display:block;margin:14px auto 0;background:linear-gradient(135deg,var(--theme-accent),#FF6B35);border:none;border-radius:14px;padding:13px 32px;font-family:'Fredoka One',cursive;font-size:1.1rem;color:#1a0a2e;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 18px rgba(255,215,0,0.3);animation:lp-in 0.4s ease both;}
   .btn-continue:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,215,0,0.45);}
+  .narrate-btn{display:inline-flex;align-items:center;gap:5px;margin:12px auto 0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);border-radius:20px;padding:5px 14px;font-size:0.82rem;color:rgba(255,255,255,0.65);cursor:pointer;transition:all 0.2s;}
+  .narrate-btn:hover{background:rgba(255,255,255,0.15);color:#fff;}
 
   /* END SCREEN */
   .end-overlay{display:none;position:absolute;inset:0;z-index:30;flex-direction:column;align-items:center;justify-content:flex-end;text-align:center;padding-bottom:40px;}
@@ -1534,6 +1536,7 @@ function replayStory(){
 
 function renderScene(sceneId){
   playSound('transition');
+  stopNarration();
   const scene=currentStory.scenes.find(s=>s.id===sceneId);
   if(!scene)return;
   currentSceneId=sceneId;
@@ -1605,9 +1608,12 @@ function renderScene(sceneId){
   // Narration text
   document.getElementById('story-text').innerHTML=scene.text.split('\n').filter(l=>l.trim()).map(l=>`<span style="display:block;margin-bottom:4px;">${l}</span>`).join('');
 
-  // Hotspot choices on image
+  // Hotspot choices — hidden until narration ends
   const hl=document.getElementById('hotspots-layer');
   hl.innerHTML='';
+  hl.style.opacity='0';
+  hl.style.transition='opacity 0.5s';
+  hl.style.pointerEvents='none';
   if(scene.choices.length>0){
     scene.choices.forEach((c,i)=>{
       const btn=document.createElement('button');
@@ -1621,14 +1627,33 @@ function renderScene(sceneId){
     });
   }
 
-  // End — show a Continue button instead of jumping straight to Bravo
+  // End — Continue button, hidden until narration ends
+  let _endBtn=null;
   if(scene.end){
-    const btn=document.createElement('button');
-    btn.className='btn-continue';
-    btn.textContent='Continuer ✨';
-    btn.onclick=()=>showEnd(scene.end);
-    document.getElementById('story-text').appendChild(btn);
+    _endBtn=document.createElement('button');
+    _endBtn.className='btn-continue';
+    _endBtn.style.opacity='0';
+    _endBtn.style.transition='opacity 0.5s';
+    _endBtn.style.pointerEvents='none';
+    _endBtn.textContent='Continuer ✨';
+    _endBtn.onclick=()=>showEnd(scene.end);
+    document.getElementById('story-text').appendChild(_endBtn);
   }
+
+  // 🔊 Replay button
+  _narrateScene=scene;
+  const _replayBtn=document.createElement('button');
+  _replayBtn.className='narrate-btn';
+  _replayBtn.innerHTML='🔊 Réécouter';
+  _replayBtn.onclick=replayNarration;
+  document.getElementById('story-text').appendChild(_replayBtn);
+
+  // Narrate then reveal choices
+  narrateScene(scene,()=>{
+    hl.style.opacity='1';
+    hl.style.pointerEvents='auto';
+    if(_endBtn){_endBtn.style.opacity='1';_endBtn.style.pointerEvents='auto';}
+  });
 }
 
 function makeChoice(nextId){
@@ -2357,14 +2382,67 @@ function updateMuteUI() {
 
 function toggleMute() {
   if (!masterGain) {
-    localStorage.setItem('liito-muted', String(!isMuted()));
+    const willMute = !isMuted();
+    localStorage.setItem('liito-muted', String(willMute));
+    if (willMute && window.speechSynthesis) speechSynthesis.cancel();
     updateMuteUI();
     return;
   }
   const nowMuted = masterGain.gain.value > 0;
   masterGain.gain.value = nowMuted ? 0 : 1;
   localStorage.setItem('liito-muted', String(nowMuted));
+  if (nowMuted && window.speechSynthesis) speechSynthesis.cancel();
   updateMuteUI();
+}
+
+// ════════════════════════════════════
+// NARRATION — Web Speech API
+// ════════════════════════════════════
+let _narrateScene = null;
+
+function _findFrVoice() {
+  const v = speechSynthesis.getVoices();
+  return v.find(x => x.lang === 'fr-FR' && x.name.toLowerCase().includes('female'))
+    || v.find(x => x.lang === 'fr-FR')
+    || v.find(x => x.lang.startsWith('fr'))
+    || null;
+}
+
+function _speak(text, onEnd) {
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'fr-FR';
+  utt.rate = 0.85;
+  utt.pitch = 1.1;
+  utt.volume = 1.0;
+  const voice = _findFrVoice();
+  if (voice) utt.voice = voice;
+  utt.onend = () => onEnd && onEnd();
+  utt.onerror = () => onEnd && onEnd();
+  speechSynthesis.speak(utt);
+}
+
+function stopNarration() {
+  if (window.speechSynthesis) speechSynthesis.cancel();
+}
+
+function narrateScene(scene, onChoicesReady) {
+  if (!window.speechSynthesis || isMuted()) { onChoicesReady(); return; }
+  if (scene.end) {
+    _speak(scene.text, () => setTimeout(() => _speak(scene.end.text, onChoicesReady), 1500));
+  } else {
+    _speak(scene.text, onChoicesReady);
+  }
+}
+
+function replayNarration() {
+  if (!_narrateScene || !window.speechSynthesis || isMuted()) return;
+  stopNarration();
+  _speak(_narrateScene.text, null);
+}
+
+if (window.speechSynthesis) {
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
 }
 
 // ════════════════════════════════════
