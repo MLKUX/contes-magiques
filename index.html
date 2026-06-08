@@ -2418,7 +2418,10 @@ function _speak(text, onEnd) {
 }
 
 function stopNarration() {
-  if (window.speechSynthesis) speechSynthesis.cancel();
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  setTimeout(() => speechSynthesis.cancel(), 50);
+  setTimeout(() => speechSynthesis.cancel(), 150);
 }
 
 function _buildChoicesText(choices) {
