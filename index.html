@@ -302,6 +302,22 @@
     .library-header h1{font-size:1.4rem;}
   }
 
+  /* ── AVENTURES ──────────────────────────────────── */
+  #adventures-screen{display:none;padding:28px 20px;max-width:920px;margin:0 auto;}
+  .adventures-header{display:flex;align-items:center;gap:14px;margin-bottom:32px;}
+  .adventures-back-btn{width:36px;height:36px;flex-shrink:0;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);color:white;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;}
+  .adventures-back-btn:hover{background:rgba(255,255,255,0.18);}
+  .adventures-title{font-family:'Fredoka One',cursive;font-size:1.85rem;background:linear-gradient(135deg,#FFD700,#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0;}
+  .adventures-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:18px;}
+  .adventure-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px;transition:transform 0.2s,box-shadow 0.2s;}
+  .adventure-card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(168,85,247,0.25);}
+  .adventure-star{font-size:2.2rem;line-height:1;}
+  .adventure-story-name{font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;}
+  .adventure-end-title{font-family:'Fredoka One',cursive;font-size:1.1rem;color:white;}
+  .adventure-text{font-size:0.82rem;color:rgba(255,255,255,0.6);line-height:1.5;}
+  .adventures-empty{text-align:center;color:rgba(255,255,255,0.4);font-size:1rem;padding:60px 20px;line-height:1.8;}
+  @media(max-width:520px){.adventures-title{font-size:1.4rem;}}
+
   /* ── CELEBRATION ─────────────────────────────────── */
   .confetti-container{position:fixed;inset:0;z-index:9999;pointer-events:none;overflow:hidden;}
   .confetti-particle{position:absolute;top:-14px;animation:confetti-fall linear both;}
@@ -394,6 +410,7 @@
         <button class="header-btn" id="mute-btn-lib" onclick="toggleMute()" title="Son">🔊</button>
         <button class="header-btn" onclick="renderThemeGrid();openThemeModal()" title="Thème">🎨</button>
         <button class="header-btn" onclick="changeName()" title="Changer de prénom" style="font-size:0.85rem">✏️</button>
+        <button class="header-btn" onclick="showAdventures()" title="Mes Aventures">📖</button>
         <div class="avatar" id="user-avatar">?</div>
       </div>
     </div>
@@ -403,6 +420,14 @@
       <button class="level-tab" onclick="filterLevel('explorateur',this)">⭐ Explorateur (6-8 ans)</button>
     </div>
     <div class="stories-grid" id="stories-grid"></div>
+  </div>
+
+  <div id="adventures-screen">
+    <div class="adventures-header">
+      <button class="adventures-back-btn" onclick="closeAdventures()">←</button>
+      <h1 class="adventures-title" id="adventures-title">Mes Aventures</h1>
+    </div>
+    <div class="adventures-grid" id="adventures-grid"></div>
   </div>
 
   <div id="story-screen">
@@ -2243,7 +2268,10 @@ function showEnd(end){
   stopNarration();
   const endToken = narrationToken;
   playSound('success');
-  if(currentStory&&currentSceneId)saveCompleted(currentStory.id,currentSceneId);
+  if(currentStory&&currentSceneId){
+    saveCompleted(currentStory.id,currentSceneId);
+    saveEnding(currentStory.id,currentSceneId,end.star,end.title,end.text);
+  }
   document.getElementById('end-star').textContent=end.star;
   document.getElementById('end-title').textContent='Bravo '+userName+' !';
   document.getElementById('end-text').innerHTML=end.text.split('\n').filter(l=>l.trim()).map(l=>`<span style="display:block;margin-bottom:6px;">${l}</span>`).join('');
@@ -2555,6 +2583,48 @@ function saveCompleted(storyId, sceneId) {
 function countCompletedForStory(storyId) {
   return getCompleted().filter(k => k.startsWith(storyId + '/')).length;
 }
+
+function getEndingsKey() { return 'liito-endings-' + userName; }
+function getEndings() {
+  try { return JSON.parse(localStorage.getItem(getEndingsKey()) || '[]'); } catch { return []; }
+}
+function saveEnding(storyId, endId, star, title, text) {
+  const arr = getEndings();
+  if (arr.some(e => e.storyId === storyId && e.endId === endId)) return;
+  arr.push({ storyId, endId, star, title, text, discoveredAt: Date.now() });
+  localStorage.setItem(getEndingsKey(), JSON.stringify(arr));
+}
+function showAdventures() {
+  document.getElementById('library-screen').style.display = 'none';
+  document.getElementById('adventures-screen').style.display = 'block';
+  document.getElementById('adventures-title').textContent = 'Les aventures de ' + userName;
+  renderAdventures();
+}
+function closeAdventures() {
+  document.getElementById('adventures-screen').style.display = 'none';
+  document.getElementById('library-screen').style.display = 'block';
+}
+function renderAdventures() {
+  const endings = getEndings();
+  const grid = document.getElementById('adventures-grid');
+  if (!endings.length) {
+    grid.innerHTML = '<p class="adventures-empty">Tes aventures apparaîtront ici au fil de tes histoires ✨</p>';
+    return;
+  }
+  grid.innerHTML = endings.slice().reverse().map(e => {
+    const story = STORIES.find(s => s.id === e.storyId);
+    const storyName = story ? story.title : e.storyId;
+    const excerpt = e.text.replace(/\n+/g, ' ');
+    const short = excerpt.length > 110 ? excerpt.substring(0, 110) + '…' : excerpt;
+    return `<div class="adventure-card">
+      <div class="adventure-star">${e.star}</div>
+      <div class="adventure-story-name">${storyName}</div>
+      <div class="adventure-end-title">${e.title}</div>
+      <div class="adventure-text">${short}</div>
+    </div>`;
+  }).join('');
+}
+
 function changeName() {
   stopNarration();
   localStorage.removeItem('liito-username');
