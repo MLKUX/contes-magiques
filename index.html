@@ -233,6 +233,8 @@
   /* ── STORY MUTE BUTTON ────────────────────────────────── */
   .story-mute-btn{position:absolute;top:18px;right:18px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);color:white;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:background 0.2s;z-index:10;}
   .story-mute-btn:hover{background:rgba(255,255,255,0.15);}
+  .story-narrate-btn{position:absolute;top:18px;right:64px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);color:white;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);z-index:10;}
+  .story-narrate-btn:hover{background:rgba(255,255,255,0.15);}
 
   /* ── LEVEL SELECT ────────────────────────────────────── */
   #level-select-screen{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:40px 20px;background:var(--theme-bg);}
@@ -398,6 +400,7 @@
     <div id="story-svg-bg"></div>
     <div class="story-gradient"></div>
     <button class="story-back-btn" onclick="closeStory()">←</button>
+  <button class="story-narrate-btn" id="narrate-toggle-btn" onclick="toggleNarration()">🎙️</button>
   <button class="story-mute-btn" id="mute-btn-story" onclick="toggleMute()">🔊</button>
     <div class="story-progress" id="story-progress"></div>
     <!-- Hotspots injected here dynamically -->
@@ -1460,6 +1463,7 @@ function startApp(){
   showLevelSelect();
 }
 function showLevelSelect(){
+  stopNarration();
   document.getElementById('level-select-title').textContent='Quel niveau pour '+userName+' ?';
   document.getElementById('level-select-screen').classList.add('show');
   document.getElementById('library-screen').style.display='none';
@@ -1523,9 +1527,11 @@ function openStory(storyId){
   document.getElementById('library-screen').style.display='none';
   document.getElementById('story-screen').style.display='block';
   document.getElementById('end-overlay').classList.remove('show');
+  updateNarrateUI();
   renderScene(currentSceneId);
 }
 function closeStory(){
+  stopNarration();
   document.getElementById('story-screen').style.display='none';
   document.getElementById('library-screen').style.display='block';
 }
@@ -1608,12 +1614,9 @@ function renderScene(sceneId){
   // Narration text
   document.getElementById('story-text').innerHTML=scene.text.split('\n').filter(l=>l.trim()).map(l=>`<span style="display:block;margin-bottom:4px;">${l}</span>`).join('');
 
-  // Hotspot choices — hidden until narration ends
+  // Hotspot choices
   const hl=document.getElementById('hotspots-layer');
   hl.innerHTML='';
-  hl.style.opacity='0';
-  hl.style.transition='opacity 0.5s';
-  hl.style.pointerEvents='none';
   if(scene.choices.length>0){
     scene.choices.forEach((c,i)=>{
       const btn=document.createElement('button');
@@ -1627,17 +1630,13 @@ function renderScene(sceneId){
     });
   }
 
-  // End — Continue button, hidden until narration ends
-  let _endBtn=null;
+  // End — Continue button
   if(scene.end){
-    _endBtn=document.createElement('button');
-    _endBtn.className='btn-continue';
-    _endBtn.style.opacity='0';
-    _endBtn.style.transition='opacity 0.5s';
-    _endBtn.style.pointerEvents='none';
-    _endBtn.textContent='Continuer ✨';
-    _endBtn.onclick=()=>showEnd(scene.end);
-    document.getElementById('story-text').appendChild(_endBtn);
+    const btn=document.createElement('button');
+    btn.className='btn-continue';
+    btn.textContent='Continuer ✨';
+    btn.onclick=()=>showEnd(scene.end);
+    document.getElementById('story-text').appendChild(btn);
   }
 
   // 🔊 Replay button
@@ -1648,12 +1647,8 @@ function renderScene(sceneId){
   _replayBtn.onclick=replayNarration;
   document.getElementById('story-text').appendChild(_replayBtn);
 
-  // Narrate then reveal choices
-  narrateScene(scene,()=>{
-    hl.style.opacity='1';
-    hl.style.pointerEvents='auto';
-    if(_endBtn){_endBtn.style.opacity='1';_endBtn.style.pointerEvents='auto';}
-  });
+  // Narration runs in parallel — interaction is not blocked
+  narrateScene(scene);
 }
 
 function makeChoice(nextId){
@@ -2436,22 +2431,36 @@ function _buildChoicesText(choices) {
   return `Tu peux choisir : ${parts.join('... ')}... ou ${last}.`;
 }
 
-function narrateScene(scene, onChoicesReady) {
-  if (!window.speechSynthesis || isMuted()) { onChoicesReady(); return; }
+const isNarrationEnabled = () => localStorage.getItem('liito-narration') !== 'false';
+
+function toggleNarration() {
+  const enabled = !isNarrationEnabled();
+  localStorage.setItem('liito-narration', String(enabled));
+  if (!enabled) stopNarration();
+  updateNarrateUI();
+}
+
+function updateNarrateUI() {
+  const btn = document.getElementById('narrate-toggle-btn');
+  if (btn) btn.innerHTML = isNarrationEnabled() ? '🎙️' : '🔇';
+}
+
+function narrateScene(scene) {
+  if (!window.speechSynthesis || !isNarrationEnabled()) return;
   if (scene.end) {
-    _speak(scene.text, () => setTimeout(() => _speak(scene.end.text, onChoicesReady), 1500));
+    _speak(scene.text, () => setTimeout(() => _speak(scene.end.text, null), 1500));
     return;
   }
   const choicesText = _buildChoicesText(scene.choices);
   if (choicesText) {
-    _speak(scene.text, () => _speak(choicesText, onChoicesReady));
+    _speak(scene.text, () => _speak(choicesText, null));
   } else {
-    _speak(scene.text, onChoicesReady);
+    _speak(scene.text, null);
   }
 }
 
 function replayNarration() {
-  if (!_narrateScene || !window.speechSynthesis || isMuted()) return;
+  if (!_narrateScene || !window.speechSynthesis || !isNarrationEnabled()) return;
   stopNarration();
   _speak(_narrateScene.text, null);
 }
@@ -2475,6 +2484,7 @@ function countCompletedForStory(storyId) {
   return getCompleted().filter(k => k.startsWith(storyId + '/')).length;
 }
 function changeName() {
+  stopNarration();
   localStorage.removeItem('liito-username');
   document.getElementById('app').style.display = 'none';
   const ls = document.getElementById('landing-screen');
