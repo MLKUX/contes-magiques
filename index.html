@@ -1463,7 +1463,7 @@ function startApp(){
   showLevelSelect();
 }
 function showLevelSelect(){
-  if (window.speechSynthesis) speechSynthesis.cancel();
+  stopNarration();
   document.getElementById('level-select-title').textContent='Quel niveau pour '+userName+' ?';
   document.getElementById('level-select-screen').classList.add('show');
   document.getElementById('library-screen').style.display='none';
@@ -1531,7 +1531,7 @@ function openStory(storyId){
   renderScene(currentSceneId);
 }
 function closeStory(){
-  if (window.speechSynthesis) speechSynthesis.cancel();
+  stopNarration();
   document.getElementById('story-screen').style.display='none';
   document.getElementById('library-screen').style.display='block';
 }
@@ -2213,6 +2213,7 @@ function adminSave(){
 // Masquer le panel admin quand on quitte une histoire
 const _closeStory=closeStory;
 closeStory=function(){
+  stopNarration();
   document.getElementById('admin-panel').classList.remove('visible');
   _closeStory();
 };
@@ -2487,7 +2488,7 @@ function countCompletedForStory(storyId) {
   return getCompleted().filter(k => k.startsWith(storyId + '/')).length;
 }
 function changeName() {
-  if (window.speechSynthesis) speechSynthesis.cancel();
+  stopNarration();
   localStorage.removeItem('liito-username');
   document.getElementById('app').style.display = 'none';
   const ls = document.getElementById('landing-screen');
