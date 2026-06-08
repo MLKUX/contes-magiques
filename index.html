@@ -308,15 +308,16 @@
   .adventures-back-btn{width:36px;height:36px;flex-shrink:0;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);color:white;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;}
   .adventures-back-btn:hover{background:rgba(255,255,255,0.18);}
   .adventures-title{font-family:'Fredoka One',cursive;font-size:1.85rem;background:linear-gradient(135deg,#FFD700,#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0;}
-  .adventures-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:18px;}
-  .adventure-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px;transition:transform 0.2s,box-shadow 0.2s;}
+  .adventures-counter{font-size:0.82rem;color:rgba(255,255,255,0.45);margin:-20px 0 16px 0;padding-left:2px;}
+  .adventures-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding:24px;max-width:900px;margin:0 auto;}
+  .adventure-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:16px;padding:20px;min-height:160px;display:flex;flex-direction:column;gap:8px;transition:transform 0.2s,box-shadow 0.2s;}
   .adventure-card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(168,85,247,0.25);}
-  .adventure-star{font-size:2.2rem;line-height:1;}
-  .adventure-story-name{font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;}
-  .adventure-end-title{font-family:'Fredoka One',cursive;font-size:1.1rem;color:white;}
-  .adventure-text{font-size:0.82rem;color:rgba(255,255,255,0.6);line-height:1.5;}
+  .adventure-star{font-size:2rem;line-height:1;}
+  .adventure-story-name{font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.06em;}
+  .adventure-end-title{font-family:'Fredoka One',cursive;font-size:1.05rem;color:white;font-weight:700;}
+  .adventure-text{font-size:0.8rem;color:rgba(255,255,255,0.6);line-height:1.5;margin-top:auto;}
   .adventures-empty{text-align:center;color:rgba(255,255,255,0.4);font-size:1rem;padding:60px 20px;line-height:1.8;}
-  @media(max-width:520px){.adventures-title{font-size:1.4rem;}}
+  @media(max-width:520px){.adventures-title{font-size:1.4rem;}.adventures-grid{grid-template-columns:1fr;padding:16px;}}
 
   /* ── CELEBRATION ─────────────────────────────────── */
   .confetti-container{position:fixed;inset:0;z-index:9999;pointer-events:none;overflow:hidden;}
@@ -427,6 +428,7 @@
       <button class="adventures-back-btn" onclick="closeAdventures()">←</button>
       <h1 class="adventures-title" id="adventures-title">Mes Aventures</h1>
     </div>
+    <p class="adventures-counter" id="adventures-counter"></p>
     <div class="adventures-grid" id="adventures-grid"></div>
   </div>
 
@@ -2604,14 +2606,21 @@ function closeAdventures() {
   document.getElementById('adventures-screen').style.display = 'none';
   document.getElementById('library-screen').style.display = 'block';
 }
+function _countTotalEndings() {
+  return STORIES.reduce((acc, s) => acc + (s.scenes || []).filter(sc => sc.end).length, 0);
+}
+
 function renderAdventures() {
-  const endings = getEndings();
+  const endings = getEndings().slice().sort((a, b) => (b.discoveredAt || 0) - (a.discoveredAt || 0));
   const grid = document.getElementById('adventures-grid');
+  const counter = document.getElementById('adventures-counter');
+  const total = _countTotalEndings();
+  if (counter) counter.textContent = endings.length + ' fin' + (endings.length > 1 ? 's' : '') + ' découverte' + (endings.length > 1 ? 's' : '') + ' sur ' + total + ' au total';
   if (!endings.length) {
     grid.innerHTML = '<p class="adventures-empty">Tes aventures apparaîtront ici au fil de tes histoires ✨</p>';
     return;
   }
-  grid.innerHTML = endings.slice().reverse().map(e => {
+  grid.innerHTML = endings.map(e => {
     const story = STORIES.find(s => s.id === e.storyId);
     const storyName = story ? story.title : e.storyId;
     const excerpt = e.text.replace(/\n+/g, ' ');
