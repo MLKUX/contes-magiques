@@ -2241,24 +2241,27 @@ closeStory=function(){
 
 function showEnd(end){
   stopNarration();
+  const endToken = narrationToken;
   playSound('success');
   if(currentStory&&currentSceneId)saveCompleted(currentStory.id,currentSceneId);
   document.getElementById('end-star').textContent=end.star;
-  document.getElementById('end-title').textContent=end.title;
+  document.getElementById('end-title').textContent='Bravo '+userName+' !';
   document.getElementById('end-text').innerHTML=end.text.split('\n').filter(l=>l.trim()).map(l=>`<span style="display:block;margin-bottom:6px;">${l}</span>`).join('');
   const illus=document.getElementById('end-illustration');
   const cacheKey=currentStory&&currentStory.id+'/'+currentSceneId+'/dalle';
   const hasImage=currentImage||(cacheKey&&imageCache[cacheKey]);
   if(hasImage){
-    // Image IA déjà sur story-svg-bg — pas d'illustration SVG
     illus.innerHTML='';
     if(IS_ADMIN) updateAdminStatus(currentStory.scenes.find(s=>s.id===currentSceneId)?.cachedImage?'cached':'generated');
   } else {
-    // Pas encore d'image : SVG en attendant (applyImage l'effacera à l'arrivée)
     illus.innerHTML=END_ILLUSTRATIONS[end.star]||END_ILLUSTRATIONS['default'];
   }
   document.getElementById('end-overlay').classList.add('show');
   launchCelebration();
+  if(isNarrationEnabled()){
+    const bravoText='Bravo '+userName+' ! '+end.text.replace(/\n+/g,' ');
+    setTimeout(()=>narrateScene(bravoText,endToken),800);
+  }
 }
 
 function launchCelebration() {
