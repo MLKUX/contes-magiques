@@ -2231,6 +2231,7 @@ closeStory=function(){
 };
 
 function showEnd(end){
+  stopNarration();
   playSound('success');
   if(currentStory&&currentSceneId)saveCompleted(currentStory.id,currentSceneId);
   document.getElementById('end-star').textContent=end.star;
