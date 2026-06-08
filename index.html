@@ -2425,10 +2425,26 @@ function stopNarration() {
   if (window.speechSynthesis) speechSynthesis.cancel();
 }
 
+function _buildChoicesText(choices) {
+  if (!choices || !choices.length) return null;
+  const texts = choices.map(c => c.text.replace(/^[\p{Emoji}\s]+/u, '').trim()).filter(t => t);
+  if (!texts.length) return null;
+  if (texts.length === 1 && /continuer/i.test(texts[0])) return null;
+  if (texts.length === 1) return `Tu peux choisir : ${texts[0]}.`;
+  const parts = [...texts];
+  const last = parts.pop();
+  return `Tu peux choisir : ${parts.join('... ')}... ou ${last}.`;
+}
+
 function narrateScene(scene, onChoicesReady) {
   if (!window.speechSynthesis || isMuted()) { onChoicesReady(); return; }
   if (scene.end) {
     _speak(scene.text, () => setTimeout(() => _speak(scene.end.text, onChoicesReady), 1500));
+    return;
+  }
+  const choicesText = _buildChoicesText(scene.choices);
+  if (choicesText) {
+    _speak(scene.text, () => _speak(choicesText, onChoicesReady));
   } else {
     _speak(scene.text, onChoicesReady);
   }
