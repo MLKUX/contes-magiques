@@ -352,6 +352,111 @@
   @keyframes end-title-bounce{0%{transform:scale(0);}60%{transform:scale(1.2);}100%{transform:scale(1);}}
   .end-title-bounce{animation:end-title-bounce 0.5s cubic-bezier(0.34,1.56,0.64,1) both;}
 
+  /* ══════════════════════════════════════════════════════
+     RESPONSIVE — TABLET ≤768px
+     ══════════════════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    /* Library: 2 colonnes sur tablette */
+    .stories-grid { grid-template-columns: repeat(2, 1fr); }
+    /* Adventures: 2 colonnes sur tablette */
+    .adventures-grid { grid-template-columns: repeat(2, 1fr); }
+    /* Modales avec marges latérales */
+    .theme-box    { margin: 16px; max-width: calc(100% - 32px); }
+    .premium-box  { margin: 16px; max-width: calc(100% - 32px); }
+    .settings-box { margin: 16px; max-width: calc(100% - 32px); }
+    /* Header actions : moins serré */
+    .library-header-actions { gap: 6px; }
+  }
+
+  /* ══════════════════════════════════════════════════════
+     RESPONSIVE — MOBILE ≤480px
+     ══════════════════════════════════════════════════════ */
+  @media (max-width: 480px) {
+
+    /* ── 1. LANDING PAGE ─────────────────────────────── */
+    .lp-hero-content { padding: 24px 16px; }
+    .lp-name-section { padding: 40px 16px; min-height: auto; }
+    .lp-name-card    { padding: 24px 16px; border-radius: 18px; }
+    .lp-name-title   { font-size: 1.35rem; }
+    /* Setup box (écran prénom initial) */
+    .setup-box { padding: 28px 18px; margin: 0 16px; border-radius: 18px; }
+    .setup-box h1 { font-size: 1.65rem; }
+    /* CTA et bouton valider : min 48px pour le pouce */
+    .btn-lp-cta {
+      min-height: 48px; padding: 13px 28px; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-start { min-height: 48px; }
+    /* Bouton ⚙️ en landing : 44px */
+    .lp-settings-btn.header-btn { width: 44px; height: 44px; }
+
+    /* ── 2. SÉLECTION NIVEAU ─────────────────────────── */
+    #level-select-screen { padding: 28px 16px; }
+    .level-card { padding: 28px 20px; }
+    .btn-level-back { min-height: 44px; padding: 10px 22px; }
+
+    /* ── 3. BIBLIOTHÈQUE ─────────────────────────────── */
+    #library-screen { padding: 18px 14px; }
+    .library-header { margin-bottom: 18px; }
+    .library-header-actions { gap: 4px; }
+    /* Boutons navbar : 44px pour le pouce */
+    .header-btn { width: 44px; height: 44px; font-size: 1.05rem; }
+    /* 1 colonne sur mobile */
+    .stories-grid { grid-template-columns: 1fr; }
+    /* Onglets de niveau */
+    .level-tabs { gap: 5px; }
+    .level-tab  { padding: 6px 11px; font-size: 0.76rem; }
+
+    /* ── 4. ÉCRAN HISTOIRE ───────────────────────────── */
+    /* Boutons ← et ⚙️ : 44px */
+    .story-back-btn     { width: 44px; height: 44px; top: 14px; left: 14px; }
+    .story-settings-btn { width: 44px; height: 44px; top: 14px; right: 14px; }
+    /* Barre de narration */
+    .story-narration { padding: 14px 12px 18px; }
+    .story-text-box  { padding: 13px 14px; }
+    /* Texte narratif : minimum 14px */
+    .story-text { font-size: 0.9rem; line-height: 1.6; }
+    /* Bouton Continuer */
+    .btn-continue { min-height: 48px; padding: 12px 24px; font-size: 1rem; width: 100%; box-sizing: border-box; }
+    /* Hotspots : pas de débordement, hauteur minimum */
+    .hotspot {
+      white-space: normal;
+      max-width: calc(100vw - 28px);
+      min-height: 44px;
+      font-size: 0.78rem;
+      padding: 8px 12px 8px 8px;
+    }
+    .hotspot-icon { width: 22px; height: 22px; font-size: 0.65rem; }
+    /* Barre de progression */
+    .story-progress { top: 18px; }
+    .progress-dot { width: 6px; height: 6px; }
+
+    /* ── 5. ÉCRAN BRAVO ──────────────────────────────── */
+    .end-overlay  { padding-bottom: 28px; }
+    .end-content  { padding: 0 16px; }
+    .end-title    { font-size: 1.8rem; }
+    .end-text     { font-size: 0.92rem; }
+    .end-star     { font-size: 44px; }
+    .btn-replay, .btn-library { min-height: 48px; max-width: 100%; }
+
+    /* ── 6. MES AVENTURES ────────────────────────────── */
+    #adventures-screen { padding: 18px 14px; }
+    .adventures-back-btn { width: 44px; height: 44px; }
+    .adventures-title { font-size: 1.35rem; }
+    /* 1 colonne sur mobile (remplace la règle 520px) */
+    .adventures-grid { grid-template-columns: 1fr; }
+
+    /* ── 7. MODALE SETTINGS ──────────────────────────── */
+    .settings-box   { margin: 12px; max-width: calc(100% - 24px); padding: 22px 18px; }
+    .settings-close { width: 40px; height: 40px; }
+    .settings-row   { padding: 14px 0; }
+    .settings-row-label { font-size: 0.88rem; }
+    /* Modales thème et premium pleine largeur */
+    .theme-box   { margin: 12px; max-width: calc(100% - 24px); padding: 22px 18px; }
+    .premium-box { margin: 12px; max-width: calc(100% - 24px); padding: 28px 18px; }
+    .btn-subscribe, .btn-cancel { min-height: 48px; }
+  }
+
 </style>
 </head>
 <body>
