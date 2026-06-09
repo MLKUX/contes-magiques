@@ -378,58 +378,76 @@
     .lp-name-section { padding: 40px 16px; min-height: auto; }
     .lp-name-card    { padding: 24px 16px; border-radius: 18px; }
     .lp-name-title   { font-size: 1.35rem; }
-    /* Setup box (écran prénom initial) */
+    /* Setup box */
     .setup-box { padding: 28px 18px; margin: 0 16px; border-radius: 18px; }
     .setup-box h1 { font-size: 1.65rem; }
-    /* CTA et bouton valider : min 48px pour le pouce */
+    /* CTA centré et accessible au pouce */
     .btn-lp-cta {
       min-height: 48px; padding: 13px 28px; font-size: 1.1rem;
-      display: flex; align-items: center; justify-content: center;
+      display: inline-flex; align-items: center; justify-content: center;
     }
     .btn-start { min-height: 48px; }
-    /* Bouton ⚙️ en landing : 44px */
+    /* Bouton ⚙️ landing : 44px */
     .lp-settings-btn.header-btn { width: 44px; height: 44px; }
 
     /* ── 2. SÉLECTION NIVEAU ─────────────────────────── */
     #level-select-screen { padding: 28px 16px; }
-    .level-card { padding: 28px 20px; }
+    /* Cartes empilées verticalement, pleine largeur, gap 12px */
+    .level-cards { flex-direction: column; align-items: center; gap: 12px; }
+    .level-card  { width: 100%; max-width: 100%; padding: 28px 20px; }
     .btn-level-back { min-height: 44px; padding: 10px 22px; }
 
     /* ── 3. BIBLIOTHÈQUE ─────────────────────────────── */
     #library-screen { padding: 18px 14px; }
     .library-header { margin-bottom: 18px; }
     .library-header-actions { gap: 4px; }
-    /* Boutons navbar : 44px pour le pouce */
     .header-btn { width: 44px; height: 44px; font-size: 1.05rem; }
-    /* 1 colonne sur mobile */
     .stories-grid { grid-template-columns: 1fr; }
-    /* Onglets de niveau */
     .level-tabs { gap: 5px; }
     .level-tab  { padding: 6px 11px; font-size: 0.76rem; }
 
     /* ── 4. ÉCRAN HISTOIRE ───────────────────────────── */
-    /* Boutons ← et ⚙️ : 44px */
     .story-back-btn     { width: 44px; height: 44px; top: 14px; left: 14px; }
     .story-settings-btn { width: 44px; height: 44px; top: 14px; right: 14px; }
-    /* Barre de narration */
     .story-narration { padding: 14px 12px 18px; }
     .story-text-box  { padding: 13px 14px; }
-    /* Texte narratif : minimum 14px */
     .story-text { font-size: 0.9rem; line-height: 1.6; }
-    /* Bouton Continuer */
     .btn-continue { min-height: 48px; padding: 12px 24px; font-size: 1rem; width: 100%; box-sizing: border-box; }
-    /* Hotspots : pas de débordement, hauteur minimum */
-    .hotspot {
-      white-space: normal;
-      max-width: calc(100vw - 28px);
-      min-height: 44px;
-      font-size: 0.78rem;
-      padding: 8px 12px 8px 8px;
-    }
-    .hotspot-icon { width: 22px; height: 22px; font-size: 0.65rem; }
-    /* Barre de progression */
     .story-progress { top: 18px; }
     .progress-dot { width: 6px; height: 6px; }
+
+    /* Hotspots : ignorer les positions desktop, empiler en bas au-dessus de la narration */
+    #hotspots-layer {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 8px 16px 195px;
+      z-index: 25;
+      pointer-events: none;
+    }
+    .hotspot {
+      position: relative !important;
+      left: auto !important; top: auto !important;
+      width: 90%; max-width: calc(100vw - 32px);
+      min-height: 44px;
+      white-space: normal;
+      font-size: 0.82rem;
+      padding: 10px 14px 10px 10px;
+      border-radius: 16px;
+      pointer-events: auto;
+      justify-content: center;
+    }
+    .hotspot-icon { width: 22px; height: 22px; font-size: 0.65rem; }
+
+    /* Zone image sans cached image : réduite à 40vh */
+    #story-screen:not(.has-image) #story-svg-bg {
+      bottom: auto;
+      height: 40vh;
+    }
+    #story-screen:not(.has-image) .story-gradient {
+      bottom: auto;
+      height: 40vh;
+    }
 
     /* ── 5. ÉCRAN BRAVO ──────────────────────────────── */
     .end-overlay  { padding-bottom: 28px; }
@@ -443,7 +461,6 @@
     #adventures-screen { padding: 18px 14px; }
     .adventures-back-btn { width: 44px; height: 44px; }
     .adventures-title { font-size: 1.35rem; }
-    /* 1 colonne sur mobile (remplace la règle 520px) */
     .adventures-grid { grid-template-columns: 1fr; }
 
     /* ── 7. MODALE SETTINGS ──────────────────────────── */
@@ -451,10 +468,35 @@
     .settings-close { width: 40px; height: 40px; }
     .settings-row   { padding: 14px 0; }
     .settings-row-label { font-size: 0.88rem; }
-    /* Modales thème et premium pleine largeur */
     .theme-box   { margin: 12px; max-width: calc(100% - 24px); padding: 22px 18px; }
     .premium-box { margin: 12px; max-width: calc(100% - 24px); padding: 28px 18px; }
     .btn-subscribe, .btn-cancel { min-height: 48px; }
+  }
+
+  /* ══════════════════════════════════════════════════════
+     PAYSAGE MOBILE (hauteur ≤480px)
+     ══════════════════════════════════════════════════════ */
+  @media (max-height: 480px) and (orientation: landscape) {
+    #hotspots-layer {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 6px 16px 150px;
+      z-index: 25;
+      pointer-events: none;
+    }
+    .hotspot {
+      position: relative !important;
+      left: auto !important; top: auto !important;
+      width: 70%; max-width: calc(100vw - 32px);
+      min-height: 40px;
+      white-space: normal;
+      font-size: 0.8rem;
+      padding: 8px 12px 8px 10px;
+      border-radius: 14px;
+      pointer-events: auto;
+      justify-content: center;
+    }
   }
 
 </style>
@@ -1736,11 +1778,13 @@ function renderScene(sceneId){
   }
 
   // Image: cachedImage (persistée) → memCache → génération API
+  document.getElementById('story-screen').classList.remove('has-image');
   if(scene.imagePrompt){
     const cacheKey=currentStory.id+'/'+sceneId+'/dalle';
     const applyImage=(url)=>{
       imageCache[cacheKey]=url;
       currentImage=url;
+      document.getElementById('story-screen').classList.add('has-image');
       svgBg.innerHTML='';
       svgBg.style.backgroundImage=`url(${url})`;
       svgBg.style.backgroundSize='cover';
